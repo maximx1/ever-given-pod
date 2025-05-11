@@ -25,7 +25,7 @@ export default function PodcastSummary({ stream }: PodcastSummaryType) {
         <div className="w-full h-auto shadow-md overflow-hidden flex flex-col bg-purple-200">
             <div className="flex flex-col md:flex-row md:items-start">
                 <div className="relative w-full h-[150px] md:w-1/3 md:h-[376] bg-purple-100 flex-shrink-0">
-                    <Image unoptimized src={summaryData.imageUrl ?? ''} alt={summaryData.title ?? ''} fill className="rounded-md object-cover" />
+                    <Image unoptimized src={summaryData.imageUrl ?? ''} alt={summaryData.title ?? ''} fill objectFit="contain" className="rounded-md" />
                 </div>
 
                 <div className="p-4 flex-grow flex flex-col md:ml-4">

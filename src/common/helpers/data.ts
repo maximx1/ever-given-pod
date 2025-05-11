@@ -36,7 +36,8 @@ export const preparePodcastItem = (podcast: PodcastDto) => {
     };
 };
 
-export const prepareStreamItem = (stream: StreamDto) => {
+export const prepareStreamItem = (stream?: StreamDto) => {
+    if (!stream) return undefined;
     return {
         ...stream,
         imageUrl: convertUrlToPublic(stream.imageUrl)
