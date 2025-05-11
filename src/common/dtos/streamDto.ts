@@ -1,0 +1,15 @@
+export type StreamDto = {
+    id: string;
+    title?: string;
+    description?: string;
+    feedUrl?: string;
+    siteUrl?: string;
+    imageUrl?: string;
+    author?: string;
+    managingEditor?: string;
+    webMaster?: string;
+    language?: string;
+    categories?: string[];
+    pubDate?: string;
+    ttl?: number;
+  };
