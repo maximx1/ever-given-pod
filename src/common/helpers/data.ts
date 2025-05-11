@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 import mime from 'mime-types';
 import { PodcastDto } from '../dtos/podcastDto';
+import { StreamDto } from '../dtos/streamDto';
 
 export const getFileSize = (filePath: string): number => {
     const stats = fs.statSync(filePath);
@@ -32,8 +33,15 @@ export const preparePodcastItem = (podcast: PodcastDto) => {
             type: getFileMimeType(podcast.url ?? ''),
             size: fileSize
         }
-    }
-}
+    };
+};
+
+export const prepareStreamItem = (stream: StreamDto) => {
+    return {
+        ...stream,
+        imageUrl: convertUrlToPublic(stream.imageUrl)
+    };
+};
 
 export const getLocalIpAddress = (): string => {
     const networkInterfaces = os.networkInterfaces();
