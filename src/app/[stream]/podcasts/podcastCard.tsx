@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { PodcastDto } from '../common/dtos/podcastDto';
+import { PodcastDto } from '../../../common/dtos/podcastDto';
 
 export default function PodcastCard({
     imageUrl = "https://placehold.co/400",
@@ -12,7 +12,7 @@ export default function PodcastCard({
     return (
         <div className="w-full h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1">
             <div className="w-[150px] h-full bg-purple-100 flex-shrink-0 relative">
-                <Image unoptimized src={imageUrl} alt={title} layout="fill" objectFit="cover" />
+                <Image unoptimized src={imageUrl} alt={title ?? ''} layout="fill" objectFit="cover" />
             </div>
 
             <div className="p-4 flex-grow flex flex-col bg-purple-200">

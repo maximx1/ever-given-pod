@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
 
-export default function AddPodcastCard({ stream }: { stream: string }) {
+export default function AddPodcastCard({ stream }: { stream?: string | string[] }) {
     const router = useRouter();
 
     const handleClick = () => {

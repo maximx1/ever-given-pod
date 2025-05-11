@@ -1,6 +1,6 @@
 export type PodcastDto = {
-    podcastId: string;
-    streamId: string;
+    podcastId?: string;
+    streamId?: string;
     imageUrl?: string;
     title?: string;
     description?: string;

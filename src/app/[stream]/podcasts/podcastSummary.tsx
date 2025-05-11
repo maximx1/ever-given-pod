@@ -1,15 +1,15 @@
 "use client";
 
 import Image from 'next/image';
-import { StreamDto } from '../common/dtos/steamDto';
+import { StreamDto } from '../../../common/dtos/streamDto';
 import { useEffect, useState } from 'react';
 
 type PodcastSummaryType = {
-    stream: string;
+    stream?: string | string[];
 };
 
 export default function PodcastSummary({ stream }: PodcastSummaryType) {
-    const [summaryData, setSummaryData] = useState<StreamDto>(null);
+    const [summaryData, setSummaryData] = useState<StreamDto>();
 
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}`)
@@ -25,7 +25,7 @@ export default function PodcastSummary({ stream }: PodcastSummaryType) {
         <div className="w-full h-auto shadow-md overflow-hidden flex flex-col bg-purple-200">
             <div className="flex flex-col md:flex-row md:items-start">
                 <div className="relative w-full h-[150px] md:w-1/3 md:h-[376] bg-purple-100 flex-shrink-0">
-                    <Image unoptimized src={summaryData.imageUrl} alt={summaryData.title} fill className="rounded-md object-cover" />
+                    <Image unoptimized src={summaryData.imageUrl ?? ''} alt={summaryData.title ?? ''} fill className="rounded-md object-cover" />
                 </div>
 
                 <div className="p-4 flex-grow flex flex-col md:ml-4">

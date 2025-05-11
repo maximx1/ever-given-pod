@@ -28,7 +28,7 @@ export const preparePodcastItem = (podcast: PodcastDto) => {
         imageUrl: convertUrlToPublic(podcast.imageUrl),
         url: fileUrl,
         enclosure: {
-            url: fileUrl,
+            url: fileUrl ?? '',
             type: getFileMimeType(podcast.url ?? ''),
             size: fileSize
         }

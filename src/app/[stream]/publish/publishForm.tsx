@@ -11,7 +11,7 @@ type PodcastDto = {
     author: string;
 };
 
-export default function StreamPublishForm({ stream }: { stream?: string }) {
+export default function StreamPublishForm({ stream }: { stream?: string | string[] }) {
     const { register, handleSubmit, formState: { errors } } = useForm<PodcastDto>();
 
     const onSubmit: SubmitHandler<PodcastDto> = (data) => {

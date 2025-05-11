@@ -6,7 +6,7 @@ import { PodcastDto } from '../../../common/dtos/podcastDto';
 import AddPodcastCard from './addPodcastCard';
 
 type PodcastListProps = {
-    stream: string;
+    stream?: string | string[];
 }
 
 export default function PodcastList({ stream }: PodcastListProps) {
@@ -30,6 +30,7 @@ export default function PodcastList({ stream }: PodcastListProps) {
                             uploadDate={podcast.uploadDate}
                             url={podcast.url}
                             author={podcast.author}
+                            imageUrl={podcast.imageUrl}
                         />
                     </div>
                 ))

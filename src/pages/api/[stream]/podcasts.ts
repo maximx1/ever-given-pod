@@ -5,10 +5,11 @@ import { v4 as uuidv4 } from 'uuid';
 import multiparty from 'multiparty';
 import { getPodcasts, publishPodcast } from '../../../common/data/db';
 import { PodcastDto } from '../../../common/dtos/podcastDto';
+import { preparePodcastItem } from '../../../common/helpers/data';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<PodcastDto[]>) => {
   const stream = req.query.stream as string,
-    podcasts = await getPodcasts(stream);
+    podcasts = (await getPodcasts(stream as string)).map(preparePodcastItem);
 
   res.status(200).json(podcasts);
 };
