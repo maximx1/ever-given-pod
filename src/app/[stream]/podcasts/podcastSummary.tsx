@@ -61,13 +61,13 @@ export default function PodcastSummary({ stream }: PodcastSummaryType) {
                     <div className="mt-4 flex justify-start space-x-4">
                         <button
                             onClick={() => handleNavigation(summaryData.feedUrl)}
-                            className='bg-purple-300 hover:bg-purple-400 text-sm px-4 py-2 rounded-sm'
+                            className='bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm'
                         >
                             RSS Feed
                         </button>
                         <button
                             onClick={() => handleNavigation(summaryData.siteUrl)}
-                            className='bg-purple-300 hover:bg-purple-400 text-sm px-4 py-2 rounded-sm'
+                            className='bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm'
                         >
                             Visit Site
                         </button>
