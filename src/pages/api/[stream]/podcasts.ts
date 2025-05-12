@@ -27,7 +27,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Invalid stream parameter' });
   }
 
-  const uploadDir = path.join(process.cwd(), 'public/uploads');
+  const uploadDir = path.join(process.cwd(), 'uploads');
   await fs.mkdir(uploadDir, { recursive: true });
   const form = new multiparty.Form({
     uploadDir
@@ -80,37 +80,6 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
-
-  // try {
-  //   const { title, description, author, image, file } = req.body;
-
-  //   const uploadDir = path.join(process.cwd(), 'public/uploads');
-  //   const imageFileName = `${uuidv4()}${path.extname(image.name)}`;
-  //   const imageFilePath = path.join(uploadDir, imageFileName);
-  //   await fs.writeFile(imageFilePath, Buffer.from(image.data, 'base64'));
-
-  //   const podcastFileName = `${uuidv4()}${path.extname(file.name)}`;
-  //   const podcastFilePath = path.join(uploadDir, podcastFileName);
-  //   await fs.writeFile(podcastFilePath, Buffer.from(file.data, 'base64'));
-
-  //   const podcastData: PodcastDto = {
-  //     podcastId: uuidv4(),
-  //     streamId: stream,
-  //     title,
-  //     description,
-  //     uploadDate: Date.now().toString(),
-  //     author,
-  //     imageUrl: imageFileName,
-  //     url: podcastFileName,
-  //   };
-
-  //   await publishPodcast(podcastData);
-
-  //   res.status(201).json({ message: 'Podcast created successfully' });
-  // } catch (error) {
-  //   console.error('Error handling request:', error);
-  //   res.status(500).json({ error: 'Internal server error' });
-  // }
 };
 
 export default function handler(

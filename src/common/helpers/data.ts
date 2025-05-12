@@ -21,7 +21,7 @@ export const convertUrlToPublic = (url?: string) => {
 };
 
 export const preparePodcastItem = (podcast: PodcastDto) => {
-    const fileSize = getFileSize(path.join(process.cwd(), `public/uploads/${podcast.url}`)),
+    const fileSize = getFileSize(path.join(process.cwd(), `uploads/${podcast.url}`)),
         fileUrl = convertUrlToPublic(podcast.url);
 
     return {

@@ -25,11 +25,13 @@ export default function PodcastCard({
 
             <div className="p-4 flex-grow flex flex-col bg-purple-200">
                 <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-                <div
-                    className={`text-sm text-gray-600 overflow-hidden transition-all duration-300 ${descriptionExpanded ? 'max-h-full' : 'max-h-[30px]'
-                        }`}
-                >
-                    {description}
+                <div className="relative">
+                    <div className={`text-sm text-gray-600 overflow-hidden transition-all duration-300 whitespace-pre-wrap ${descriptionExpanded ? 'max-h-full' : 'max-h-[60px]'}`}>
+                        {description}
+                    </div>
+                    {!descriptionExpanded && (
+                        <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-purple-200 to-transparent pointer-events-none"></div>
+                    )}
                 </div>
                 <button onClick={toggleExpand} className="mt-2 text-center text-blue-500 hover:underline text-sm self-center">
                     {descriptionExpanded ? 'Show Less' : 'Show More'}

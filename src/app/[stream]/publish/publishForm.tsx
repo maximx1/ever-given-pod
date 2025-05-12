@@ -1,6 +1,8 @@
 "use client";
 
 import { useForm, SubmitHandler } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type PodcastDto = {
     imageUrl?: FileList;
@@ -12,9 +14,12 @@ type PodcastDto = {
 };
 
 export default function StreamPublishForm({ stream }: { stream?: string | string[] }) {
-    const { register, handleSubmit, formState: { errors } } = useForm<PodcastDto>();
+    const { register, handleSubmit, formState: { errors } } = useForm<PodcastDto>(),
+        router = useRouter(),
+        [submitting, setSubmitting] = useState(false);
 
     const onSubmit: SubmitHandler<PodcastDto> = (data) => {
+        setSubmitting(true);
         const formData = new FormData();
         formData.append("image", data.imageUrl?.[0] as File);
         formData.append("title", data.title);
@@ -29,10 +34,14 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
             body: formData,
         })
             .then((res) => res.json())
-            .then((result) => {
-                console.log("Podcast created:", result);
+            .then(() => {
+                alert(`Podcast uploaded: ${data.title}`);
+                router.push(`/${stream}/podcasts`);
             })
-            .catch((err) => console.error("Error creating podcast:", err));
+            .catch((err) => {
+                alert(`Error creating podcast: JSON.string${err}`);
+                setSubmitting(false);
+            });
     };
 
     return (
@@ -102,8 +111,9 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
                 <button
                     type="submit"
                     className="w-full bg-purple-600 text-purple-200 py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                    disabled={submitting}
                 >
-                    Submit
+                    {submitting ? 'Uploading...' : 'Upload'}
                 </button>
             </form>
         </div>

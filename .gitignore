@@ -19,7 +19,7 @@
 
 # production
 /build
-/public/uploads/
+/uploads/
 db.json
 
 # misc
