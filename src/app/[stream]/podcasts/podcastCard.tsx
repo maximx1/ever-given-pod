@@ -1,3 +1,5 @@
+"use client";
+
 import Image from 'next/image';
 import { PodcastDto } from '../../../common/dtos/podcastDto';
 import { useState } from 'react';
