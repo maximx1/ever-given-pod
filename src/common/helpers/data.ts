@@ -42,16 +42,8 @@ export const prepareStreamItem = (stream?: StreamDto) => {
     const imageUrl = stream.imageUrl ? convertUrlToPublic(stream.imageUrl) : undefined;
     return {
         ...stream,
-        imageUrl//,
-        // customElements: [
-        //     {
-        //         image: [
-        //             { url: imageUrl },
-        //             { title: stream.title }//,
-        //             //{ link: stream.link }
-        //         ]
-        //     }
-        //]
+        imageUrl,
+        feedUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream.id}/feed`,
     };
 };
 

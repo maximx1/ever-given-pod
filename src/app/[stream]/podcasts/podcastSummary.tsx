@@ -3,13 +3,21 @@
 import Image from 'next/image';
 import { StreamDto } from '../../../common/dtos/streamDto';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type PodcastSummaryType = {
     stream?: string | string[];
 };
 
 export default function PodcastSummary({ stream }: PodcastSummaryType) {
-    const [summaryData, setSummaryData] = useState<StreamDto>();
+
+    const [summaryData, setSummaryData] = useState<StreamDto>(),
+        router = useRouter(),
+        handleNavigation = (url?: string) => {
+            if (url) {
+                router.push(url);
+            }
+        };
 
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}`)
@@ -50,23 +58,19 @@ export default function PodcastSummary({ stream }: PodcastSummaryType) {
                         </ul>
                     </div>
 
-                    <div className="mt-4">
-                        <a
-                            href={summaryData.feedUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline text-sm block"
+                    <div className="mt-4 flex justify-start space-x-4">
+                        <button
+                            onClick={() => handleNavigation(summaryData.feedUrl)}
+                            className='bg-purple-300 hover:bg-purple-400 text-sm px-4 py-2 rounded-sm'
                         >
-                            View Feed
-                        </a>
-                        <a
-                            href={summaryData.siteUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline text-sm block mt-2"
+                            RSS Feed
+                        </button>
+                        <button
+                            onClick={() => handleNavigation(summaryData.siteUrl)}
+                            className='bg-purple-300 hover:bg-purple-400 text-sm px-4 py-2 rounded-sm'
                         >
                             Visit Site
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
