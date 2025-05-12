@@ -38,9 +38,20 @@ export const preparePodcastItem = (podcast: PodcastDto) => {
 
 export const prepareStreamItem = (stream?: StreamDto) => {
     if (!stream) return undefined;
+
+    const imageUrl = stream.imageUrl ? convertUrlToPublic(stream.imageUrl) : undefined;
     return {
         ...stream,
-        imageUrl: convertUrlToPublic(stream.imageUrl)
+        imageUrl//,
+        // customElements: [
+        //     {
+        //         image: [
+        //             { url: imageUrl },
+        //             { title: stream.title }//,
+        //             //{ link: stream.link }
+        //         ]
+        //     }
+        //]
     };
 };
 
