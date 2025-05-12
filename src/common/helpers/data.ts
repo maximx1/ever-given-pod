@@ -44,6 +44,7 @@ export const prepareStreamItem = (stream?: StreamDto) => {
         ...stream,
         imageUrl,
         feedUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream.id}/feed`,
+        siteUrl: stream.siteUrl ?? `${process.env.NEXT_PUBLIC_API_BASE_URL}/${stream.id}/podcasts`
     };
 };
 
