@@ -18,12 +18,12 @@ export default function PodcastCard({
         };
 
     return (
-        <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1">
-            <div className="w-[150px] h-full bg-purple-100 flex-shrink-0 relative">
+        <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
+            <div className="w-[150px] h-full max-h-[232px] bg-purple-100 flex-shrink-0 relative">
                 <Image unoptimized src={imageUrl} alt={title ?? ''} layout="fill" objectFit="contain" />
             </div>
 
-            <div className="p-4 flex-grow flex flex-col bg-purple-200">
+            <div className="p-4 flex-grow flex flex-col">
                 <h2 className="text-lg font-bold text-gray-800">{title}</h2>
                 <div className="relative">
                     <div className={`text-sm text-gray-600 overflow-hidden transition-all duration-300 whitespace-pre-wrap ${descriptionExpanded ? 'max-h-full' : 'max-h-[60px]'}`}>
