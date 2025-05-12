@@ -16,7 +16,7 @@ export default function PodcastList({ stream }: PodcastListProps) {
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts`)
             .then((res) => res.json())
             .then((data) => setPodcastData(data));
-    }, []);
+    }, [stream]);
 
     return (
         <div className="max-w-[800px] mx-auto w-full px-4">
