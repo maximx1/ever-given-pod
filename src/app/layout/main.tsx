@@ -21,6 +21,9 @@ export default function Main({ children }: MainProps) {
             <main className="flex-grow">
                 {children}
             </main>
+            <footer className="bg-purple-300 py-4">
+                <p className="text-right text-sm pr-4">© 2025 Ever Givin Pod</p>
+            </footer>
         </div>
     )
 }

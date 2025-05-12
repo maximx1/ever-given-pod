@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { PodcastDto } from '../../../common/dtos/podcastDto';
+import { useState } from 'react';
 
 export default function PodcastCard({
     imageUrl = "https://placehold.co/400",
@@ -9,15 +10,28 @@ export default function PodcastCard({
     url,
     author,
 }: PodcastDto) {
+    const [descriptionExpanded, setDescriptionExpanded] = useState(false),
+        toggleExpand = () => {
+            setDescriptionExpanded(!descriptionExpanded);
+        };
+
     return (
-        <div className="w-full h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1">
+        <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1">
             <div className="w-[150px] h-full bg-purple-100 flex-shrink-0 relative">
                 <Image unoptimized src={imageUrl} alt={title ?? ''} layout="fill" objectFit="contain" />
             </div>
 
             <div className="p-4 flex-grow flex flex-col bg-purple-200">
                 <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-                <p className="text-sm text-gray-600 flex-grow">{description}</p>
+                <div
+                    className={`text-sm text-gray-600 overflow-hidden transition-all duration-300 ${descriptionExpanded ? 'max-h-full' : 'max-h-[30px]'
+                        }`}
+                >
+                    {description}
+                </div>
+                <button onClick={toggleExpand} className="mt-2 text-center text-blue-500 hover:underline text-sm self-center">
+                    {descriptionExpanded ? 'Show Less' : 'Show More'}
+                </button>
                 <div className="mt-2 text-sm text-gray-500">
                     <p>By: {author}</p>
                     <p>Uploaded: {uploadDate}</p>
