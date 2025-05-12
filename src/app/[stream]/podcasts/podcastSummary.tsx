@@ -23,7 +23,7 @@ export default function PodcastSummary({ stream }: PodcastSummaryType) {
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}`)
             .then((res) => res.json())
             .then((data) => setSummaryData(data));
-    }, []);
+    }, [stream]);
 
     if (!summaryData) {
         return <p>Loading...</p>;
