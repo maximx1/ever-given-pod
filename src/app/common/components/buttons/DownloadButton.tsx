@@ -23,7 +23,7 @@ export default function DownloadButton({
     debounceMs,
     disabled = false
 }: DownloadButtonProps) {
-    const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         if (disabled) return;
 
