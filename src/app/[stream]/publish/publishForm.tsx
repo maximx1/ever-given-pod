@@ -16,7 +16,8 @@ type PodcastDto = {
 export default function StreamPublishForm({ stream }: { stream?: string | string[] }) {
     const { register, handleSubmit, formState: { errors } } = useForm<PodcastDto>(),
         router = useRouter(),
-        [submitting, setSubmitting] = useState(false);
+        [submitting, setSubmitting] = useState(false),
+        [progress, setProgress] = useState(-1);
 
     const onSubmit: SubmitHandler<PodcastDto> = (data) => {
         setSubmitting(true);
@@ -28,21 +29,33 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
         formData.append("file", data.url?.[0] as File);
         formData.append("author", data.author);
 
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts`);
 
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts`, {
-            method: "POST",
-            body: formData,
-        })
-            .then((res) => res.json())
-            .then(() => {
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+                setProgress(Math.round((event.loaded / event.total) * 100));
+            }
+        };
+
+        xhr.onload = () => {
+            setSubmitting(false);
+            if (xhr.status === 201) {
                 alert(`Podcast uploaded: ${data.title}`);
                 router.push(`/${stream}/podcasts`);
-            })
-            .catch((err) => {
-                alert(`Error creating podcast: JSON.string${err}`);
-                setSubmitting(false);
-            });
-    };
+            } else {
+                alert('Error uploading podcast.');
+            }
+        };
+
+        xhr.onerror = () => {
+            setSubmitting(false);
+            alert('Error uploading podcast.');
+        };
+
+        xhr.send(formData);
+
+    }
 
     return (
         <div className="max-w-[800px] mx-auto w-full px-4 bg-purple-200 rounded-sm pt-4 pb-4 mt-4">
@@ -115,6 +128,14 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
                 >
                     {submitting ? 'Uploading...' : 'Upload'}
                 </button>
+                {progress > 0 && progress < 100 && (
+                    <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                        <div
+                            className="bg-purple-600 h-2 rounded-full transition-all"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                )}
             </form>
         </div>
     );

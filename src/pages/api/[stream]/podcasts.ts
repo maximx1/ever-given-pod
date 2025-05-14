@@ -74,6 +74,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
 
       await publishPodcast(podcastData);
 
+      res.setHeader('Location', `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts/${podcastData.podcastId}`);
       res.status(201).json({ message: 'Podcast created successfully' });
     } catch (error) {
       console.error('Error handling request:', error);
