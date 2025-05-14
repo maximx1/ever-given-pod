@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type MainProps = {
     children: React.ReactNode;
@@ -15,8 +16,11 @@ export default function Main({ children }: MainProps) {
   
     return (
         <div className="min-h-screen flex flex-col">
-            <header className="bg-purple-300 py-4 sticky top-0 z-10">
-                <h1 className="text-center text-2xl font-bold cursor-pointer" onClick={handleHeaderClick}>Ever Givin Pod</h1>
+            <header className="bg-purple-300 py-4 sticky top-0 z-10 flex items-center justify-center">
+                <div className="flex items-center cursor-pointer" onClick={handleHeaderClick}>
+                    <Image src="/site-icon.svg" alt="Site Icon" width={32} height={32} className="mr-2" />
+                    <h1 className="text-2xl font-bold">Ever Givin Pod</h1>
+                </div>
             </header>
             <main className="flex-grow">
                 {children}
