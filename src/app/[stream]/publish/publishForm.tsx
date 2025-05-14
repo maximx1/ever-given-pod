@@ -54,7 +54,6 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
         };
 
         xhr.send(formData);
-
     }
 
     return (

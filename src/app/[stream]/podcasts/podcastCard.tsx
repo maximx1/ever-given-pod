@@ -1,8 +1,9 @@
 "use client";
 
 import Image from 'next/image';
-import { PodcastDto } from '../../../common/dtos/podcastDto';
+import { PodcastDto } from '@/common/dtos/podcastDto';
 import { useState } from 'react';
+import DownloadButton from '@/app/common/components/buttons/DownloadButton';
 
 export default function PodcastCard({
     imageUrl = "https://placehold.co/400",
@@ -40,9 +41,22 @@ export default function PodcastCard({
                     <p>By: {author}</p>
                     <p>Uploaded: {uploadDate}</p>
                 </div>
-                <a href={url} target="_blank" rel="noopener noreferrer" className="mt-4 text-blue-500 hover:underline text-sm">
-                    Listen Now
-                </a>
+                <div className="flex">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="mt-4 text-blue-500 hover:underline text-sm">
+                        Listen Now
+                    </a>
+                    {url &&
+                        <DownloadButton
+                            href={url}
+                            iconSrc={`${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/download.svg`}
+                            iconAlt="Download"
+                            text="Download"
+                            download={`${title}-${url.split('/').pop()}`}
+                            className="mt-4 ml-2"
+                            debounceMs={2000}
+                        />
+                    }
+                </div>
             </div>
         </div>
     );
