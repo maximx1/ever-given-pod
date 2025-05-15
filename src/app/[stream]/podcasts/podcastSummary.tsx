@@ -1,7 +1,8 @@
 "use client";
 
 import Image from 'next/image';
-import { StreamDto } from '../../../common/dtos/streamDto';
+import { StreamDto } from '@/common/dtos/streamDto';
+import PodcastIcon from '@/../public/icons/podcast.svg';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -33,7 +34,7 @@ export default function PodcastSummary({ stream }: PodcastSummaryType) {
         <div className="w-full h-auto shadow-md overflow-hidden flex flex-col bg-purple-200">
             <div className="flex flex-col md:flex-row md:items-start">
                 <div className="relative w-full h-[150px] md:w-1/3 md:h-[376] bg-purple-100 flex-shrink-0">
-                    <Image unoptimized src={summaryData.imageUrl ?? ''} alt={summaryData.title ?? ''} fill className="object-cover md:object-contain" />
+                    <Image src={summaryData.imageUrl ?? `${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/podcast.svg`} alt={summaryData.title ?? ''} fill className="object-cover md:object-contain" />
                 </div>
 
                 <div className="p-4 flex-grow flex flex-col md:ml-4">
