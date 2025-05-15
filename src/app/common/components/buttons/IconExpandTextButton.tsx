@@ -39,7 +39,24 @@ export default function IconExpandTextButton({
     return (
         <a
             download={download}
-            className={`flex items-center group transition-all duration-200 bg-transparent rounded-sm hover:bg-purple-400 hover:shadow pl-1 pr-2 py-1 text-sm select-none ${className}`}
+            className={`
+                flex
+                items-center
+                group
+                transition-all
+                duration-200
+                bg-transparent
+                rounded-sm
+                hover:bg-purple-400
+                hover:shadow
+                pl-1
+                pr-2
+                py-1
+                text-sm
+                select-none
+                cursor-pointer
+                ${className}
+            `}
             onClick={handleClick}
             tabIndex={isDisabled ? -1 : 0}
             aria-disabled={isDisabled}
