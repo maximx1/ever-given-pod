@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { StreamDto } from '@/common/dtos/streamDto';
-import PodcastIcon from '@/../public/icons/podcast.svg';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
