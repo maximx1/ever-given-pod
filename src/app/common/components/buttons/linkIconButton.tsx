@@ -1,7 +1,7 @@
 "use client";
 
-import IconExpandTextButton from "./iconExpandTextButton";
 import { useRouter } from "next/navigation";
+import IconExpandTextButton from "./iconExpandTextButton";
 
 type LinkIconButtonProps = {
     href: string;
