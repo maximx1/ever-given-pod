@@ -21,7 +21,7 @@ export default function PodcastCard({
     return (
         <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
             <div className="w-[150px] h-full max-h-[232px] bg-purple-100 flex-shrink-0 relative">
-                <Image unoptimized src={imageUrl ?? `${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/podcast.svg`} alt={title ?? ''} layout="fill" objectFit="contain" />
+                <Image src={imageUrl ?? `${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/podcast.svg`} alt={title ?? ''} layout="fill" className="object-contain" />
             </div>
 
             <div className="p-4 flex-grow flex flex-col">

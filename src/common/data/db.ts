@@ -62,6 +62,12 @@ export const getPodcasts = async (stream: string) => {
     return db.data?.podcasts.filter((podcast) => podcast.streamId === stream) ?? [];
 };
 
+export const getRandomPodcasts = async (limit: number = 20) => {
+    const podcasts = db.data?.podcasts ?? [];
+    const shuffled = podcasts.slice().sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, limit);
+};
+
 export const publishPodcast = async (podcast: PodcastDto) => {
     await queueWrite(async () => {
         db.data?.podcasts.push(podcast);
