@@ -1,8 +1,8 @@
 "use client";
 
-import IconExpandTextButton from "./IconExpandTextButton";
+import IconExpandTextButton from "./iconExpandTextButton";
 
-type DownloadButtonProps = {
+type DownloadIconButtonProps = {
     href: string;
     iconSrc: string;
     iconAlt?: string;
@@ -13,7 +13,7 @@ type DownloadButtonProps = {
     disabled?: boolean;
 };
 
-export default function DownloadButton({
+export default function DownloadIconButton({
     href,
     iconSrc,
     iconAlt = "icon",
@@ -22,7 +22,7 @@ export default function DownloadButton({
     className = "",
     debounceMs,
     disabled = false
-}: DownloadButtonProps) {
+}: DownloadIconButtonProps) {
     const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         if (disabled) return;

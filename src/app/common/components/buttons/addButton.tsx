@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-export default function AddPodcastCard({ stream }: { stream?: string | string[] }) {
+export default function AddButton({ stream }: { stream?: string | string[] }) {
     const router = useRouter(),
         defaultBottomOffset = 16,
         [bottomOffset, setBottomOffset] = useState(defaultBottomOffset);

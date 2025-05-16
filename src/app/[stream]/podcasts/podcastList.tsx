@@ -2,8 +2,8 @@
 
 import PodcastCard from './podcastCard';
 import { useEffect, useState } from 'react';
-import { PodcastDto } from '../../../common/dtos/podcastDto';
-import AddPodcastCard from './addPodcastCard';
+import { PodcastDto } from '@/common/dtos/podcastDto';
+import AddButton from '@/app/common/components/buttons/addButton';
 
 type PodcastListProps = {
     stream?: string | string[];
@@ -20,7 +20,7 @@ export default function PodcastList({ stream }: PodcastListProps) {
 
     return (
         <div className="max-w-[800px] mx-auto w-full px-4">
-            <AddPodcastCard stream={stream}/>
+            <AddButton stream={stream} />
             {
                 podcastData.map((podcast, index) => (
                     <div key={index} className="flex justify-center">

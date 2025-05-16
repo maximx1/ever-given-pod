@@ -9,7 +9,9 @@ import { preparePodcastItem } from '../../../common/helpers/data';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<PodcastDto[]>) => {
   const stream = req.query.stream as string,
-    podcasts = (await getPodcasts(stream as string)).map(preparePodcastItem);
+    podcasts = (await getPodcasts(stream as string))
+      .map(preparePodcastItem)
+      .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
 
   res.status(200).json(podcasts);
 };

@@ -79,7 +79,7 @@ export default function Home() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {podcasts.map(podcast => (
             <button
-              key={podcast.streamId}
+              key={podcast.podcastId}
               type='button'
               onClick={() => handlePodcastClick(podcast)}
               className="aspect-square bg-purple-100 rounded-lg flex items-center justify-center overflow-hidden shadow focus:outline-none focus:ring-2 focus:ring-purple-400 transition"

@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import { PodcastDto } from '@/common/dtos/podcastDto';
 import { useState } from 'react';
-import DownloadButton from '@/app/common/components/buttons/DownloadButton';
+import DownloadIconButton from '@/app/common/components/buttons/downloadIconButton';
+import LinkIconButton from '@/app/common/components/buttons/linkIconButton';
 
 export default function PodcastCard({
     imageUrl,
@@ -39,20 +40,34 @@ export default function PodcastCard({
                 </button>
                 <div className="mt-2 text-sm text-gray-500">
                     <p>By: {author}</p>
-                    <p>Uploaded: {uploadDate}</p>
+                    <p>Uploaded: {uploadDate ?
+                        new Date(Number(uploadDate)).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric"
+                        }) : "Unknown"}</p>
                 </div>
                 <div className="flex">
+                    {url &&
+                        <LinkIconButton
+                            href={url}
+                            iconSrc={`${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/play.svg`}
+                            iconAlt="Listen Now"
+                            text="Listen Now"
+                            className="mt-4"
+                        />
+                    }
                     <a href={url} target="_blank" rel="noopener noreferrer" className="mt-4 text-blue-500 hover:underline text-sm">
-                        Listen Now
+                        
                     </a>
                     {url &&
-                        <DownloadButton
+                        <DownloadIconButton
                             href={url}
                             iconSrc={`${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/download.svg`}
                             iconAlt="Download"
                             text="Download"
                             download={`${title}-${url.split('/').pop()}`}
-                            className="mt-4 ml-2"
+                            className="mt-4"
                             debounceMs={2000}
                         />
                     }
