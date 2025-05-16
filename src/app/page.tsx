@@ -28,7 +28,7 @@ export default function Home() {
 
   return (
     <Main>
-      <div className="w-full flex justify-center mt-8">
+      <div className="w-full flex justify-center mt-15">
         <div className="w-[100px] h-[100px] flex items-center justify-center">
           <Image
             src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/site-icon.svg`}
@@ -40,7 +40,7 @@ export default function Home() {
           />
         </div>
       </div>
-      <div className="w-full flex justify-center mt-8">
+      <div className="w-full flex justify-center mt-15 mb-25">
         <div className="relative w-[320px]">
           <input
             ref={inputRef}
@@ -64,7 +64,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-full flex justify-center mt-8">
+      <div className="w-full flex justify-center mt-8 mb-15">
         <div className="w-[500px] flex flex-col items-center">
           <h1 className="text-2xl font-bold text-purple-200 text-center">
             Not sure what you are looking for?
