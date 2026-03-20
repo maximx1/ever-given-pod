@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { resolveAppUrl } from '@/common/helpers/api';
 
 export default function AddButton({ stream }: { stream?: string | string[] }) {
     const router = useRouter(),
@@ -9,7 +10,7 @@ export default function AddButton({ stream }: { stream?: string | string[] }) {
         [bottomOffset, setBottomOffset] = useState(defaultBottomOffset);
 
     const handleClick = () => {
-        router.push(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${stream}/publish`);
+        router.push(resolveAppUrl(`/${stream}/publish`));
     };
 
     useEffect(() => {

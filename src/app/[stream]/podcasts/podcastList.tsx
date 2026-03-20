@@ -4,6 +4,7 @@ import PodcastCard from './podcastCard';
 import { useEffect, useState } from 'react';
 import { PodcastDto } from '@/common/dtos/podcastDto';
 import AddButton from '@/app/common/components/buttons/addButton';
+import { resolveApiUrl } from '@/common/helpers/api';
 
 type PodcastListProps = {
     stream?: string | string[];
@@ -13,7 +14,7 @@ export default function PodcastList({ stream }: PodcastListProps) {
     const [podcastData, setPodcastData] = useState<PodcastDto[]>([]);
 
     useEffect(() => {
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts`)
+        fetch(resolveApiUrl(`/${stream}/podcasts`))
             .then((res) => res.json())
             .then((data) => setPodcastData(data));
     }, [stream]);

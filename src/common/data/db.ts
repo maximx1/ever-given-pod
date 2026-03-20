@@ -1,17 +1,30 @@
 import path from 'path';
+import bcrypt from 'bcrypt';
 import { JSONFilePreset } from 'lowdb/node';
+import { UserDto } from '../dtos/userDto';
 import { PodcastDto } from '../dtos/podcastDto';
 import { StreamDto } from '../dtos/streamDto';
 
 export type DatabaseSchema = {
+    users: UserDto[];
     streams: StreamDto[];
     podcasts: PodcastDto[];
 };
 
 const defaultData: DatabaseSchema = {
+    users: [
+        {
+            id: '1',
+            email: 'sample@example.com',
+            password: bcrypt.hashSync('abc123', 10),
+            name: 'Sample User',
+            creationDate: new Date().toISOString()
+        }
+    ],
     streams: [
         {
             id: 'f60236c3-81dd-47ba-b0ae-afd9229ac6f2',
+            userId: '1',
             title: 'Audio Books',
             description: 'Personal repo of audio books',
             author: 'anonymous',
@@ -81,4 +94,25 @@ export const getStreams = async () => {
 
 export const getStream = async (id: string) => {
     return db.data?.streams.find((stream) => stream.id === id);
+};
+
+export const getUserByEmail = async (email: string) => {
+    return db.data?.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
+};
+
+export const getUserById = async (id: string) => {
+    return db.data?.users.find((user) => user.id === id);
+};
+
+export const createUser = async (user: UserDto) => {
+    if (!db.data) return null;
+
+    const existing = db.data.users.find((u) => u.email?.toLowerCase() === user.email?.toLowerCase());
+    if (existing) {
+        return null;
+    }
+
+    db.data.users.push(user);
+    await db.write();
+    return user;
 };

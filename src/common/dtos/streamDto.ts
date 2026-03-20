@@ -1,5 +1,6 @@
 export type StreamDto = {
     id: string;
+    userId: string;
     title?: string;
     description?: string;
     feedUrl?: string;

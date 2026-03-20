@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 import mime from 'mime-types';
 import { PodcastDto } from '../dtos/podcastDto';
+import { resolveApiUrl, resolveAppUrl, resolveAssetUrl } from './api';
 import { StreamDto } from '../dtos/streamDto';
 
 export const getFileSize = (filePath: string): number => {
@@ -17,7 +18,7 @@ export const getFileMimeType = (filePath: string): string => {
 };
 
 export const convertUrlToPublic = (url?: string) => {
-    return url ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${url}` : undefined;
+    return url ? resolveAssetUrl(`/uploads/${url}`) : undefined;
 };
 
 export const preparePodcastItem = (podcast: PodcastDto) => {
@@ -43,8 +44,8 @@ export const prepareStreamItem = (stream?: StreamDto) => {
     return {
         ...stream,
         imageUrl,
-        feedUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream.id}/feed`,
-        siteUrl: stream.siteUrl ?? `${process.env.NEXT_PUBLIC_API_BASE_URL}/${stream.id}/podcasts`
+        feedUrl: resolveApiUrl(`/${stream.id}/feed`),
+        siteUrl: stream.siteUrl ?? resolveAppUrl(`/${stream.id}/podcasts`)
     };
 };
 
