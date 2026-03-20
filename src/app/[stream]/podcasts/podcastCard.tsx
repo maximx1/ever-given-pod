@@ -5,6 +5,7 @@ import { PodcastDto } from '@/common/dtos/podcastDto';
 import { useState } from 'react';
 import DownloadIconButton from '@/app/common/components/buttons/downloadIconButton';
 import LinkIconButton from '@/app/common/components/buttons/linkIconButton';
+import { resolveAssetUrl } from '@/common/helpers/api';
 
 export default function PodcastCard({
     imageUrl,
@@ -22,7 +23,7 @@ export default function PodcastCard({
     return (
         <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
             <div className="w-[150px] h-full max-h-[232px] bg-purple-100 flex-shrink-0 relative">
-                <Image src={imageUrl ?? `${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/podcast.svg`} alt={title ?? ''} layout="fill" className="object-contain" />
+                <Image src={imageUrl ?? resolveAssetUrl('/icons/podcast.svg')} alt={title ?? ''} layout="fill" className="object-contain" />
             </div>
 
             <div className="p-4 flex-grow flex flex-col">
@@ -51,7 +52,7 @@ export default function PodcastCard({
                     {url &&
                         <LinkIconButton
                             href={url}
-                            iconSrc={`${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/play.svg`}
+                            iconSrc={resolveAssetUrl('/icons/play.svg')}
                             iconAlt="Listen Now"
                             text="Listen Now"
                             className="mt-4"
@@ -63,7 +64,7 @@ export default function PodcastCard({
                     {url &&
                         <DownloadIconButton
                             href={url}
-                            iconSrc={`${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/download.svg`}
+                            iconSrc={resolveAssetUrl('/icons/download.svg')}
                             iconAlt="Download"
                             text="Download"
                             download={`${title}-${url.split('/').pop()}`}

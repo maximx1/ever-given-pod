@@ -5,6 +5,7 @@ import Main from './layout/main';
 import { useRef, useState, useEffect } from 'react';
 import { PodcastDto } from '@/common/dtos/podcastDto';
 import { useRouter } from 'next/navigation';
+import { resolveApiUrl, resolveAppUrl, resolveAssetUrl } from '@/common/helpers/api';
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null),
@@ -15,12 +16,12 @@ export default function Home() {
     },
     handlePodcastClick = (podcast: PodcastDto) => {
       if (podcast.streamId != null) {
-        router.push(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${podcast.streamId}/podcasts`); // TODO: This should eventually go to the individual player page.
+        router.push(resolveAppUrl(`/${podcast.streamId}/podcasts`)); // TODO: This should eventually go to the individual player page.
       }
     };
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/podcasts/random?limit=12`)
+    fetch(resolveApiUrl('/podcasts/random?limit=12'))
       .then(res => res.json())
       .then(setPodcasts)
       .catch(() => setPodcasts([]));
@@ -32,7 +33,7 @@ export default function Home() {
         <div className="w-full flex justify-center mt-15">
           <div className="w-[100px] h-[100px] flex items-center justify-center">
             <Image
-              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/site-icon.svg`}
+              src={resolveAssetUrl('/site-icon.svg')}
               alt="Site Icon"
               width={100}
               height={100}
@@ -56,7 +57,7 @@ export default function Home() {
               tabIndex={0}
             >
               <Image
-                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/search.svg`}
+                src={resolveAssetUrl('/icons/search.svg')}
                 alt="Search"
                 width={24}
                 height={24}
@@ -88,7 +89,7 @@ export default function Home() {
               title={podcast.title}
             >
               <Image
-                src={podcast.imageUrl || `${process.env.NEXT_PUBLIC_API_BASE_URL}/icons/podcast.svg`}
+                src={podcast.imageUrl || resolveAssetUrl('/icons/podcast.svg')}
                 alt={podcast.title ?? ''}
                 width={200}
                 height={200}

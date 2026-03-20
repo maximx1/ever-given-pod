@@ -3,6 +3,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { resolveApiUrl } from '@/common/helpers/api';
 
 type PodcastDto = {
     imageUrl?: FileList;
@@ -30,7 +31,7 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
         formData.append("author", data.author);
 
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts`);
+        xhr.open("POST", resolveApiUrl(`/${stream}/podcasts`));
 
         xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
