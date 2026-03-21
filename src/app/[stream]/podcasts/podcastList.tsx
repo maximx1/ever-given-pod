@@ -20,7 +20,7 @@ export default function PodcastList({ stream }: PodcastListProps) {
     }, [stream]);
 
     return (
-        <div className="max-w-[800px] mx-auto w-full px-4">
+        <div className="podcast-list relative max-w-[800px] mx-auto w-full px-4">
             <AddButton stream={stream} />
             {
                 podcastData.map((podcast, index) => (

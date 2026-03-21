@@ -7,9 +7,10 @@ import UserContext from '@/app/common/components/user/userContext';
 
 type MainProps = {
     children: React.ReactNode;
+    showUserContext?: boolean;
 };
 
-export default function Main({ children }: MainProps) {
+export default function Main({ children, showUserContext = true }: MainProps) {
     const router = useRouter();
 
     const handleHeaderClick = () => {
@@ -24,15 +25,15 @@ export default function Main({ children }: MainProps) {
                         <Image src={resolveAssetUrl("/site-icon.svg")} alt="Site Icon" width={32} height={32} className="mr-2" />
                         <h1 className="text-2xl font-bold">Ever Givin Pod</h1>
                     </div>
-                    <div className="flex justify-end">
-                        <UserContext />
+                    <div className="flex justify-end h-[22px]">
+                        {showUserContext && <UserContext />}
                     </div>
                 </div>
             </header>
-            <main className="flex-grow">
+            <main className="flex flex-grow flex-col">
                 {children}
             </main>
-            <footer className="bg-purple-300 py-4 mt-4">
+            <footer className="bg-purple-300 py-4">
                 <p className="text-right text-sm pr-4">© {new Date().getFullYear()} Ever Givin Pod</p>
             </footer>
         </div>
