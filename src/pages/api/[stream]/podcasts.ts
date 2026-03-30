@@ -3,17 +3,18 @@ import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import multiparty from 'multiparty';
-import { getPodcasts, publishPodcast } from '../../../common/data/db';
-import { PodcastDto } from '../../../common/dtos/podcastDto';
-import { preparePodcastItem } from '../../../common/helpers/data';
+import { getEpisodes, publishEpisode } from '../../../common/data/db';
+import { EpisodeDto } from '../../../common/dtos/episodeDto';
+import { prepareEpisodeItem } from '../../../common/helpers/data';
+import { FIELD_LIMITS } from '../../../common/limits';
 
-const get = async (req: NextApiRequest, res: NextApiResponse<PodcastDto[]>) => {
+const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[]>) => {
   const stream = req.query.stream as string,
-    podcasts = (await getPodcasts(stream as string))
-      .map(preparePodcastItem)
+    episodes = (await getEpisodes(stream as string))
+      .map(prepareEpisodeItem)
       .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
 
-  res.status(200).json(podcasts);
+  res.status(200).json(episodes);
 };
 
 export const config = {
@@ -46,38 +47,48 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       const description = fields.description?.[0];
       const author = fields.author?.[0];
 
+      if (title && title.length > FIELD_LIMITS.title) {
+        return res.status(400).json({ error: `Title must be ${FIELD_LIMITS.title} characters or fewer` });
+      }
+      if (description && description.length > FIELD_LIMITS.description) {
+        return res.status(400).json({ error: `Description must be ${FIELD_LIMITS.description} characters or fewer` });
+      }
+      if (author && author.length > FIELD_LIMITS.author) {
+        return res.status(400).json({ error: `Author must be ${FIELD_LIMITS.author} characters or fewer` });
+      }
+
       console.log(fields);
       const imageFile = files.image?.[0];
-      const podcastFile = files.file?.[0];
+      const episodeFile = files.file?.[0];
 
-      if (!imageFile || !podcastFile) {
+      if (!imageFile || !episodeFile) {
         return res.status(400).json({ error: 'Missing image or file' });
       }
 
       const imageFileName = `${uuidv4()}${path.extname(imageFile.originalFilename)}`;
-      const podcastFileName = `${uuidv4()}${path.extname(podcastFile.originalFilename)}`;
+      const episodeFileName = `${uuidv4()}${path.extname(episodeFile.originalFilename)}`;
 
       const imageFilePath = path.join(uploadDir, imageFileName);
-      const podcastFilePath = path.join(uploadDir, podcastFileName);
+      const episodeFilePath = path.join(uploadDir, episodeFileName);
 
       await fs.rename(imageFile.path, imageFilePath);
-      await fs.rename(podcastFile.path, podcastFilePath);
+      await fs.rename(episodeFile.path, episodeFilePath);
 
-      const podcastData: PodcastDto = {
-        podcastId: uuidv4(),
+      const episodeData: EpisodeDto = {
+        episodeId: uuidv4(),
         streamId: stream,
         title,
         description,
         uploadDate: Date.now().toString(),
         author,
         imageUrl: imageFileName,
-        url: podcastFileName,
+        url: episodeFileName,
       };
 
-      await publishPodcast(podcastData);
+      await publishEpisode(episodeData);
 
-      res.setHeader('Location', `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts/${podcastData.podcastId}`);
-      res.status(201).json({ message: 'Podcast created successfully' });
+      res.setHeader('Location', `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts/${episodeData.episodeId}`);
+      res.status(201).json({ message: 'Episode created successfully' });
     } catch (error) {
       console.error('Error handling request:', error);
       res.status(500).json({ error: 'Internal server error' });

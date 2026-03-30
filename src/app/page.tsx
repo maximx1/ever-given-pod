@@ -3,28 +3,28 @@
 import Image from 'next/image';
 import Main from './layout/main';
 import { useRef, useState, useEffect } from 'react';
-import { PodcastDto } from '@/common/dtos/podcastDto';
+import { EpisodeDto } from '@/common/dtos/episodeDto';
 import { useRouter } from 'next/navigation';
 import { resolveApiUrl, resolveAppUrl, resolveAssetUrl } from '@/common/helpers/api';
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null),
-    [podcasts, setPodcasts] = useState<PodcastDto[]>([]),
+    [episodes, setEpisodes] = useState<(EpisodeDto & { ownerUsername?: string })[]>([]),
     router = useRouter(),
     handleSearchClick = () => {
       alert(inputRef.current?.value);
     },
-    handlePodcastClick = (podcast: PodcastDto) => {
-      if (podcast.streamId != null) {
-        router.push(resolveAppUrl(`/${podcast.streamId}/podcasts`)); // TODO: This should eventually go to the individual player page.
+    handleEpisodeClick = (episode: EpisodeDto & { ownerUsername?: string }) => {
+      if (episode.ownerUsername && episode.streamId != null) {
+        router.push(resolveAppUrl(`/${episode.ownerUsername}/${episode.streamId}`));
       }
     };
 
   useEffect(() => {
-    fetch(resolveApiUrl('/podcasts/random?limit=12'))
+    fetch(resolveApiUrl('/episodes/random?limit=12'))
       .then(res => res.json())
-      .then(setPodcasts)
-      .catch(() => setPodcasts([]));
+      .then(setEpisodes)
+      .catch(() => setEpisodes([]));
   }, []);
 
   return (
@@ -33,7 +33,7 @@ export default function Home() {
         <div className="w-full flex justify-center mt-15">
           <div className="w-[100px] h-[100px] flex items-center justify-center">
             <Image
-              src={resolveAssetUrl('/site-icon.svg')}
+              src={resolveAssetUrl('/icons/site-icon.svg')}
               alt="Site Icon"
               width={100}
               height={100}
@@ -78,19 +78,19 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-full max-w-[1200px] px-8 mt-8 mx-auto">
+      <div className="w-full max-w-[1200px] px-8 mt-8 mb-16 mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {podcasts.map(podcast => (
+          {episodes.map(episode => (
             <button
-              key={podcast.podcastId}
+              key={episode.episodeId}
               type='button'
-              onClick={() => handlePodcastClick(podcast)}
-              className="aspect-square bg-purple-100 rounded-lg flex items-center justify-center overflow-hidden shadow focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
-              title={podcast.title}
+              onClick={() => handleEpisodeClick(episode)}
+              className="aspect-square rounded-lg overflow-hidden shadow focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+              title={episode.title}
             >
               <Image
-                src={podcast.imageUrl || resolveAssetUrl('/icons/podcast.svg')}
-                alt={podcast.title ?? ''}
+                src={episode.imageUrl || resolveAssetUrl('/icons/podcast.svg')}
+                alt={episode.title ?? ''}
                 width={200}
                 height={200}
                 className="object-cover w-full h-full"

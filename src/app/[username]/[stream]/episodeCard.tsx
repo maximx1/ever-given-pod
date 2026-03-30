@@ -1,20 +1,20 @@
 "use client";
 
 import Image from 'next/image';
-import { PodcastDto } from '@/common/dtos/podcastDto';
+import { EpisodeDto } from '@/common/dtos/episodeDto';
 import { useState } from 'react';
 import DownloadIconButton from '@/app/common/components/buttons/downloadIconButton';
 import LinkIconButton from '@/app/common/components/buttons/linkIconButton';
 import { resolveAssetUrl } from '@/common/helpers/api';
 
-export default function PodcastCard({
+export default function EpisodeCard({
     imageUrl,
     title,
     description,
     uploadDate,
     url,
     author,
-}: PodcastDto) {
+}: EpisodeDto) {
     const [descriptionExpanded, setDescriptionExpanded] = useState(false),
         toggleExpand = () => {
             setDescriptionExpanded(!descriptionExpanded);
@@ -22,7 +22,7 @@ export default function PodcastCard({
 
     return (
         <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
-            <div className="w-[150px] h-full max-h-[232px] bg-purple-100 flex-shrink-0 relative">
+            <div className="w-[150px] h-full max-h-[232px] bg-purple-200 flex-shrink-0 relative">
                 <Image src={imageUrl ?? resolveAssetUrl('/icons/podcast.svg')} alt={title ?? ''} layout="fill" className="object-contain" />
             </div>
 

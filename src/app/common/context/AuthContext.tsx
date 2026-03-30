@@ -5,8 +5,10 @@ import { resolveApiUrl } from "@/common/helpers/api";
 
 type User = {
   id: string;
+  username: string;
   email?: string;
   name?: string;
+  imageUrl?: string;
 };
 
 type AuthContextValue = {

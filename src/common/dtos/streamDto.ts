@@ -1,3 +1,5 @@
+import { EpisodeDto } from './episodeDto';
+
 export type StreamDto = {
     id: string;
     userId: string;
@@ -13,4 +15,5 @@ export type StreamDto = {
     categories?: string[];
     pubDate?: string;
     ttl?: number;
+    episodes?: EpisodeDto[];
   };
