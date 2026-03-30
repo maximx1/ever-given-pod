@@ -1,11 +1,13 @@
 "use client";
 
 import { useForm, SubmitHandler } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { resolveApiUrl } from '@/common/helpers/api';
+import { resolveApiUrl, resolveAppUrl } from '@/common/helpers/api';
+import { FIELD_LIMITS } from '@/common/fieldLimits';
+import CharCount from '@/app/common/components/charCount';
 
-type PodcastDto = {
+type EpisodeFormDto = {
     imageUrl?: FileList;
     title: string;
     description: string;
@@ -15,12 +17,13 @@ type PodcastDto = {
 };
 
 export default function StreamPublishForm({ stream }: { stream?: string | string[] }) {
-    const { register, handleSubmit, formState: { errors } } = useForm<PodcastDto>(),
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<EpisodeFormDto>(),
+        params = useParams(),
         router = useRouter(),
         [submitting, setSubmitting] = useState(false),
         [progress, setProgress] = useState(-1);
 
-    const onSubmit: SubmitHandler<PodcastDto> = (data) => {
+    const onSubmit: SubmitHandler<EpisodeFormDto> = (data) => {
         setSubmitting(true);
         const formData = new FormData();
         formData.append("image", data.imageUrl?.[0] as File);
@@ -42,16 +45,16 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
         xhr.onload = () => {
             setSubmitting(false);
             if (xhr.status === 201) {
-                alert(`Podcast uploaded: ${data.title}`);
-                router.push(`/${stream}/podcasts`);
+                alert(`Episode uploaded: ${data.title}`);
+                router.push(resolveAppUrl(`/${params?.username}/${stream}`));
             } else {
-                alert('Error uploading podcast.');
+                alert('Error uploading episode.');
             }
         };
 
         xhr.onerror = () => {
             setSubmitting(false);
-            alert('Error uploading podcast.');
+            alert('Error uploading episode.');
         };
 
         xhr.send(formData);
@@ -61,34 +64,46 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
         <div className="max-w-[800px] mx-auto w-full px-4 bg-purple-200 rounded-sm pt-4 pb-4 mt-4">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                        Title
-                    </label>
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                            Title
+                        </label>
+                        <CharCount current={watch('title')?.length ?? 0} max={FIELD_LIMITS.title} />
+                    </div>
                     <input
                         id="title"
                         {...register("title", { required: "Title is required" })}
+                        maxLength={FIELD_LIMITS.title}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3"
                     />
                     {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
                 </div>
                 <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                        Description
-                    </label>
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                            Description
+                        </label>
+                        <CharCount current={watch('description')?.length ?? 0} max={FIELD_LIMITS.description} />
+                    </div>
                     <textarea
                         id="description"
                         {...register("description", { required: "Description is required" })}
+                        maxLength={FIELD_LIMITS.description}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3"
                     />
                     {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
                 </div>
                 <div>
-                    <label htmlFor="author" className="block text-sm font-medium text-gray-700">
-                        Author
-                    </label>
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="author" className="block text-sm font-medium text-gray-700">
+                            Author
+                        </label>
+                        <CharCount current={watch('author')?.length ?? 0} max={FIELD_LIMITS.author} />
+                    </div>
                     <input
                         id="author"
                         {...register("author", { required: "Author is required" })}
+                        maxLength={FIELD_LIMITS.author}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3"
                     />
                     {errors.author && <p className="text-red-500 text-sm">{errors.author.message}</p>}
@@ -110,13 +125,13 @@ export default function StreamPublishForm({ stream }: { stream?: string | string
 
                 <div>
                     <label htmlFor="podcastFile" className="block text-sm font-medium text-gray-700">
-                        Upload Podcast File
+                        Upload Episode File
                     </label>
                     <input
                         id="podcastFile"
                         type="file"
                         accept="audio/*"
-                        {...register("url", { required: "Podcast file is required" })}
+                        {...register("url", { required: "Episode file is required" })}
                         className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 hover:file:bg-gray-100"
                     />
                     {errors.url && <p className="text-red-500 text-sm">{errors.url.message}</p>}

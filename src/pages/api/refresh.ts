@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: 'Invalid or expired session' });
   }
 
-  const newToken = signSession({ userId: session.userId, email: session.email, name: session.name });
+  const newToken = signSession({ userId: session.userId, username: session.username, email: session.email, name: session.name });
   res.setHeader('Set-Cookie', buildSessionCookieHeader(newToken));
 
   return res.status(200).json({ user: session });

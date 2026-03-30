@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Main from '../../layout/main';
+import Main from '../../../layout/main';
 import StreamPublishForm from './publishForm';
 import { useAuth } from '@/app/common/context/AuthContext';
 import { StreamDto } from '@/common/dtos/streamDto';

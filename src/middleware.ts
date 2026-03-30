@@ -14,13 +14,8 @@ export function middleware(req: NextRequest) {
     const hasSession = req.cookies.has('session');
 
     if (hasSession && (adjustedPathname === '/login' || adjustedPathname === '/signup')) {
-        const profileUrl = new URL(basePath ? `${basePath}/profile` : '/profile', req.url);
-        return NextResponse.redirect(profileUrl);
-    }
-
-    if (adjustedPathname === '/profile' && !hasSession) {
-        const loginUrl = new URL(basePath ? `${basePath}/login` : '/login', req.url);
-        return NextResponse.redirect(loginUrl);
+        const homeUrl = new URL(basePath || '/', req.url);
+        return NextResponse.redirect(homeUrl);
     }
 
     return NextResponse.next();

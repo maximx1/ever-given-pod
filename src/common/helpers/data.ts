@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import mime from 'mime-types';
-import { PodcastDto } from '../dtos/podcastDto';
+import { EpisodeDto } from '../dtos/episodeDto';
 import { resolveApiUrl, resolveAppUrl, resolveAssetUrl } from './api';
 import { StreamDto } from '../dtos/streamDto';
 
@@ -17,35 +17,39 @@ export const getFileMimeType = (filePath: string): string => {
     return mimeType || 'application/octet-stream';
 };
 
-export const convertUrlToPublic = (url?: string) => {
-    return url ? resolveAssetUrl(`/uploads/${url}`) : undefined;
+export const convertUrlToPublic = (url?: string, max?: number) => {
+    if (!url) return undefined;
+    const base = resolveAssetUrl(`/uploads/${url}`);
+    return max ? `${base}?max=${max}` : base;
 };
 
-export const preparePodcastItem = (podcast: PodcastDto) => {
-    const fileSize = getFileSize(path.join(process.cwd(), `uploads/${podcast.url}`)),
-        fileUrl = convertUrlToPublic(podcast.url);
+export const prepareEpisodeItem = (episode: EpisodeDto) => {
+    const fileSize = getFileSize(path.join(process.cwd(), `uploads/${episode.url}`)),
+        fileUrl = convertUrlToPublic(episode.url);
 
     return {
-        ...podcast,
-        imageUrl: convertUrlToPublic(podcast.imageUrl),
+        ...episode,
+        imageUrl: convertUrlToPublic(episode.imageUrl, 600),
         url: fileUrl,
         enclosure: {
             url: fileUrl ?? '',
-            type: getFileMimeType(podcast.url ?? ''),
+            type: getFileMimeType(episode.url ?? ''),
             size: fileSize
         }
     };
 };
 
-export const prepareStreamItem = (stream?: StreamDto) => {
+export const prepareStreamItem = (stream?: StreamDto, ownerUsername?: string) => {
     if (!stream) return undefined;
 
-    const imageUrl = stream.imageUrl ? convertUrlToPublic(stream.imageUrl) : undefined;
+    const { episodes, ...streamWithoutEpisodes } = stream;
+    const imageUrl = stream.imageUrl ? convertUrlToPublic(stream.imageUrl, 600) : undefined;
+    const basePath = ownerUsername ? `/${ownerUsername}/${stream.id}` : `/${stream.id}`;
     return {
-        ...stream,
+        ...streamWithoutEpisodes,
         imageUrl,
         feedUrl: resolveApiUrl(`/${stream.id}/feed`),
-        siteUrl: stream.siteUrl ?? resolveAppUrl(`/${stream.id}/podcasts`)
+        siteUrl: stream.siteUrl ?? resolveAppUrl(basePath)
     };
 };
 

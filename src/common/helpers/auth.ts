@@ -6,6 +6,7 @@ const JWT_EXPIRES_IN = '1h';
 
 export type SessionPayload = {
     userId: string;
+    username: string;
     email?: string;
     name?: string;
 };
