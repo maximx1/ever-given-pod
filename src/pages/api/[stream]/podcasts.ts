@@ -6,7 +6,7 @@ import multiparty from 'multiparty';
 import { getEpisodes, publishEpisode } from '../../../common/data/db';
 import { EpisodeDto } from '../../../common/dtos/episodeDto';
 import { prepareEpisodeItem } from '../../../common/helpers/data';
-import { FIELD_LIMITS } from '../../../common/fieldLimits';
+import { FIELD_LIMITS } from '../../../common/limits';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[]>) => {
   const stream = req.query.stream as string,

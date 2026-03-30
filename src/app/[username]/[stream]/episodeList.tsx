@@ -27,8 +27,8 @@ export default function EpisodeList({ stream }: EpisodeListProps) {
         <div className="episode-list relative max-w-[800px] mx-auto w-full px-4">
             <AddButton stream={stream} onEpisodeCreated={fetchEpisodes} />
             {
-                episodeData.map((episode, index) => (
-                    <div key={index} className="flex justify-center">
+                episodeData.map((episode) => (
+                    <div key={episode.episodeId} className="flex justify-center">
                         <EpisodeCard
                             title={episode.title}
                             description={episode.description}

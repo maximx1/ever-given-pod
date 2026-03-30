@@ -44,7 +44,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'File not specified' });
     }
 
-    const filePath = path.join(process.cwd(), 'uploads', file);
+    const uploadsDir = path.resolve(process.cwd(), 'uploads');
+    const filePath = path.resolve(uploadsDir, file);
+
+    if (!filePath.startsWith(uploadsDir + path.sep)) {
+        return res.status(400).json({ error: 'Invalid file path' });
+    }
 
     if (!fs.existsSync(filePath)) {
         return res.status(404).json({ error: 'File not found' });
@@ -54,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Type', contentType);
 
     const maxParam = req.query.max as string | undefined;
-    const max = maxParam ? parseInt(maxParam, 10) : NaN;
+    const max = maxParam ? Math.min(parseInt(maxParam, 10), 2000) : NaN;
 
     if (!isNaN(max) && max > 0 && SUPPORTED_IMAGE_TYPES.has(contentType)) {
         try {

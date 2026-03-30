@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcrypt';
 import { createUser, getUserByEmail } from '../../common/data/db';
 import { signSession, buildSessionCookieHeader } from '../../common/helpers/auth';
-import { FIELD_LIMITS } from '../../common/fieldLimits';
+import { FIELD_LIMITS } from '../../common/limits';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -14,6 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'Username, email, and password are required' });
   }
 
+  if (/\s/.test(username)) {
+    return res.status(400).json({ message: 'Username cannot contain spaces' });
+  }
   if (username.length > FIELD_LIMITS.username) {
     return res.status(400).json({ message: `Username must be ${FIELD_LIMITS.username} characters or fewer` });
   }

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
 import { resolveApiUrl } from '@/common/helpers/api';
-import { FIELD_LIMITS } from '@/common/fieldLimits';
+import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
 import FileDropZone from '@/app/common/components/fileDropZone';
 

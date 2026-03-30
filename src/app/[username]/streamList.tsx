@@ -21,8 +21,8 @@ export default function StreamList({ username, streams, canEdit, onStreamDeleted
 
     return (
         <div className="relative max-w-[800px] mx-auto w-full px-4">
-            {streams.map((stream, index) => (
-                <div key={index} className="flex justify-center">
+            {streams.map((stream) => (
+                <div key={stream.id} className="flex justify-center">
                     <StreamCard username={username} {...stream} canEdit={canEdit} onDeleted={onStreamDeleted} />
                 </div>
             ))}

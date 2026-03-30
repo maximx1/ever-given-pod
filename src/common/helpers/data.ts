@@ -24,8 +24,17 @@ export const convertUrlToPublic = (url?: string, max?: number) => {
 };
 
 export const prepareEpisodeItem = (episode: EpisodeDto) => {
-    const fileSize = getFileSize(path.join(process.cwd(), `uploads/${episode.url}`)),
-        fileUrl = convertUrlToPublic(episode.url);
+    let fileSize = 0;
+    let fileMimeType = 'application/octet-stream';
+    if (episode.url) {
+        try {
+            fileSize = getFileSize(path.join(process.cwd(), `uploads/${episode.url}`));
+            fileMimeType = getFileMimeType(episode.url);
+        } catch {
+            // File may not exist on disk
+        }
+    }
+    const fileUrl = convertUrlToPublic(episode.url);
 
     return {
         ...episode,
@@ -33,7 +42,7 @@ export const prepareEpisodeItem = (episode: EpisodeDto) => {
         url: fileUrl,
         enclosure: {
             url: fileUrl ?? '',
-            type: getFileMimeType(episode.url ?? ''),
+            type: fileMimeType,
             size: fileSize
         }
     };

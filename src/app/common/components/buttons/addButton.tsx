@@ -5,7 +5,7 @@ import { resolveApiUrl } from '@/common/helpers/api';
 import { useAuth } from '@/app/common/context/AuthContext';
 import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
 import { StreamDto } from '@/common/dtos/streamDto';
-import { FIELD_LIMITS } from '@/common/fieldLimits';
+import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
 import FileDropZone from '@/app/common/components/fileDropZone';
 

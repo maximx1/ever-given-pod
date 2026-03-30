@@ -3,10 +3,13 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
 import multiparty from 'multiparty';
+import mime from 'mime-types';
 import { parseSessionCookie } from '../../common/helpers/auth';
 import { createStream } from '../../common/data/db';
 import { StreamDto } from '../../common/dtos/streamDto';
-import { FIELD_LIMITS } from '../../common/fieldLimits';
+import { FIELD_LIMITS, MAX_IMAGE_SIZE } from '../../common/limits';
+
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 export const config = {
     api: {
@@ -53,7 +56,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             let imageFileName: string | undefined;
             const imageFile = files.image?.[0];
             if (imageFile) {
-                imageFileName = `${uuidv4()}${path.extname(imageFile.originalFilename)}`;
+                const detectedType = mime.lookup(imageFile.originalFilename || '') || imageFile.headers?.['content-type'] || '';
+                if (!ALLOWED_IMAGE_TYPES.has(detectedType)) {
+                    await fs.unlink(imageFile.path).catch(() => {});
+                    return res.status(400).json({ error: 'Only JPEG, PNG, WebP, and GIF images are allowed' });
+                }
+
+                const stat = await fs.stat(imageFile.path);
+                if (stat.size > MAX_IMAGE_SIZE) {
+                    await fs.unlink(imageFile.path).catch(() => {});
+                    return res.status(400).json({ error: 'Image must be 10 MB or smaller' });
+                }
+
+                const ext = path.extname(imageFile.originalFilename || '') || (mime.extension(detectedType) ? `.${mime.extension(detectedType)}` : '.bin');
+                imageFileName = `${uuidv4()}${ext}`;
                 await fs.rename(imageFile.path, path.join(uploadDir, imageFileName));
             }
 

@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { resolveApiUrl, resolveAppUrl } from '@/common/helpers/api';
-import { FIELD_LIMITS } from '@/common/fieldLimits';
+import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
 
 type EpisodeFormDto = {

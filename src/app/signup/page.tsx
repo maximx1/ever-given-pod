@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { resolveApiUrl, resolveAppUrl } from "@/common/helpers/api";
 import { useAuth } from "@/app/common/context/AuthContext";
-import { FIELD_LIMITS } from "@/common/fieldLimits";
+import { FIELD_LIMITS } from "@/common/limits";
 import CharCount from "@/app/common/components/charCount";
 import Main from "../layout/main";
 
@@ -131,7 +131,7 @@ export default function SignupPage() {
                             </div>
                             <input
                                 value={username}
-                                onChange={(e) => { setUsername(e.target.value); setUsernameStatus("idle"); }}
+                                onChange={(e) => { setUsername(e.target.value.replace(/\s/g, '')); setUsernameStatus("idle"); }}
                                 onBlur={() => checkAvailability("username", username)}
                                 type="text"
                                 required

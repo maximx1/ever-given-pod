@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { resolveApiUrl, resolveAppUrl } from "@/common/helpers/api";
 import { useAuth } from "@/app/common/context/AuthContext";
-import { FIELD_LIMITS } from '@/common/fieldLimits';
+import { FIELD_LIMITS } from '@/common/limits';
 import Main from "../layout/main";
 
 export default function LoginPage() {
