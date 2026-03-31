@@ -19,7 +19,7 @@ export default async function handler(
         const feedToken = typeof token === 'string' ? token : undefined;
         if (!feedToken) {
             const session = parseSessionCookie(req.headers.cookie);
-            if (!session || !streamData.accessList?.some((a) => a.userId === session.userId)) {
+            if (!session || (session.userId !== streamData.userId && !streamData.accessList?.some((a) => a.userId === session.userId))) {
                 return res.status(403).json({ message: 'Access denied' });
             }
         } else {

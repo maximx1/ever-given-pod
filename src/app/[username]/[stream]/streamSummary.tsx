@@ -16,6 +16,7 @@ import KeySvg from '@/icons/key.svg';
 import CopySvg from '@/icons/copy.svg';
 import { FIELD_LIMITS } from '@/common/limits';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 
 type StreamSummaryType = {
     stream?: string | string[];
@@ -242,7 +243,14 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved 
                     <div className="mt-4 flex flex-col md:flex-row md:items-center gap-2">
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={() => handleNavigation(summaryData.feedUrl)}
+                                onClick={() => {
+                                    let feedUrl = summaryData.feedUrl ?? '';
+                                    if (isPrivate && feedToken) {
+                                        feedUrl += `${feedUrl.includes('?') ? '&' : '?'}token=${feedToken}`;
+                                    }
+                                    navigator.clipboard.writeText(feedUrl);
+                                    toast('Feed URL copied to clipboard');
+                                }}
                                 className='bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm'
                             >
                                 RSS Feed
@@ -282,7 +290,10 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved 
                                         </code>
                                         <button
                                             type="button"
-                                            onClick={() => navigator.clipboard.writeText(feedToken)}
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(feedToken);
+                                                toast('Token copied to clipboard');
+                                            }}
                                             className="flex-shrink-0 cursor-pointer hover:opacity-70"
                                             title="Copy token"
                                         >
