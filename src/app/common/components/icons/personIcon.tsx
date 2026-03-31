@@ -6,5 +6,9 @@ type PersonIconProps = {
 };
 
 export default function PersonIcon({ size = 24, className }: PersonIconProps) {
-    return <PersonSvg width={size} height={size} className={className} />;
+    return (
+        <span className={`inline-block ${className ?? ''}`} style={{ width: size, height: size }}>
+            <PersonSvg className="w-full h-full" />
+        </span>
+    );
 }

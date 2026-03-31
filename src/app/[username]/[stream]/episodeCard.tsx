@@ -114,7 +114,7 @@ export default function EpisodeCard({
                     {url &&
                         <LinkIconButton
                             href={url}
-                            icon={<PlaySvg width={20} height={20} />}
+                            icon={<PlaySvg />}
                             iconAlt="Listen Now"
                             text="Listen Now"
                             className="mt-4"
@@ -126,7 +126,7 @@ export default function EpisodeCard({
                     {url &&
                         <DownloadIconButton
                             href={url}
-                            icon={<DownloadSvg width={20} height={20} />}
+                            icon={<DownloadSvg />}
                             iconAlt="Download"
                             text="Download"
                             download={`${title}-${url.split('/').pop()}`}

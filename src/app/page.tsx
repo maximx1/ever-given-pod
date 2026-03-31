@@ -42,7 +42,7 @@ export default function Home() {
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded hover:bg-purple-100 transition"
               tabIndex={0}
             >
-              <SearchSvg width={24} height={24} />
+              <SearchSvg />
             </button>
           </div>
         </div>

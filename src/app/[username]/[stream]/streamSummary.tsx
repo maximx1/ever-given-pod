@@ -243,10 +243,21 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved 
                     <div className="mt-4 flex flex-col md:flex-row md:items-center gap-2">
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     let feedUrl = summaryData.feedUrl ?? '';
-                                    if (isPrivate && feedToken) {
-                                        feedUrl += `${feedUrl.includes('?') ? '&' : '?'}token=${feedToken}`;
+                                    let token = feedToken;
+                                    if (isPrivate && !token) {
+                                        try {
+                                            const res = await fetch(resolveApiUrl(`/${stream}/token`), { method: 'POST' });
+                                            const data = await res.json();
+                                            if (data.feedToken) {
+                                                token = data.feedToken;
+                                                setFeedToken(token);
+                                            }
+                                        } catch { /* ignore */ }
+                                    }
+                                    if (isPrivate && token) {
+                                        feedUrl += `${feedUrl.includes('?') ? '&' : '?'}token=${token}`;
                                     }
                                     navigator.clipboard.writeText(feedUrl);
                                     toast('Feed URL copied to clipboard');
@@ -277,7 +288,7 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved 
                                 )}
                                 {isPrivate && user && !tokenRevealed && (
                                     <IconExpandTextButton
-                                        icon={<KeySvg width={20} height={20} />}
+                                        icon={<KeySvg />}
                                         iconAlt="Auth Token"
                                         text="Auth Token"
                                         onClick={handleTokenReveal}
@@ -297,7 +308,7 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved 
                                             className="flex-shrink-0 cursor-pointer hover:opacity-70"
                                             title="Copy token"
                                         >
-                                            <CopySvg width={16} height={16} />
+                                            <span className="w-4 h-4 inline-block"><CopySvg className="w-full h-full" /></span>
                                         </button>
                                     </div>
                                 )}

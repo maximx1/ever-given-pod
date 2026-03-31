@@ -9,7 +9,7 @@ export default function AccessDenied() {
         <>
             <div className="flex flex-col items-center justify-center py-20 px-4">
                 <div className={`w-[80px] h-[80px] mb-6 opacity-60 ${styles.lockIcon}`}>
-                    <LockSvg width={80} height={80} />
+                    <LockSvg />
                 </div>
                 <h2 className="text-2xl font-bold text-purple-300 mb-2">This stream is private</h2>
                 <p className="text-purple-200 text-center max-w-md">

@@ -96,7 +96,7 @@ export default function StreamCard({
                             className="w-10 h-10 rounded-full border-2 border-red-400 flex items-center justify-center hover:bg-red-100 transition"
                             title="Delete stream"
                         >
-                            <TrashSvg width={18} height={18} className="text-red-500" />
+                            <TrashSvg className="text-red-500" />
                         </button>
                     )}
                     <Link
@@ -104,7 +104,7 @@ export default function StreamCard({
                         className="w-10 h-10 rounded-full border-2 border-purple-500 flex items-center justify-center hover:bg-purple-300 transition"
                         title="View episodes"
                     >
-                        <ChevronRightSvg width={20} height={20} className="text-purple-500" />
+                        <ChevronRightSvg className="text-purple-500" />
                     </Link>
                 </div>
             </div>

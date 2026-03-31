@@ -9,5 +9,9 @@ type ArrowIconProps = {
 
 export default function ArrowIcon({ direction, size = 24, className }: ArrowIconProps) {
     const Svg = direction === 'up' ? ArrowUpSvg : ArrowDownSvg;
-    return <Svg width={size} height={size} className={className} />;
+    return (
+        <span className={`inline-block ${className ?? ''}`} style={{ width: size, height: size }}>
+            <Svg className="w-full h-full" />
+        </span>
+    );
 }

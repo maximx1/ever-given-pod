@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { StreamDto } from '@/common/dtos/streamDto';
-import { resolveApiUrl, resolveAppUrl, resolveAssetUrl } from '@/common/helpers/api';
+import { resolveApiUrl, resolveAssetUrl } from '@/common/helpers/api';
 
 type DiscoveryGridProps = {
     title?: string;
@@ -15,12 +15,12 @@ export default function DiscoveryGrid({
     title = "Not sure what you are looking for?",
     subtitle = "Get started by selecting something of interest:",
 }: DiscoveryGridProps) {
-    const [streams, setStreams] = useState<(StreamDto & { ownerUsername?: string })[]>([]);
+    const [streams, setStreams] = useState<(StreamDto & { siteUrl?: string })[]>([]);
     const router = useRouter();
 
-    const handleStreamClick = (stream: StreamDto & { ownerUsername?: string }) => {
-        if (stream.ownerUsername && (stream.name || stream.id)) {
-            router.push(resolveAppUrl(`/${stream.ownerUsername}/${stream.name || stream.id}`));
+    const handleStreamClick = (stream: StreamDto & { siteUrl?: string }) => {
+        if (stream.siteUrl) {
+            router.push(stream.siteUrl);
         }
     };
 
