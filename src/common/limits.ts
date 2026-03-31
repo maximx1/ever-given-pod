@@ -7,6 +7,7 @@ export const FIELD_LIMITS = {
     description: 7000,
     author: 200,
     streamTitle: 200,
+    streamName: 50,
 } as const;
 
 export const MAX_IMAGE_SIZE = 30 * 1024 * 1024; // 30 MB

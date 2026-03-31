@@ -3,6 +3,7 @@ import { EpisodeDto } from './episodeDto';
 export type StreamDto = {
     id: string;
     userId: string;
+    name?: string;
     title?: string;
     description?: string;
     feedUrl?: string;

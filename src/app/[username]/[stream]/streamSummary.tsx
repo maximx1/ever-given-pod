@@ -79,6 +79,7 @@ export default function StreamSummary({ stream }: StreamSummaryType) {
                 </div>
                 <div className="p-4 flex-grow flex flex-col md:ml-4">
                     <h2 className="text-lg font-bold text-gray-800">{summaryData.title}</h2>
+                    {summaryData.name && <p className="text-xs text-gray-400">{summaryData.name}</p>}
                     <p className="text-sm text-gray-600">{summaryData.description}</p>
 
                     <div className="mt-4 text-sm text-gray-500">

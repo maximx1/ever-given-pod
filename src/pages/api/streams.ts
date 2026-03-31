@@ -5,7 +5,7 @@ import path from 'path';
 import multiparty from 'multiparty';
 import mime from 'mime-types';
 import { parseSessionCookie } from '../../common/helpers/auth';
-import { createStream } from '../../common/data/db';
+import { createStream, getStreamsByUserId } from '../../common/data/db';
 import { StreamDto } from '../../common/dtos/streamDto';
 import { FIELD_LIMITS, MAX_IMAGE_SIZE } from '../../common/limits';
 
@@ -41,16 +41,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         try {
             const title = fields.title?.[0];
+            const name = fields.name?.[0];
             const description = fields.description?.[0] || '';
 
             if (!title || typeof title !== 'string' || !title.trim()) {
                 return res.status(400).json({ error: 'Title is required' });
             }
+            if (!name || typeof name !== 'string' || !name.trim()) {
+                return res.status(400).json({ error: 'Name is required' });
+            }
             if (title.trim().length > FIELD_LIMITS.streamTitle) {
                 return res.status(400).json({ error: `Title must be ${FIELD_LIMITS.streamTitle} characters or fewer` });
             }
+            if (name.trim().length > FIELD_LIMITS.streamName) {
+                return res.status(400).json({ error: `Name must be ${FIELD_LIMITS.streamName} characters or fewer` });
+            }
             if (description.length > FIELD_LIMITS.description) {
                 return res.status(400).json({ error: `Description must be ${FIELD_LIMITS.description} characters or fewer` });
+            }
+
+            const userStreams = await getStreamsByUserId(session.userId);
+            const nameExists = userStreams.some((s) => s.name?.toLowerCase() === name.trim().toLowerCase());
+            if (nameExists) {
+                return res.status(400).json({ error: 'You already have a stream with this name' });
             }
 
             let imageFileName: string | undefined;
@@ -76,6 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const stream: StreamDto = {
                 id: uuidv4(),
                 userId: session.userId,
+                name: name.trim(),
                 title: title.trim(),
                 description: description.trim() || undefined,
                 imageUrl: imageFileName,

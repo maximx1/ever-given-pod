@@ -15,10 +15,28 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
     const visibleFooterHeight = useFooterHeight(),
         [dialogOpen, setDialogOpen] = useState(false),
         [title, setTitle] = useState(''),
+        [name, setName] = useState(''),
+        [nameManuallyEdited, setNameManuallyEdited] = useState(false),
         [description, setDescription] = useState(''),
         [imageFile, setImageFile] = useState<File | null>(null),
         [imagePreview, setImagePreview] = useState<string | null>(null),
-        [submitting, setSubmitting] = useState(false);
+        [submitting, setSubmitting] = useState(false),
+        [error, setError] = useState<string | null>(null);
+
+    const titleToName = (title: string) =>
+        title.toLowerCase().replace(/[\s/\\]+/g, '-');
+
+    const handleTitleChange = (value: string) => {
+        setTitle(value);
+        if (!nameManuallyEdited) {
+            setName(titleToName(value));
+        }
+    };
+
+    const handleNameChange = (value: string) => {
+        setNameManuallyEdited(true);
+        setName(value);
+    };
 
     const handleImageSelected = (file: File) => {
         if (!file.type.startsWith('image/')) return;
@@ -34,17 +52,22 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
 
     const resetForm = () => {
         setTitle('');
+        setName('');
+        setNameManuallyEdited(false);
         setDescription('');
+        setError(null);
         clearImage();
     };
 
     const handleSubmit = async () => {
-        if (!title.trim() || submitting) return;
+        if (!title.trim() || !name.trim() || submitting) return;
 
         setSubmitting(true);
+        setError(null);
         try {
             const formData = new FormData();
             formData.append('title', title.trim());
+            formData.append('name', name.trim());
             if (description.trim()) formData.append('description', description.trim());
             if (imageFile) formData.append('image', imageFile);
 
@@ -59,10 +82,10 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                 onStreamCreated?.();
             } else {
                 const data = await res.json();
-                alert(data.error || 'Failed to create stream');
+                setError(data.error || 'Failed to create stream');
             }
         } catch {
-            alert('Failed to create stream');
+            setError('Failed to create stream');
         } finally {
             setSubmitting(false);
         }
@@ -88,6 +111,11 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h3 className="text-lg font-bold text-gray-800 mb-4">New Stream</h3>
+                        {error && (
+                            <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                                {error}
+                            </div>
+                        )}
                         <div className="space-y-3">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
@@ -97,11 +125,26 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                                 <input
                                     type="text"
                                     value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
+                                    onChange={(e) => handleTitleChange(e.target.value)}
                                     placeholder="Stream title"
                                     maxLength={FIELD_LIMITS.streamTitle}
                                     className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
                                     autoFocus
+                                    onKeyDown={(e) => { if (e.key === 'Escape') setDialogOpen(false); }}
+                                />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <label className="text-sm font-medium text-gray-700">Name</label>
+                                    <CharCount current={name.length} max={FIELD_LIMITS.streamName} />
+                                </div>
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => handleNameChange(e.target.value)}
+                                    placeholder="url-safe-name"
+                                    maxLength={FIELD_LIMITS.streamName}
+                                    className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
                                     onKeyDown={(e) => { if (e.key === 'Escape') setDialogOpen(false); }}
                                 />
                             </div>
@@ -144,7 +187,7 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                                 type="button"
                                 onClick={handleSubmit}
                                 className="px-4 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
-                                disabled={submitting || !title.trim()}
+                                disabled={submitting || !title.trim() || !name.trim()}
                             >
                                 {submitting ? 'Creating...' : 'Create'}
                             </button>

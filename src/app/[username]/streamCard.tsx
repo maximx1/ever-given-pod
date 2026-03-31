@@ -17,6 +17,7 @@ type StreamCardProps = StreamDto & {
 export default function StreamCard({
     id,
     username,
+    name,
     title,
     description,
     author,
@@ -62,6 +63,7 @@ export default function StreamCard({
 
                 <div className="p-4 flex-grow flex flex-col">
                     <h2 className="text-lg font-bold text-gray-800">{title}</h2>
+                    {name && <p className="text-xs text-gray-400">{name}</p>}
                     {description && <p className="text-sm text-gray-600">{description}</p>}
 
                     <div className="mt-2 text-sm text-gray-500">
@@ -96,7 +98,7 @@ export default function StreamCard({
                         </button>
                     )}
                     <Link
-                        href={resolveAppUrl(`/${username}/${id}`)}
+                        href={resolveAppUrl(`/${username}/${name ?? id}`)}
                         className="w-10 h-10 rounded-full border-2 border-purple-500 flex items-center justify-center hover:bg-purple-300 transition"
                         title="View episodes"
                     >
