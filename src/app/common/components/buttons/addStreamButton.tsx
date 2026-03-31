@@ -23,19 +23,19 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
         [submitting, setSubmitting] = useState(false),
         [error, setError] = useState<string | null>(null);
 
-    const titleToName = (title: string) =>
-        title.toLowerCase().replace(/[\s/\\]+/g, '-');
+    const sanitizeName = (value: string) =>
+        value.toLowerCase().replace(/[\s/\\]+/g, '-').replace(/[^a-z0-9_-]/g, '');
 
     const handleTitleChange = (value: string) => {
         setTitle(value);
         if (!nameManuallyEdited) {
-            setName(titleToName(value));
+            setName(sanitizeName(value));
         }
     };
 
     const handleNameChange = (value: string) => {
         setNameManuallyEdited(true);
-        setName(value);
+        setName(sanitizeName(value));
     };
 
     const handleImageSelected = (file: File) => {

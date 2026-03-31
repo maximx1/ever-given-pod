@@ -8,9 +8,14 @@ import { EpisodeDto } from '../../../common/dtos/episodeDto';
 import { prepareEpisodeItem } from '../../../common/helpers/data';
 import { FIELD_LIMITS } from '../../../common/limits';
 
-const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[]>) => {
-  const stream = req.query.stream as string,
-    episodes = (await getEpisodes(stream as string))
+const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
+  const stream = req.query.stream as string;
+  const streamData = await getStream(stream);
+  if (!streamData) {
+    return res.status(404).json({ error: 'Stream not found' });
+  }
+
+  const episodes = (await getEpisodes(streamData.id))
       .map(prepareEpisodeItem)
       .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
 

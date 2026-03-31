@@ -71,7 +71,7 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
         if (!hasImage) {
             return;
         }
-        if (hasImage && !canEdit) {
+        if (!canEdit) {
             setViewerOpen(true);
             return;
         }

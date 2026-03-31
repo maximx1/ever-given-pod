@@ -98,7 +98,7 @@ export default function StreamCard({
                         </button>
                     )}
                     <Link
-                        href={resolveAppUrl(`/${username}/${name ?? id}`)}
+                        href={resolveAppUrl(`/${encodeURIComponent(username)}/${encodeURIComponent(name?.trim() || id)}`)}
                         className="w-10 h-10 rounded-full border-2 border-purple-500 flex items-center justify-center hover:bg-purple-300 transition"
                         title="View episodes"
                     >

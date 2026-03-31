@@ -87,7 +87,7 @@ export const getRandomEpisodes = async (limit: number = 20) => {
 
 export const publishEpisode = async (episode: EpisodeDto) => {
     await queueWrite(async () => {
-        const stream = db.data?.streams.find((s) => s.id === episode.streamId || s.name === episode.streamId);
+        const stream = db.data?.streams.find((s) => s.id === episode.streamId);
         if (stream) {
             if (!stream.episodes) stream.episodes = [];
             stream.episodes.push(episode);
