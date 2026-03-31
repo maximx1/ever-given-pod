@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { resolveAppUrl, resolveApiUrl, resolveAssetUrl } from "@/common/helpers/api";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/app/common/context/AuthContext";
 
 export default function UserContext() {
     const router = useRouter();
-    const { user, setUser } = useAuth();
+    const pathname = usePathname();
+    const { user, loading, setUser } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -36,10 +37,15 @@ export default function UserContext() {
         router.push(resolveAppUrl('/'));
     };
 
+    if (loading) {
+        return <div className="w-[22px] h-[22px]" />;
+    }
+
     if (user) {
+        const fallbackSrc = resolveAssetUrl('/icons/person.svg');
         const imgSrc = user.imageUrl
             ? resolveAssetUrl(`/uploads/${user.imageUrl}?max=100`)
-            : resolveAssetUrl('/person.svg');
+            : fallbackSrc;
 
         return (
             <div className="relative" ref={menuRef}>
@@ -47,6 +53,7 @@ export default function UserContext() {
                     src={imgSrc}
                     alt={user.name || user.username}
                     onClick={() => setMenuOpen(v => !v)}
+                    onError={(e) => { (e.target as HTMLImageElement).src = fallbackSrc; }}
                     className="w-[22px] h-[22px] rounded object-cover cursor-pointer hover:ring-2 hover:ring-purple-500 transition"
                 />
                 {menuOpen && (
@@ -70,18 +77,25 @@ export default function UserContext() {
         );
     }
 
+    const navigateWithRedirect = (target: string) => {
+        if (pathname && pathname !== '/login' && pathname !== '/signup') {
+            sessionStorage.setItem('loginRedirect', pathname);
+        }
+        router.push(resolveAppUrl(target));
+    };
+
     return (
         <div className="flex items-center space-x-2">
             <button
                 type="button"
-                onClick={() => router.push(resolveAppUrl('/signup'))}
+                onClick={() => navigateWithRedirect('/signup')}
                 className="px-3 py-1.5 rounded-md bg-purple-400 text-white text-xs font-semibold hover:bg-purple-600 transition"
             >
                 Sign Up
             </button>
             <button
                 type="button"
-                onClick={() => router.push(resolveAppUrl('/login'))}
+                onClick={() => navigateWithRedirect('/login')}
                 className="px-3 py-1.5 rounded-md bg-purple-400 text-white text-xs font-semibold hover:bg-purple-600 transition"
             >
                 Log In

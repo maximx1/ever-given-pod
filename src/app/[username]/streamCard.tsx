@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { StreamDto } from '@/common/dtos/streamDto';
 import { resolveAppUrl, resolveApiUrl, resolveAssetUrl } from '@/common/helpers/api';
+import TrashSvg from '@/icons/trash.svg';
+import ChevronRightSvg from '@/icons/chevron-right.svg';
 
 type StreamCardProps = StreamDto & {
     username: string;
@@ -94,7 +96,7 @@ export default function StreamCard({
                             className="w-10 h-10 rounded-full border-2 border-red-400 flex items-center justify-center hover:bg-red-100 transition"
                             title="Delete stream"
                         >
-                            <Image src={resolveAssetUrl('/icons/trash.svg')} alt="Delete" width={18} height={18} className="[filter:invert(27%)_sepia(80%)_saturate(2000%)_hue-rotate(340deg)_brightness(80%)_contrast(95%)]" />
+                            <TrashSvg width={18} height={18} className="text-red-500" />
                         </button>
                     )}
                     <Link
@@ -102,7 +104,7 @@ export default function StreamCard({
                         className="w-10 h-10 rounded-full border-2 border-purple-500 flex items-center justify-center hover:bg-purple-300 transition"
                         title="View episodes"
                     >
-                        <Image src={resolveAssetUrl('/icons/chevron-right.svg')} alt="View episodes" width={20} height={20} className="[filter:invert(27%)_sepia(60%)_saturate(1700%)_hue-rotate(245deg)_brightness(92%)_contrast(89%)]" />
+                        <ChevronRightSvg width={20} height={20} className="text-purple-500" />
                     </Link>
                 </div>
             </div>

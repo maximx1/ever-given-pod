@@ -1,10 +1,12 @@
 "use client";
 
+import { ReactNode } from "react";
 import IconExpandTextButton from "./iconExpandTextButton";
 
 type DownloadIconButtonProps = {
     href: string;
-    iconSrc: string;
+    iconSrc?: string;
+    icon?: ReactNode;
     iconAlt?: string;
     text: string;
     download?: boolean | string;
@@ -16,6 +18,7 @@ type DownloadIconButtonProps = {
 export default function DownloadIconButton({
     href,
     iconSrc,
+    icon,
     iconAlt = "icon",
     text,
     download = false,
@@ -39,6 +42,7 @@ export default function DownloadIconButton({
     return (
         <IconExpandTextButton
             iconSrc={iconSrc}
+            icon={icon}
             iconAlt={iconAlt}
             text={text}
             className={className}

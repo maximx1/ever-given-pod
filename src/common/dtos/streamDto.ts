@@ -1,5 +1,10 @@
 import { EpisodeDto } from './episodeDto';
 
+export type StreamAccessEntry = {
+    userId: string;
+    feedToken: string;
+};
+
 export type StreamDto = {
     id: string;
     userId: string;
@@ -17,4 +22,6 @@ export type StreamDto = {
     pubDate?: string;
     ttl?: number;
     episodes?: EpisodeDto[];
+    isPrivate?: boolean;
+    accessList?: StreamAccessEntry[];
   };
