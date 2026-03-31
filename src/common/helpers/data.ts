@@ -53,7 +53,8 @@ export const prepareStreamItem = (stream?: StreamDto, ownerUsername?: string) =>
 
     const { episodes, ...streamWithoutEpisodes } = stream;
     const imageUrl = stream.imageUrl ? convertUrlToPublic(stream.imageUrl, 600) : undefined;
-    const basePath = ownerUsername ? `/${ownerUsername}/${stream.id}` : `/${stream.id}`;
+    const slug = encodeURIComponent(stream.name || stream.id);
+    const basePath = ownerUsername ? `/${encodeURIComponent(ownerUsername)}/${slug}` : `/${slug}`;
     return {
         ...streamWithoutEpisodes,
         imageUrl,

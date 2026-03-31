@@ -3,14 +3,19 @@ import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import multiparty from 'multiparty';
-import { getEpisodes, publishEpisode } from '../../../common/data/db';
+import { getEpisodes, getStream, publishEpisode } from '../../../common/data/db';
 import { EpisodeDto } from '../../../common/dtos/episodeDto';
 import { prepareEpisodeItem } from '../../../common/helpers/data';
 import { FIELD_LIMITS } from '../../../common/limits';
 
-const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[]>) => {
-  const stream = req.query.stream as string,
-    episodes = (await getEpisodes(stream as string))
+const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
+  const stream = req.query.stream as string;
+  const streamData = await getStream(stream);
+  if (!streamData) {
+    return res.status(404).json({ error: 'Stream not found' });
+  }
+
+  const episodes = (await getEpisodes(streamData.id))
       .map(prepareEpisodeItem)
       .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
 
@@ -28,6 +33,11 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (!stream || typeof stream !== 'string') {
     return res.status(400).json({ error: 'Invalid stream parameter' });
+  }
+
+  const streamData = await getStream(stream);
+  if (!streamData) {
+    return res.status(404).json({ error: 'Stream not found' });
   }
 
   const uploadDir = path.join(process.cwd(), 'uploads');
@@ -76,7 +86,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
 
       const episodeData: EpisodeDto = {
         episodeId: uuidv4(),
-        streamId: stream,
+        streamId: streamData.id,
         title,
         description,
         uploadDate: Date.now().toString(),

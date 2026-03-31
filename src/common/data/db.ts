@@ -6,11 +6,13 @@ import { EpisodeDto } from '../dtos/episodeDto';
 import { StreamDto } from '../dtos/streamDto';
 
 export type DatabaseSchema = {
+    schema_version: number;
     users: UserDto[];
     streams: StreamDto[];
 };
 
 const defaultData: DatabaseSchema = {
+    schema_version: 1,
     users: [
         {
             id: '1',
@@ -25,6 +27,7 @@ const defaultData: DatabaseSchema = {
         {
             id: 'f60236c3-81dd-47ba-b0ae-afd9229ac6f2',
             userId: '1',
+            name: 'audio_books',
             title: 'Audio Books',
             description: 'Personal repo of audio books',
             author: 'anonymous',
@@ -71,8 +74,8 @@ await queueWrite(async () => {
 // ----------------------
 // ----- Operations -----
 // ----------------------
-export const getEpisodes = async (stream: string) => {
-    const s = db.data?.streams.find((s) => s.id === stream);
+export const getEpisodes = async (idOrName: string) => {
+    const s = db.data?.streams.find((s) => s.id === idOrName || s.name === idOrName);
     return s?.episodes ?? [];
 };
 
@@ -109,8 +112,8 @@ export const getStreamsByUserId = async (userId: string) => {
     return db.data?.streams.filter((stream) => stream.userId === userId) ?? [];
 };
 
-export const getStream = async (id: string) => {
-    return db.data?.streams.find((stream) => stream.id === id);
+export const getStream = async (idOrName: string) => {
+    return db.data?.streams.find((stream) => stream.id === idOrName || stream.name === idOrName);
 };
 
 export const getUserByEmail = async (email: string) => {
@@ -153,10 +156,10 @@ export const updateUserImage = async (userId: string, imageUrl: string) => {
     return user;
 };
 
-export const updateStreamImage = async (streamId: string, imageUrl: string) => {
+export const updateStreamImage = async (idOrName: string, imageUrl: string) => {
     if (!db.data) return null;
 
-    const stream = db.data.streams.find((s) => s.id === streamId);
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
     if (!stream) return null;
 
     stream.imageUrl = imageUrl;
@@ -166,10 +169,10 @@ export const updateStreamImage = async (streamId: string, imageUrl: string) => {
     return stream;
 };
 
-export const deleteStream = async (streamId: string): Promise<StreamDto | null> => {
+export const deleteStream = async (idOrName: string): Promise<StreamDto | null> => {
     if (!db.data) return null;
 
-    const index = db.data.streams.findIndex((s) => s.id === streamId);
+    const index = db.data.streams.findIndex((s) => s.id === idOrName || s.name === idOrName);
     if (index === -1) return null;
 
     const [removed] = db.data.streams.splice(index, 1);
