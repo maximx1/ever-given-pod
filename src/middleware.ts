@@ -11,6 +11,18 @@ export function middleware(req: NextRequest) {
         return NextResponse.rewrite(url);
     }
 
+    const feedMatch = adjustedPathname.match(/^\/([^/]+)\/([^/]+)\/feed$/);
+    if (feedMatch) {
+        const [, username, streamName] = feedMatch;
+        const destination = new URL(`${basePath}/api/feeds/by-name`, req.url);
+        destination.searchParams.set('username', username);
+        destination.searchParams.set('stream', streamName);
+        const token = req.nextUrl.searchParams.get('token');
+        if (token) destination.searchParams.set('token', token);
+
+        return NextResponse.rewrite(destination);
+    }
+
     const hasSession = req.cookies.has('session');
 
     if (hasSession && (adjustedPathname === '/login' || adjustedPathname === '/signup')) {

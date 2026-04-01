@@ -3,6 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import mime from 'mime-types';
 import sharp from 'sharp';
+import { getStreamByFile } from '../../../common/data/db';
+import { parseSessionCookie } from '../../../common/helpers/auth';
 
 const SUPPORTED_IMAGE_TYPES = new Set([
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/tiff',
@@ -53,6 +55,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!fs.existsSync(filePath)) {
         return res.status(404).json({ error: 'File not found' });
+    }
+
+    const stream = await getStreamByFile(file);
+    if (stream?.isPrivate) {
+        const token = typeof req.query.token === 'string' ? req.query.token : undefined;
+        if (!token) {
+            const session = parseSessionCookie(req.headers.cookie);
+            if (!session || (session.userId !== stream.userId && !stream.accessList?.some((a) => a.userId === session.userId))) {
+                return res.status(403).json({ error: 'Access denied' });
+            }
+        } else {
+            const validToken = stream.accessList?.some((a) => a.feedToken === token);
+            if (!validToken) {
+                return res.status(403).json({ error: 'Invalid token' });
+            }
+        }
     }
 
     const contentType = mime.lookup(filePath) || 'application/octet-stream';

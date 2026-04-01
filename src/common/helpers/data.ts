@@ -23,7 +23,7 @@ export const convertUrlToPublic = (url?: string, max?: number) => {
     return max ? `${base}?max=${max}` : base;
 };
 
-export const prepareEpisodeItem = (episode: EpisodeDto) => {
+export const prepareEpisodeItem = (episode: EpisodeDto, token?: string) => {
     let fileSize = 0;
     let fileMimeType = 'application/octet-stream';
     if (episode.url) {
@@ -34,7 +34,10 @@ export const prepareEpisodeItem = (episode: EpisodeDto) => {
             // File may not exist on disk
         }
     }
-    const fileUrl = convertUrlToPublic(episode.url);
+    let fileUrl = convertUrlToPublic(episode.url);
+    if (fileUrl && token) {
+        fileUrl += `${fileUrl.includes('?') ? '&' : '?'}token=${token}`;
+    }
 
     return {
         ...episode,

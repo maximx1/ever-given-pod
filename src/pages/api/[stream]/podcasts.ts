@@ -29,7 +29,7 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
   }
 
   const episodes = (await getEpisodes(streamData.id))
-      .map(prepareEpisodeItem)
+      .map((ep) => prepareEpisodeItem(ep))
       .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
 
   res.status(200).json(episodes);
@@ -80,7 +80,6 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).json({ error: `Author must be ${FIELD_LIMITS.author} characters or fewer` });
       }
 
-      console.log(fields);
       const imageFile = files.image?.[0];
       const episodeFile = files.file?.[0];
 

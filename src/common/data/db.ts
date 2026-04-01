@@ -280,3 +280,16 @@ export const updateEpisodeTitle = async (streamIdOrName: string, episodeId: stri
     });
     return episode;
 };
+
+export const getStreamByFile = async (filename: string) => {
+    return db.data?.streams.find((s) =>
+        s.imageUrl === filename ||
+        s.episodes?.some((e) => e.url === filename || e.imageUrl === filename)
+    );
+};
+
+export const getStreamByUsernameAndName = async (username: string, streamName: string) => {
+    const user = db.data?.users.find((u) => u.username?.toLowerCase() === username.toLowerCase());
+    if (!user) return undefined;
+    return db.data?.streams.find((s) => s.userId === user.id && s.name === streamName);
+};
