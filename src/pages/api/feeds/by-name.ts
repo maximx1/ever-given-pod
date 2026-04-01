@@ -6,19 +6,10 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    let { usernameVal, streamVal } = req.query;
+    const { username: usernameVal, stream: streamVal } = req.query;
 
     if (!usernameVal || !streamVal) {
-        const url = req.url || '';
-        const re = /.*\/([^\/\?#]+)\/([^\/\?#]+)\/feed(?:$|\?.*)/;
-        const m = url.match(re);
-        if (m) {
-            usernameVal = usernameVal || m[1];
-            streamVal = streamVal || m[2];
-        }
-        if (!usernameVal || !streamVal) {
-            return res.status(400).json({ message: 'Missing username or stream' });
-        }
+        return res.status(400).json({ message: 'Missing username or stream' });
     }
 
     const streamData = await getStreamByUsernameAndName(usernameVal as string, streamVal as string);
