@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import Image from "next/image";
 
 type IconExpandTextButtonProps = {
-    iconSrc: string;
+    iconSrc?: string;
+    icon?: ReactNode;
     iconAlt?: string;
     text: string;
     download?: boolean | string;
@@ -16,6 +17,7 @@ type IconExpandTextButtonProps = {
 
 export default function IconExpandTextButton({
     iconSrc,
+    icon,
     iconAlt = "icon",
     text,
     download = false,
@@ -51,7 +53,7 @@ export default function IconExpandTextButton({
                 hover:shadow
                 pl-1
                 pr-2
-                py-1
+                py-2
                 text-sm
                 select-none
                 cursor-pointer
@@ -61,8 +63,8 @@ export default function IconExpandTextButton({
             tabIndex={isDisabled ? -1 : 0}
             aria-disabled={isDisabled}
         >
-            <Image src={iconSrc} alt={iconAlt} width={20} height={20} />
-            <span className="overflow-hidden max-w-0 group-hover:max-w-[80px] transition-all duration-200 whitespace-nowrap ml-1">
+            {icon ? icon : <Image src={iconSrc!} alt={iconAlt} width={20} height={20} />}
+            <span className="overflow-hidden max-w-0 group-hover:max-w-[150px] transition-all duration-200 whitespace-nowrap ml-1">
                 {text}
             </span>
         </a>

@@ -34,7 +34,7 @@ export default function Main({ children, showUserContext = true }: MainProps) {
                 {children}
             </main>
             <footer className="bg-purple-300 py-4">
-                <p className="text-right text-sm pr-4">© {new Date().getFullYear()} Ever Givin Pod</p>
+                <p className="text-right text-sm pr-4">© 2025-{new Date().getFullYear()} Ever Givin Pod</p>
             </footer>
         </div>
     )

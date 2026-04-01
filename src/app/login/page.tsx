@@ -12,11 +12,13 @@ export default function LoginPage() {
     const { user, loading, setUser } = useAuth();
     const [identifier, setIdentifier] = useState("");
 
+    const [submitted, setSubmitted] = useState(false);
+
     useEffect(() => {
-        if (!loading && user) {
+        if (!loading && user && !submitted) {
             router.push(resolveAppUrl(`/${user.username}`));
         }
-    }, [user, loading, router]);
+    }, [user, loading, router, submitted]);
 
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -37,8 +39,11 @@ export default function LoginPage() {
             if (response.ok) {
                 const data = await response.json();
                 setSuccess(`Logged in as ${data.name || data.email}`);
+                setSubmitted(true);
                 setUser(data);
-                router.push(resolveAppUrl(`/${data.username}`));
+                const ref = sessionStorage.getItem('loginRedirect');
+                sessionStorage.removeItem('loginRedirect');
+                router.push(ref || resolveAppUrl(`/${data.username}`));
             } else {
                 const json = await response.json();
                 setError(json.message || "Login failed");

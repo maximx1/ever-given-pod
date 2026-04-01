@@ -25,11 +25,13 @@ export default function SignupPage() {
     const router = useRouter();
     const { user, loading, setUser } = useAuth();
 
+    const [submitted, setSubmitted] = useState(false);
+
     useEffect(() => {
-        if (!loading && user) {
+        if (!loading && user && !submitted) {
             router.push(resolveAppUrl(`/${user.username}`));
         }
-    }, [user, loading, router]);
+    }, [user, loading, router, submitted]);
 
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -107,8 +109,11 @@ export default function SignupPage() {
 
             if (response.ok) {
                 const data = await response.json();
+                setSubmitted(true);
                 setUser(data);
-                router.push(resolveAppUrl(`/${data.username}`));
+                const ref = sessionStorage.getItem('loginRedirect');
+                sessionStorage.removeItem('loginRedirect');
+                router.push(ref || resolveAppUrl(`/${data.username}`));
             } else {
                 const body = await response.json();
                 setError(body.message || 'Could not sign up');
@@ -181,6 +186,7 @@ export default function SignupPage() {
                                 type="password"
                                 required
                                 maxLength={FIELD_LIMITS.password}
+                                autoComplete="new-password"
                                 className="w-full rounded border p-2"
                             />
                         </div>
@@ -196,6 +202,7 @@ export default function SignupPage() {
                                 type="password"
                                 required
                                 maxLength={FIELD_LIMITS.password}
+                                autoComplete="new-password"
                                 className="w-full rounded border p-2"
                             />
                             {passwordMismatch && (

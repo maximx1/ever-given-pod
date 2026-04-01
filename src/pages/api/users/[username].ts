@@ -19,10 +19,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const streams = await getStreamsByUserId(user.id);
-    const preparedStreams = streams.map((s) => prepareStreamItem(s, user.username)).filter(Boolean);
 
     const session = parseSessionCookie(req.headers.cookie);
     const isOwnProfile = session?.userId === user.id;
+
+    const visibleStreams = isOwnProfile
+        ? streams
+        : streams.filter((s) => !s.isPrivate);
+
+    const preparedStreams = visibleStreams.map((s) => prepareStreamItem(s, user.username)).filter(Boolean);
 
     return res.status(200).json({
         id: user.id,

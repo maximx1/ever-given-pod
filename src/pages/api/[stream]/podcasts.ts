@@ -7,6 +7,7 @@ import { getEpisodes, getStream, publishEpisode } from '../../../common/data/db'
 import { EpisodeDto } from '../../../common/dtos/episodeDto';
 import { prepareEpisodeItem } from '../../../common/helpers/data';
 import { FIELD_LIMITS } from '../../../common/limits';
+import { parseSessionCookie } from '../../../common/helpers/auth';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
   const stream = req.query.stream as string;
@@ -15,8 +16,20 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
     return res.status(404).json({ error: 'Stream not found' });
   }
 
+  if (streamData.isPrivate) {
+    const session = parseSessionCookie(req.headers.cookie);
+    if (!session) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    const isOwner = session.userId === streamData.userId;
+    const hasAccess = streamData.accessList?.some((a) => a.userId === session.userId);
+    if (!isOwner && !hasAccess) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+  }
+
   const episodes = (await getEpisodes(streamData.id))
-      .map(prepareEpisodeItem)
+      .map((ep) => prepareEpisodeItem(ep))
       .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
 
   res.status(200).json(episodes);
@@ -67,7 +80,6 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).json({ error: `Author must be ${FIELD_LIMITS.author} characters or fewer` });
       }
 
-      console.log(fields);
       const imageFile = files.image?.[0];
       const episodeFile = files.file?.[0];
 
