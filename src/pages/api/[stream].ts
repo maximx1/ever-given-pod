@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs/promises';
 import path from 'path';
-import { StreamDto } from '../../common/dtos/streamDto';
 import { getStream, getUserById, deleteStream, updateStreamTitle } from '../../common/data/db';
 import { FIELD_LIMITS } from '../../common/limits';
 import { prepareStreamItem } from '../../common/helpers/data';

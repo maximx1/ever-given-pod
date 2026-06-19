@@ -1,3 +1,9 @@
+export type PlaybackPosition = {
+    userId: string;
+    position: number;
+    duration?: number;
+};
+
 export type EpisodeDto = {
     episodeId?: string;
     streamId?: string;
@@ -7,4 +13,6 @@ export type EpisodeDto = {
     uploadDate: string;
     url?: string;
     author?: string;
+    playCount?: number;
+    playbackPositions?: PlaybackPosition[];
 };

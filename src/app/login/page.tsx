@@ -48,7 +48,7 @@ export default function LoginPage() {
                 const json = await response.json();
                 setError(json.message || "Login failed");
             }
-        } catch (err) {
+        } catch {
             setError("Network error");
         }
     };

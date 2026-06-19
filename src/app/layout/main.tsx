@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { resolveAppUrl, resolveAssetUrl } from '@/common/helpers/api';
 import UserContext from '@/app/common/components/user/userContext';
+import FloatingPlayer from '@/app/common/components/player/floatingPlayer';
+import ResumeDialog from '@/app/common/components/player/resumeDialog';
+import { usePlayer } from '@/app/common/context/PlayerContext';
+import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
 
 type MainProps = {
     children: React.ReactNode;
@@ -12,6 +16,8 @@ type MainProps = {
 
 export default function Main({ children, showUserContext = true }: MainProps) {
     const router = useRouter();
+    const { resumePrompt, resolveResumePrompt, dismissResumePrompt, queue } = usePlayer();
+    const footerPad = useFooterHeight();
 
     const handleHeaderClick = () => {
         router.push(resolveAppUrl('/'));
@@ -30,12 +36,23 @@ export default function Main({ children, showUserContext = true }: MainProps) {
                     </div>
                 </div>
             </header>
-            <main className="flex flex-grow flex-col">
+            <main className="flex flex-grow flex-col" style={{ paddingBottom: footerPad }}>
                 {children}
             </main>
-            <footer className="bg-purple-300 py-4">
+            <footer className={`${queue.length > 0 ? 'hidden' : ''} bg-purple-300 py-4`}>
                 <p className="text-right text-sm pr-4">© 2025-{new Date().getFullYear()} Ever Givin Pod</p>
             </footer>
+            <FloatingPlayer />
+            {resumePrompt && (
+                <ResumeDialog
+                    episodeName={resumePrompt.item.title}
+                    elapsed={resumePrompt.savedPosition}
+                    total={resumePrompt.savedDuration}
+                    onResume={() => resolveResumePrompt(true)}
+                    onRestart={() => resolveResumePrompt(false)}
+                    onClose={dismissResumePrompt}
+                />
+            )}
         </div>
     )
 }

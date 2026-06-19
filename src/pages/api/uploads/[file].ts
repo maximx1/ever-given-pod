@@ -74,7 +74,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const contentType = mime.lookup(filePath) || 'application/octet-stream';
-    res.setHeader('Content-Type', contentType);
 
     const maxParam = req.query.max as string | undefined;
     const max = maxParam ? Math.min(parseInt(maxParam, 10), 2000) : NaN;
@@ -91,5 +90,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     }
 
-    fs.createReadStream(filePath).pipe(res);
+    // Support HTTP Range requests for efficient seeking on large media files
+    const stat = fs.statSync(filePath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+
+    if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunkSize = end - start + 1;
+
+        res.writeHead(206, {
+            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunkSize,
+            'Content-Type': contentType,
+        });
+        fs.createReadStream(filePath, { start, end }).pipe(res);
+    } else {
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Length', fileSize);
+        res.setHeader('Accept-Ranges', 'bytes');
+        fs.createReadStream(filePath).pipe(res);
+    }
 }

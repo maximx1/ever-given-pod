@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import cookie from 'cookie';
-import { parseSessionCookie, signSession, buildSessionCookieHeader, verifyRawSession, isSessionRevoked } from '../../common/helpers/auth';
+import { signSession, buildSessionCookieHeader, verifyRawSession, isSessionRevoked } from '../../common/helpers/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

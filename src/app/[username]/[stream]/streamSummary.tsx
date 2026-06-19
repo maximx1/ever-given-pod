@@ -15,13 +15,14 @@ import PersonIcon from '@/app/common/components/icons/personIcon';
 import KeySvg from '@/icons/key.svg';
 import CopySvg from '@/icons/copy.svg';
 import { FIELD_LIMITS } from '@/common/limits';
-import Image from 'next/image';
+// Image optimization handled by ImageWithActions — don't import `next/image` here
 import { toast } from 'react-toastify';
 
 type StreamSummaryType = {
     stream?: string | string[];
     onAccessDenied?: () => void;
     onImageResolved?: (imageUrl: string) => void;
+    onNameResolved?: (name: string) => void;
 };
 
 type AccessUser = {
@@ -37,7 +38,7 @@ type ExtendedStreamDto = StreamDto & {
     feedToken?: string;
 };
 
-export default function StreamSummary({ stream, onAccessDenied, onImageResolved }: StreamSummaryType) {
+export default function StreamSummary({ stream, onAccessDenied, onImageResolved, onNameResolved }: StreamSummaryType) {
 
     const [summaryData, setSummaryData] = useState<ExtendedStreamDto>(),
         [isPrivate, setIsPrivate] = useState(false),
@@ -71,6 +72,9 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved 
                     if (data.imageUrl) {
                         onImageResolved?.(data.imageUrl);
                     }
+                    if (data.title) {
+                        onNameResolved?.(data.title);
+                    }
                     if (data.accessList) {
                         setAccessList(data.accessList.map((a: StreamAccessEntry & { username?: string; name?: string }) => ({
                             userId: a.userId,
@@ -81,7 +85,7 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved 
                     }
                 }
             });
-    }, [stream]);
+    }, [stream, onAccessDenied, onImageResolved, onNameResolved]);
 
     useEffect(() => {
         return () => {

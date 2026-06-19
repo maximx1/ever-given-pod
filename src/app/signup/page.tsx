@@ -118,7 +118,7 @@ export default function SignupPage() {
                 const body = await response.json();
                 setError(body.message || 'Could not sign up');
             }
-        } catch (err) {
+        } catch {
             setError('Network error');
         }
     };

@@ -249,7 +249,7 @@ export const searchUsers = async (query: string, excludeUserId?: string, limit: 
             (u.email && u.email.toLowerCase().includes(q))
         )
         .slice(0, limit)
-        .map(({ password, email, ...rest }) => rest);
+        .map(({ ...rest }) => rest);
 };
 
 export const updateStreamTitle = async (idOrName: string, title: string) => {
@@ -292,4 +292,43 @@ export const getStreamByUsernameAndName = async (username: string, streamName: s
     const user = db.data?.users.find((u) => u.username?.toLowerCase() === username.toLowerCase());
     if (!user) return undefined;
     return db.data?.streams.find((s) => s.userId === user.id && s.name === streamName);
+};
+
+export const updatePlaybackPosition = async (streamIdOrName: string, episodeId: string, userId: string, position: number, duration?: number) => {
+    await queueWrite(async () => {
+        const stream = db.data?.streams.find((s) => s.id === streamIdOrName || s.name === streamIdOrName);
+        if (!stream) return;
+        const episode = stream.episodes?.find((e) => e.episodeId === episodeId);
+        if (!episode) return;
+        if (!episode.playbackPositions) episode.playbackPositions = [];
+        const existing = episode.playbackPositions.find((p) => p.userId === userId);
+        if (existing) {
+            existing.position = position;
+            if (duration !== undefined) existing.duration = duration;
+        } else {
+            episode.playbackPositions.push({ userId, position, duration });
+        }
+        await db.write();
+    });
+};
+
+export const getPlaybackPosition = async (streamIdOrName: string, episodeId: string, userId: string): Promise<{ position: number; duration?: number } | null> => {
+    const stream = db.data?.streams.find((s) => s.id === streamIdOrName || s.name === streamIdOrName);
+    if (!stream) return null;
+    const episode = stream.episodes?.find((e) => e.episodeId === episodeId);
+    if (!episode?.playbackPositions) return null;
+    const entry = episode.playbackPositions.find((p) => p.userId === userId);
+    if (!entry) return null;
+    return { position: entry.position, duration: entry.duration };
+};
+
+export const incrementPlayCount = async (streamIdOrName: string, episodeId: string) => {
+    await queueWrite(async () => {
+        const stream = db.data?.streams.find((s) => s.id === streamIdOrName || s.name === streamIdOrName);
+        if (!stream) return;
+        const episode = stream.episodes?.find((e) => e.episodeId === episodeId);
+        if (!episode) return;
+        episode.playCount = (episode.playCount ?? 0) + 1;
+        await db.write();
+    });
 };
