@@ -34,12 +34,14 @@ export default function CircularProgress({
 
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
-    const fraction = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
-    const filled = circumference * fraction;
     const center = size / 2;
 
-    // Dot position: angle from top, clockwise
-    const angle = fraction * 2 * Math.PI - Math.PI / 2;
+    const gapAngle = (30 * Math.PI) / 180;
+    const activeArcLength = circumference * (1 - gapAngle / (2 * Math.PI));
+    const fraction = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
+    const filled = activeArcLength * fraction;
+
+    const angle = fraction * (2 * Math.PI - gapAngle) + (-Math.PI / 2 + gapAngle / 2);
     const dotX = center + radius * Math.cos(angle);
     const dotY = center + radius * Math.sin(angle);
 
@@ -49,10 +51,16 @@ export default function CircularProgress({
         const rect = svg.getBoundingClientRect();
         const x = clientX - rect.left - center;
         const y = clientY - rect.top - center;
-        let a = Math.atan2(y, x) + Math.PI / 2;
+        let a = Math.atan2(y, x) + Math.PI / 2 - gapAngle / 2;
         if (a < 0) a += 2 * Math.PI;
-        const ratio = a / (2 * Math.PI);
-        onSeek(ratio * duration);
+
+        const arcEnd = 2 * Math.PI - gapAngle;
+        if (a >= arcEnd && a < 2 * Math.PI) {
+            onSeek(0);
+        } else {
+            const ratio = a / arcEnd;
+            onSeek(Math.min(ratio, 1) * duration);
+        }
     }, [duration, onSeek, center]);
 
     const onPointerDown = useCallback((e: React.PointerEvent) => {
@@ -72,6 +80,9 @@ export default function CircularProgress({
 
     const fontSize = size * 0.18;
 
+    const gapLength = circumference * gapAngle / (2 * Math.PI);
+    const offsetShift = gapAngle / 4 / Math.PI;
+
     return (
         <svg
             ref={svgRef}
@@ -82,7 +93,6 @@ export default function CircularProgress({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
         >
-            {/* Background gutter */}
             <circle
                 cx={center}
                 cy={center}
@@ -91,8 +101,9 @@ export default function CircularProgress({
                 stroke="currentColor"
                 className="text-gray-500"
                 strokeWidth={strokeWidth}
+                strokeDasharray={`${activeArcLength} ${gapLength}`}
+                strokeDashoffset={circumference * (0.25 - offsetShift)}
             />
-            {/* Filled arc */}
             <circle
                 cx={center}
                 cy={center}
@@ -102,11 +113,10 @@ export default function CircularProgress({
                 className="text-purple-600"
                 strokeWidth={strokeWidth}
                 strokeDasharray={`${filled} ${circumference - filled}`}
-                strokeDashoffset={circumference * 0.25}
+                strokeDashoffset={circumference * (0.25 - offsetShift)}
                 strokeLinecap="round"
                 style={{ transition: draggingRef.current ? 'none' : 'stroke-dasharray 0.1s linear' }}
             />
-            {/* Draggable dot */}
             <circle
                 cx={dotX}
                 cy={dotY}
@@ -116,7 +126,6 @@ export default function CircularProgress({
                 stroke="white"
                 strokeWidth={1.5}
             />
-            {/* Elapsed */}
             <text
                 x={center}
                 y={center - fontSize * 0.15}
@@ -128,7 +137,6 @@ export default function CircularProgress({
             >
                 {formatCompact(currentTime)}
             </text>
-            {/* Divider line */}
             <line
                 x1={center - size * 0.18}
                 y1={center + fontSize * 0.25}
@@ -138,7 +146,6 @@ export default function CircularProgress({
                 className="text-gray-500"
                 strokeWidth={0.5}
             />
-            {/* Total */}
             <text
                 x={center}
                 y={center + fontSize * 0.4}

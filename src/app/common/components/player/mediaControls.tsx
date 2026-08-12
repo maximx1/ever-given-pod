@@ -4,7 +4,6 @@ import { usePlayer } from '@/app/common/context/PlayerContext';
 import PlaySvg from '@/icons/play.svg';
 import PauseSvg from '@/icons/pause.svg';
 import SkipNextSvg from '@/icons/skip-next.svg';
-import RotateCwSvg from '@/icons/rotate-cw.svg';
 
 type MediaControlsProps = {
     className?: string;
@@ -46,14 +45,10 @@ function SeekButton({ amount, onClick, className = '', disabled = false }: SeekB
     const abs = Math.abs(amount);
     const sign = amount > 0 ? '+' : '-';
     const aria = amount > 0 ? `Skip forward ${abs} seconds` : `Skip back ${abs} seconds`;
-    const flip = amount < 0;
 
     return (
         <ControlButton onClick={onClick} label={aria} className={className} disabled={disabled}>
-            <div className="relative w-5 h-5 flex items-center justify-center">
-                <RotateCwSvg className={`${flip ? 'transform scale-x-[-1]' : ''}`} />
-                <span className="absolute text-[9px] font-medium leading-none pointer-events-none text-current drop-shadow-sm">{`${sign}${abs}`}</span>
-            </div>
+            <span className="text-sm font-medium leading-none tabular-nums w-8 h-8 flex items-center justify-center">{`${sign}${abs}`}</span>
         </ControlButton>
     );
 }
