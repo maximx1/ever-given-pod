@@ -1,7 +1,7 @@
 "use client";
 
 import EpisodeCard from './episodeCard';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { EpisodeDto } from '@/common/dtos/episodeDto';
 import { StreamDto } from '@/common/dtos/streamDto';
 import AddButton from '@/app/common/components/buttons/addButton';
@@ -15,36 +15,38 @@ type SortDir = 'desc' | 'asc';
 type EpisodeListProps = {
     stream?: string | string[];
     streamImageUrl?: string;
+    streamName?: string;
 }
 
 const ADD_BTN_SIZE = 64;
 const ADD_BTN_OFFSET = 16;
 const ARROW_SIZE = Math.round(ADD_BTN_SIZE * 0.6);
-const GAP_ABOVE_ADD = 20;
+// Reduce gap above add button so arrows sit a bit lower, and nudge right a little
+const GAP_ABOVE_ADD = 8;
 const GAP_BETWEEN_ARROWS = 6;
-const ARROW_RIGHT = ADD_BTN_OFFSET + (ADD_BTN_SIZE - ARROW_SIZE) / 2;
+const ARROW_RIGHT = ADD_BTN_OFFSET + (ADD_BTN_SIZE - ARROW_SIZE) / 2 - 8;
 const DOWN_BOTTOM = ADD_BTN_OFFSET + ADD_BTN_SIZE + GAP_ABOVE_ADD;
 const UP_BOTTOM = DOWN_BOTTOM + ARROW_SIZE + GAP_BETWEEN_ARROWS;
 
-export default function EpisodeList({ stream, streamImageUrl }: EpisodeListProps) {
+export default function EpisodeList({ stream, streamImageUrl, streamName }: EpisodeListProps) {
     const [episodeData, setEpisodeData] = useState<EpisodeDto[]>([]);
     const [sortDir, setSortDir] = useState<SortDir>('desc');
     const [isOwner, setIsOwner] = useState(false);
     const visibleFooterHeight = useFooterHeight();
     const { user } = useAuth();
 
-    const fetchEpisodes = () => {
+    const fetchEpisodes = useCallback(() => {
         fetch(resolveApiUrl(`/${stream}/podcasts`))
             .then((res) => {
                 if (!res.ok) return [];
                 return res.json();
             })
             .then((data) => setEpisodeData(Array.isArray(data) ? data : []));
-    };
+    }, [stream]);
 
     useEffect(() => {
         fetchEpisodes();
-    }, [stream]);
+    }, [fetchEpisodes]);
 
     useEffect(() => {
         if (!user || !stream) { setIsOwner(false); return; }
@@ -74,7 +76,7 @@ export default function EpisodeList({ stream, streamImageUrl }: EpisodeListProps
                         type="button"
                         onClick={() => setSortDir('asc')}
                         style={{ position: 'fixed', bottom: `${UP_BOTTOM + visibleFooterHeight}px`, right: `${ARROW_RIGHT}px` }}
-                        className={`z-10 cursor-pointer transition-colors ${sortDir === 'asc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
+                        className={`z-40 cursor-pointer transition-colors ${sortDir === 'asc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
                         title="Oldest first"
                     >
                         <ArrowIcon direction="up" size={ARROW_SIZE} />
@@ -83,7 +85,7 @@ export default function EpisodeList({ stream, streamImageUrl }: EpisodeListProps
                         type="button"
                         onClick={() => setSortDir('desc')}
                         style={{ position: 'fixed', bottom: `${DOWN_BOTTOM + visibleFooterHeight}px`, right: `${ARROW_RIGHT}px` }}
-                        className={`z-10 cursor-pointer transition-colors ${sortDir === 'desc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
+                        className={`z-40 cursor-pointer transition-colors ${sortDir === 'desc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
                         title="Newest first"
                     >
                         <ArrowIcon direction="down" size={ARROW_SIZE} />
@@ -103,6 +105,7 @@ export default function EpisodeList({ stream, streamImageUrl }: EpisodeListProps
                             author={episode.author}
                             imageUrl={episode.imageUrl}
                             fallbackImageUrl={streamImageUrl}
+                            streamName={streamName}
                             canEdit={isOwner}
                             stream={stream}
                             onTitleChanged={handleEpisodeTitleChanged}

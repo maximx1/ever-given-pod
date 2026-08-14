@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { clearSessionCookieHeader, parseSessionCookie, revokeSession } from '../../common/helpers/auth';
+import { clearSessionCookieHeader, revokeSession } from '../../common/helpers/auth';
 import cookie from 'cookie';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

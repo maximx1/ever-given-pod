@@ -36,7 +36,7 @@ export default function StreamPublish() {
         } else {
           router.push(resolveAppUrl('/'));
         }
-      } catch (err) {
+      } catch {
         router.push(resolveAppUrl('/'));
       } finally {
         setLoading(false);

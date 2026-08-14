@@ -11,6 +11,7 @@ export default function StreamPage() {
   const params = useParams();
   const [accessDenied, setAccessDenied] = useState(false);
   const [streamImageUrl, setStreamImageUrl] = useState<string | undefined>();
+  const [streamName, setStreamName] = useState<string | undefined>();
 
   if (accessDenied) {
     return (
@@ -22,8 +23,8 @@ export default function StreamPage() {
 
   return (
     <Main>
-      <StreamSummary stream={params?.stream} onAccessDenied={() => setAccessDenied(true)} onImageResolved={setStreamImageUrl} />
-      <EpisodeList stream={params?.stream} streamImageUrl={streamImageUrl} />
+      <StreamSummary stream={params?.stream} onAccessDenied={() => setAccessDenied(true)} onImageResolved={setStreamImageUrl} onNameResolved={setStreamName} />
+      <EpisodeList stream={params?.stream} streamImageUrl={streamImageUrl} streamName={streamName} />
     </Main>
   );
 }

@@ -3,15 +3,18 @@
 import { EpisodeDto } from '@/common/dtos/episodeDto';
 import { useEffect, useRef, useState } from 'react';
 import DownloadIconButton from '@/app/common/components/buttons/downloadIconButton';
-import LinkIconButton from '@/app/common/components/buttons/linkIconButton';
+import IconExpandTextButton from '@/app/common/components/buttons/iconExpandTextButton';
 import EditableText from '@/app/common/components/editableText';
 import PlaySvg from '@/icons/play.svg';
 import DownloadSvg from '@/icons/download.svg';
+import AddToQueueSvg from '@/icons/add-to-queue.svg';
 import { resolveApiUrl, resolveAssetUrl } from '@/common/helpers/api';
 import { FIELD_LIMITS } from '@/common/limits';
+import { usePlayer } from '@/app/common/context/PlayerContext';
 
 type EpisodeCardProps = EpisodeDto & {
     fallbackImageUrl?: string;
+    streamName?: string;
     canEdit?: boolean;
     stream?: string | string[];
     onTitleChanged?: (episodeId: string, newTitle: string) => void;
@@ -26,10 +29,24 @@ export default function EpisodeCard({
     url,
     author,
     fallbackImageUrl,
+    streamName,
     canEdit = false,
     stream,
     onTitleChanged,
 }: EpisodeCardProps) {
+    const { requestPlayNow, requestAddToQueue } = usePlayer();
+
+    const streamId = typeof stream === 'string' ? stream : Array.isArray(stream) ? stream[0] : '';
+
+    const buildQueueItem = () => ({
+        episodeId: episodeId ?? url ?? '',
+        title: title ?? 'Untitled',
+        streamName: streamName ?? streamId ?? '',
+        streamId,
+        url: url!,
+        imageUrl: imageUrl ?? undefined,
+        fallbackImageUrl: fallbackImageUrl ?? undefined,
+    });
     const [descriptionExpanded, setDescriptionExpanded] = useState(false),
         [needsExpand, setNeedsExpand] = useState(false),
         descRef = useRef<HTMLDivElement>(null),
@@ -112,17 +129,23 @@ export default function EpisodeCard({
                 </div>
                 <div className="flex">
                     {url &&
-                        <LinkIconButton
-                            href={url}
+                        <IconExpandTextButton
                             icon={<PlaySvg />}
-                            iconAlt="Listen Now"
-                            text="Listen Now"
+                        iconAlt="Play Now"
+                        text="Play Now"
                             className="mt-4"
+                        onClick={() => requestPlayNow(buildQueueItem())}
                         />
                     }
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="mt-4 text-blue-500 hover:underline text-sm">
-                        
-                    </a>
+                    {url &&
+                        <IconExpandTextButton
+                            icon={<AddToQueueSvg />}
+                            iconAlt="Add to Queue"
+                            text="Add to Queue"
+                            className="mt-4"
+                            onClick={() => requestAddToQueue(buildQueueItem())}
+                        />
+                    }
                     {url &&
                         <DownloadIconButton
                             href={url}
