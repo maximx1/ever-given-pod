@@ -8,7 +8,7 @@ type PersonIconProps = {
 export default function PersonIcon({ size = 24, className }: PersonIconProps) {
     return (
         <span className={`inline-block ${className ?? ''}`} style={{ width: size, height: size }}>
-            <PersonSvg className="w-full h-full" />
+            <PersonSvg className="w-full h-full" style={{ transform: 'translate(-1px, -1px)', transformOrigin: 'center' }} />
         </span>
     );
 }
