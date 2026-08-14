@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ever-given-pod
+
+This is a personal standalone self-hosted podcast and audio files hosting app.
 
 ## Getting Started
 
-First, run the development server:
+### Development
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Build the app:
 
-## Learn More
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Then start it:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You may also use yarn, pnpm, or bun to build this project.
 
-## Deploy on Vercel
+## Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### NEXT_PUBLIC_API_BASE_URL
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Set `NEXT_PUBLIC_API_BASE_URL` to your deployment's base URL. This is important — without it, RSS feed URLs won't work. Podcast clients won't be able to fetch feeds.
+
+```bash
+NEXT_PUBLIC_API_BASE_URL="https://pod.sample.com" npm run build
+NEXT_PUBLIC_API_BASE_URL="https://pod.sample.com" npm start
+```
+
+### Database
+
+The app uses lowdb (a JSON file database). It ships with a default user:
+
+- Username: `sampleuser`
+- Password: `abc123`
+- Stream: `audio_books`
+
+The password is bcrypt-hashed (10 rounds), so editing `db.json` directly won't change the password. To change credentials, either update the password hash in `db.ts` before running, or create a new user via the signup endpoint.
+
+## Technology
+
+- Next.js
+- React
+- TypeScript
+- podcast (RSS feed generation)
+
+## License
+
+MIT licensed.

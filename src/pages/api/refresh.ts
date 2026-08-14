@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import cookie from 'cookie';
+import { parse } from 'cookie';
 import { signSession, buildSessionCookieHeader, verifyRawSession, isSessionRevoked } from '../../common/helpers/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const header = req.headers.cookie;
-  const parsed = header ? cookie.parse(header) : {};
+  const parsed = header ? parse(header) : {};
   const token = parsed.session;
 
   if (!token || isSessionRevoked(token)) {
