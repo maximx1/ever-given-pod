@@ -34,7 +34,7 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: [
+     matcher: [
         /*
          * Match all request paths except for the ones starting with:
          * - api/auth (auth endpoints)
@@ -43,5 +43,11 @@ export const config = {
          * - favicon.ico (favicon file)
          */
         '/((?!api/|_next/static|_next/image|favicon.ico).*)',
+    ],
+    exclude: [
+        '/api/streams/random',
+        '/api/episodes/random',
+        '/api/feeds/by-name',
+        '/api/feeds/:username/:stream*',
     ],
 };
