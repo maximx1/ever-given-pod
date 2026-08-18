@@ -22,6 +22,9 @@
 /uploads/
 db.json
 
+# Feature specifications (local working docs)
+features/
+
 # misc
 .DS_Store
 *.pem
