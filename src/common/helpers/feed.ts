@@ -33,7 +33,7 @@ export async function handleFeedRequest(
         items = (await getEpisodes(streamData.id)).map((ep) => {
             const uploaded = Number(ep.uploadDate);
             return {
-                ...prepareEpisodeItem(ep, feedToken),
+                ...prepareEpisodeItem(ep, feedToken, streamData.seasons),
                 date: Number.isFinite(uploaded) && uploaded > 0 ? new Date(uploaded) : undefined,
                 itunesSeason: ep.seasonId ? seasonNumbers.get(ep.seasonId) : undefined,
                 itunesEpisode: ep.seasonId ? ep.episodeNumber : undefined,

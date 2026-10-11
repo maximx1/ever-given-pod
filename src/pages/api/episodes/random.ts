@@ -7,8 +7,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined,
     rawEpisodes = await getRandomEpisodes(limit),
     episodes = await Promise.all(rawEpisodes.map(async (e) => {
-      const prepared = prepareEpisodeItem(e);
       const stream = e.streamId ? await getStream(e.streamId) : undefined;
+      const prepared = prepareEpisodeItem(e, undefined, stream?.seasons);
       const owner = stream ? await getUserById(stream.userId) : undefined;
       return { ...prepared, ownerUsername: owner?.username };
     }));

@@ -107,6 +107,14 @@ export const publishEpisode = async (episode: EpisodeDto, seasonId?: string) => 
         if (stream) {
             if (!stream.episodes) stream.episodes = [];
             if (seasonId && stream.seasons?.some((s) => s.id === seasonId)) {
+                // Feed dates only resolve to the second, so keep each new episode at least a second
+                // after the season's latest; apps that sort by date then keep the season in order
+                const latest = Math.max(0, ...stream.episodes
+                    .filter((e) => e.seasonId === seasonId)
+                    .map((e) => Number(e.uploadDate) || 0));
+                if ((Number(episode.uploadDate) || 0) < latest + 1000) {
+                    episode.uploadDate = (latest + 1000).toString();
+                }
                 episode.episodeNumber = nextEpisodeNumber(stream, seasonId);
                 episode.seasonId = seasonId;
             }
@@ -296,6 +304,7 @@ export const updateEpisodeTitle = async (streamIdOrName: string, episodeId: stri
 export const getStreamByFile = async (filename: string) => {
     return db.data?.streams.find((s) =>
         s.imageUrl === filename ||
+        s.seasons?.some((season) => season.imageUrl === filename) ||
         s.episodes?.some((e) => e.url === filename || e.imageUrl === filename)
     );
 };
@@ -391,6 +400,20 @@ export const updateSeason = async (idOrName: string, seasonId: string, updates: 
 
     if (updates.title !== undefined) season.title = updates.title;
     if (updates.description !== undefined) season.description = updates.description || undefined;
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return season;
+};
+
+export const updateSeasonImage = async (idOrName: string, seasonId: string, imageUrl: string) => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    const season = stream?.seasons?.find((s) => s.id === seasonId);
+    if (!season) return null;
+
+    season.imageUrl = imageUrl;
     await queueWrite(async () => {
         await db.write();
     });

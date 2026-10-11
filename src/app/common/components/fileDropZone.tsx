@@ -6,7 +6,10 @@ import { toast } from 'react-toastify';
 type FileDropZoneProps = {
     accept?: string;
     label?: string;
-    onFileSelected: (file: File) => void;
+    onFileSelected?: (file: File) => void;
+    // With multiple, every accepted file is passed to onFilesSelected instead
+    multiple?: boolean;
+    onFilesSelected?: (files: File[]) => void;
     previewUrl?: string | null;
     onClear?: () => void;
 };
@@ -20,7 +23,7 @@ function matchesAccept(file: File, accept?: string): boolean {
     });
 }
 
-export default function FileDropZone({ accept, label = 'Drag & drop a file here', onFileSelected, previewUrl, onClear }: FileDropZoneProps) {
+export default function FileDropZone({ accept, label = 'Drag & drop a file here', onFileSelected, multiple = false, onFilesSelected, previewUrl, onClear }: FileDropZoneProps) {
     const [dragOver, setDragOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,30 +39,41 @@ export default function FileDropZone({ accept, label = 'Drag & drop a file here'
         setDragOver(false);
     }, []);
 
+    // Returns false when nothing usable was picked
+    const selectFiles = useCallback((picked: FileList | null | undefined) => {
+        const files = Array.from(picked ?? []);
+        if (files.length === 0) return true;
+
+        const expected = accept?.includes('image') ? 'image' : accept?.includes('audio') ? 'audio' : 'valid';
+        if (!multiple) {
+            if (!matchesAccept(files[0], accept)) {
+                toast.error(`Please select an ${expected} file.`);
+                return false;
+            }
+            onFileSelected?.(files[0]);
+            return true;
+        }
+
+        const accepted = files.filter((file) => matchesAccept(file, accept));
+        if (accepted.length < files.length) {
+            toast.error(`${files.length - accepted.length} file${files.length - accepted.length === 1 ? ' was' : 's were'} skipped: not ${expected} files.`);
+        }
+        if (accepted.length === 0) return false;
+        onFilesSelected?.(accepted);
+        return true;
+    }, [accept, multiple, onFileSelected, onFilesSelected]);
+
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
         setDragOver(false);
-        const file = e.dataTransfer.files?.[0];
-        if (!file) return;
-        if (!matchesAccept(file, accept)) {
-            const expected = accept?.includes('image') ? 'image' : accept?.includes('audio') ? 'audio' : 'valid';
-            toast.error(`Please select an ${expected} file.`);
-            return;
-        }
-        onFileSelected(file);
-    }, [onFileSelected, accept]);
+        selectFiles(e.dataTransfer.files);
+    }, [selectFiles]);
 
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (!matchesAccept(file, accept)) {
-            const expected = accept?.includes('image') ? 'image' : accept?.includes('audio') ? 'audio' : 'valid';
-            toast.error(`Please select an ${expected} file.`);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            return;
-        }
-        onFileSelected(file);
+        selectFiles(e.target.files);
+        // Clear the input so picking the same files again still fires a change
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const handleBrowseClick = () => {
@@ -72,6 +86,7 @@ export default function FileDropZone({ accept, label = 'Drag & drop a file here'
                 ref={fileInputRef}
                 type="file"
                 accept={accept}
+                multiple={multiple}
                 className="hidden"
                 onChange={handleFileInputChange}
             />
