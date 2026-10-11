@@ -1,9 +1,12 @@
 "use client";
 
 import EpisodeCard from './episodeCard';
+import SeasonCard from './seasonCard';
+import SeasonDialog from './seasonDialog';
 import { useEffect, useState, useCallback } from 'react';
+import { toast } from 'react-toastify';
 import { EpisodeDto } from '@/common/dtos/episodeDto';
-import { StreamDto } from '@/common/dtos/streamDto';
+import { SeasonDto, StreamDto } from '@/common/dtos/streamDto';
 import AddButton from '@/app/common/components/buttons/addButton';
 import { resolveApiUrl } from '@/common/helpers/api';
 import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
@@ -30,6 +33,8 @@ const UP_BOTTOM = DOWN_BOTTOM + ARROW_SIZE + GAP_BETWEEN_ARROWS;
 
 export default function EpisodeList({ stream, streamImageUrl, streamName }: EpisodeListProps) {
     const [episodeData, setEpisodeData] = useState<EpisodeDto[]>([]);
+    const [seasons, setSeasons] = useState<SeasonDto[]>([]);
+    const [seasonDialogOpen, setSeasonDialogOpen] = useState(false);
     const [sortDir, setSortDir] = useState<SortDir>('desc');
     const [isOwner, setIsOwner] = useState(false);
     const visibleFooterHeight = useFooterHeight();
@@ -42,6 +47,12 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                 return res.json();
             })
             .then((data) => setEpisodeData(Array.isArray(data) ? data : []));
+        fetch(resolveApiUrl(`/${stream}/seasons`))
+            .then((res) => {
+                if (!res.ok) return [];
+                return res.json();
+            })
+            .then((data) => setSeasons(Array.isArray(data) ? data : []));
     }, [stream]);
 
     useEffect(() => {
@@ -62,11 +73,32 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
         ));
     };
 
+    const handleMoveToSeason = async (episodeId: string | undefined, seasonId: string) => {
+        try {
+            const res = await fetch(resolveApiUrl(`/${stream}/move-episode`), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ episodeId, seasonId }),
+            });
+            if (!res.ok) toast.error('Could not move the episode.');
+        } catch {
+            toast.error('Could not move the episode.');
+        }
+        fetchEpisodes();
+    };
+
     const sorted = [...episodeData].sort((a, b) => {
         const aTime = Number(a.uploadDate) || 0;
         const bTime = Number(b.uploadDate) || 0;
         return sortDir === 'desc' ? bTime - aTime : aTime - bTime;
     });
+
+    const sortedSeasons = [...seasons].sort((a, b) => sortDir === 'desc' ? b.number - a.number : a.number - b.number);
+    const seasonIds = new Set(seasons.map((season) => season.id));
+    const ungrouped = sorted.filter((episode) => !episode.seasonId || !seasonIds.has(episode.seasonId));
+    const episodesOf = (seasonId: string) => episodeData
+        .filter((episode) => episode.seasonId === seasonId)
+        .sort((a, b) => (a.episodeNumber ?? 0) - (b.episodeNumber ?? 0));
 
     return (
         <div className="episode-list relative max-w-[800px] mx-auto w-full px-4">
@@ -92,9 +124,41 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                     </button>
                 </>
             )}
-            <AddButton stream={stream} onEpisodeCreated={fetchEpisodes} />
+            <AddButton stream={stream} onEpisodeCreated={fetchEpisodes} seasons={sortedSeasons} />
+            {isOwner && (
+                <div className="flex justify-end mx-4 mt-4">
+                    <button
+                        type="button"
+                        onClick={() => setSeasonDialogOpen(true)}
+                        className="bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm cursor-pointer"
+                    >
+                        New Season
+                    </button>
+                </div>
+            )}
+            {seasonDialogOpen && (
+                <SeasonDialog stream={stream} onCreated={fetchEpisodes} onClose={() => setSeasonDialogOpen(false)} />
+            )}
             {
-                sorted.map((episode) => (
+                // Empty seasons are only useful to the owner, who can fill them
+                sortedSeasons
+                    .filter((season) => isOwner || episodesOf(season.id).length > 0)
+                    .map((season) => (
+                        <SeasonCard
+                            key={season.id}
+                            season={season}
+                            episodes={episodesOf(season.id)}
+                            canEdit={isOwner}
+                            stream={stream}
+                            streamImageUrl={streamImageUrl}
+                            streamName={streamName}
+                            onChanged={fetchEpisodes}
+                            onEpisodeTitleChanged={handleEpisodeTitleChanged}
+                        />
+                    ))
+            }
+            {
+                ungrouped.map((episode) => (
                     <div key={episode.episodeId} className="flex justify-center">
                         <EpisodeCard
                             episodeId={episode.episodeId}
@@ -109,6 +173,19 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                             canEdit={isOwner}
                             stream={stream}
                             onTitleChanged={handleEpisodeTitleChanged}
+                            actions={isOwner && seasons.length > 0 && (
+                                <select
+                                    value=""
+                                    onChange={(e) => handleMoveToSeason(episode.episodeId, e.target.value)}
+                                    className="mt-4 max-w-[160px] text-sm bg-transparent border border-purple-400 rounded-sm px-2 py-1.5 text-gray-700 cursor-pointer"
+                                    title="Add to a season"
+                                >
+                                    <option value="" disabled>Add to season...</option>
+                                    {sortedSeasons.map((season) => (
+                                        <option key={season.id} value={season.id}>{season.title}</option>
+                                    ))}
+                                </select>
+                            )}
                         />
                     </div>
                 ))

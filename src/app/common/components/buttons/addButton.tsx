@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { resolveApiUrl } from '@/common/helpers/api';
 import { useAuth } from '@/app/common/context/AuthContext';
 import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
-import { StreamDto } from '@/common/dtos/streamDto';
+import { SeasonDto, StreamDto } from '@/common/dtos/streamDto';
 import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
 import FileDropZone from '@/app/common/components/fileDropZone';
 
-export default function AddButton({ stream, onEpisodeCreated }: { stream?: string | string[]; onEpisodeCreated?: () => void }) {
+export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { stream?: string | string[]; onEpisodeCreated?: () => void; seasons?: SeasonDto[] }) {
     const { user } = useAuth(),
         visibleFooterHeight = useFooterHeight(),
         [isOwner, setIsOwner] = useState(false),
@@ -18,6 +18,7 @@ export default function AddButton({ stream, onEpisodeCreated }: { stream?: strin
         [title, setTitle] = useState(''),
         [description, setDescription] = useState(''),
         [author, setAuthor] = useState(''),
+        [seasonId, setSeasonId] = useState(''),
         [imageFile, setImageFile] = useState<File | null>(null),
         [imagePreview, setImagePreview] = useState<string | null>(null),
         [audioFile, setAudioFile] = useState<File | null>(null),
@@ -63,6 +64,7 @@ export default function AddButton({ stream, onEpisodeCreated }: { stream?: strin
         setTitle('');
         setDescription('');
         setAuthor('');
+        setSeasonId('');
         setImageFile(null);
         setImagePreview(null);
         setAudioFile(null);
@@ -79,6 +81,7 @@ export default function AddButton({ stream, onEpisodeCreated }: { stream?: strin
         formData.append('description', description.trim());
         formData.append('file', audioFile);
         formData.append('author', author.trim());
+        if (seasonId) formData.append('seasonId', seasonId);
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', resolveApiUrl(`/${stream}/podcasts`));
@@ -179,6 +182,21 @@ export default function AddButton({ stream, onEpisodeCreated }: { stream?: strin
                                     onKeyDown={(e) => { if (e.key === 'Escape') { setDialogOpen(false); resetForm(); } }}
                                 />
                             </div>
+                            {seasons.length > 0 && (
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 block mb-1">Season</label>
+                                    <select
+                                        value={seasonId}
+                                        onChange={(e) => setSeasonId(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none bg-white"
+                                    >
+                                        <option value="">No season</option>
+                                        {seasons.map((season) => (
+                                            <option key={season.id} value={season.id}>{season.title}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                             <div>
                                 <label className="text-sm font-medium text-gray-700 block mb-1">Episode Image</label>
                                 <FileDropZone

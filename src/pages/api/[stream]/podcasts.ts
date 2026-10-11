@@ -78,6 +78,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       const title = fields.title?.[0];
       const description = fields.description?.[0];
       const author = fields.author?.[0];
+      const seasonId = fields.seasonId?.[0] || undefined;
 
       if (title && title.length > FIELD_LIMITS.title) {
         return res.status(400).json({ error: `Title must be ${FIELD_LIMITS.title} characters or fewer` });
@@ -87,6 +88,10 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       }
       if (author && author.length > FIELD_LIMITS.author) {
         return res.status(400).json({ error: `Author must be ${FIELD_LIMITS.author} characters or fewer` });
+      }
+
+      if (seasonId && !streamData.seasons?.some((s) => s.id === seasonId)) {
+        return res.status(400).json({ error: 'Season not found' });
       }
 
       const imageFile = files.image?.[0];
@@ -124,7 +129,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         url: episodeFileName,
       };
 
-      await publishEpisode(episodeData);
+      await publishEpisode(episodeData, seasonId);
 
       res.setHeader('Location', `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts/${episodeData.episodeId}`);
       res.status(201).json({ message: 'Episode created successfully' });

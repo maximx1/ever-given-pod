@@ -1,7 +1,7 @@
 "use client";
 
 import { EpisodeDto } from '@/common/dtos/episodeDto';
-import { useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import DownloadIconButton from '@/app/common/components/buttons/downloadIconButton';
 import IconExpandTextButton from '@/app/common/components/buttons/iconExpandTextButton';
 import EditableText from '@/app/common/components/editableText';
@@ -18,6 +18,7 @@ type EpisodeCardProps = EpisodeDto & {
     canEdit?: boolean;
     stream?: string | string[];
     onTitleChanged?: (episodeId: string, newTitle: string) => void;
+    actions?: ReactNode;
 };
 
 export default function EpisodeCard({
@@ -33,6 +34,8 @@ export default function EpisodeCard({
     canEdit = false,
     stream,
     onTitleChanged,
+    episodeNumber,
+    actions,
 }: EpisodeCardProps) {
     const { requestPlayNow, requestAddToQueue } = usePlayer();
 
@@ -83,6 +86,9 @@ export default function EpisodeCard({
             </div>
 
             <div className="p-4 flex-grow flex flex-col">
+                {episodeNumber != null && (
+                    <span className="text-xs font-semibold text-purple-700">Episode {episodeNumber}</span>
+                )}
                 <EditableText
                     value={title ?? ''}
                     canEdit={canEdit}
@@ -127,7 +133,7 @@ export default function EpisodeCard({
                             day: "numeric"
                         }) : "Unknown"}</p>
                 </div>
-                <div className="flex">
+                <div className="flex flex-wrap">
                     {url &&
                         <IconExpandTextButton
                             icon={<PlaySvg />}
@@ -157,6 +163,7 @@ export default function EpisodeCard({
                             debounceMs={2000}
                         />
                     }
+                    {actions && <div className="flex items-center ml-auto">{actions}</div>}
                 </div>
             </div>
         </div>
