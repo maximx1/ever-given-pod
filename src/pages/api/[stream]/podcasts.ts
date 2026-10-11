@@ -30,7 +30,7 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
   }
 
   const episodes = (await getEpisodes(streamData.id))
-      .map((ep) => prepareEpisodeItem(ep))
+      .map((ep) => prepareEpisodeItem(ep, undefined, streamData.seasons))
       .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
 
   res.status(200).json(episodes);
@@ -97,11 +97,12 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       const imageFile = files.image?.[0];
       const episodeFile = files.file?.[0];
 
-      if (!imageFile || !episodeFile) {
+      // An episode in a season may go without its own image and show the season's cover
+      if (!episodeFile || (!imageFile && !seasonId)) {
         return res.status(400).json({ error: 'Missing image or file' });
       }
 
-      const imageError = await validateImageUpload(imageFile);
+      const imageError = imageFile ? await validateImageUpload(imageFile) : null;
       if (imageError) {
         return res.status(400).json({ error: imageError });
       }
@@ -109,13 +110,14 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).json({ error: 'Only audio files are allowed' });
       }
 
-      const imageFileName = `${uuidv4()}${getUploadExtension(imageFile)}`;
+      const imageFileName = imageFile ? `${uuidv4()}${getUploadExtension(imageFile)}` : undefined;
       const episodeFileName = `${uuidv4()}${getUploadExtension(episodeFile)}`;
 
-      const imageFilePath = path.join(uploadDir, imageFileName);
       const episodeFilePath = path.join(uploadDir, episodeFileName);
 
-      await fs.rename(imageFile.path, imageFilePath);
+      if (imageFile && imageFileName) {
+        await fs.rename(imageFile.path, path.join(uploadDir, imageFileName));
+      }
       await fs.rename(episodeFile.path, episodeFilePath);
 
       const episodeData: EpisodeDto = {

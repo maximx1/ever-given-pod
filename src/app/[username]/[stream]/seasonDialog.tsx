@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { resolveApiUrl } from '@/common/helpers/api';
 import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
+import FileDropZone from '@/app/common/components/fileDropZone';
 
 type SeasonDialogProps = {
     stream?: string | string[];
@@ -15,7 +16,15 @@ type SeasonDialogProps = {
 export default function SeasonDialog({ stream, onCreated, onClose }: SeasonDialogProps) {
     const [title, setTitle] = useState(''),
         [description, setDescription] = useState(''),
+        [imageFile, setImageFile] = useState<File | null>(null),
+        [imagePreview, setImagePreview] = useState<string | null>(null),
         [submitting, setSubmitting] = useState(false);
+
+    const handleImageSelected = (file: File) => {
+        if (!file.type.startsWith('image/')) return;
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
 
     const handleSubmit = async () => {
         if (!title.trim() || submitting) return;
@@ -28,6 +37,14 @@ export default function SeasonDialog({ stream, onCreated, onClose }: SeasonDialo
                 body: JSON.stringify({ title: title.trim(), description: description.trim() }),
             });
             if (res.ok) {
+                if (imageFile) {
+                    const created = await res.json();
+                    const formData = new FormData();
+                    formData.append('seasonId', created.id);
+                    formData.append('image', imageFile);
+                    const imageRes = await fetch(resolveApiUrl(`/${stream}/season-image`), { method: 'POST', body: formData });
+                    if (!imageRes.ok) toast.error('Season created, but the cover was not saved.');
+                }
                 onCreated();
                 onClose();
                 return;
@@ -81,6 +98,16 @@ export default function SeasonDialog({ stream, onCreated, onClose }: SeasonDialo
                             rows={3}
                             className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none resize-vertical"
                             onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Cover (optional)</label>
+                        <FileDropZone
+                            accept="image/*"
+                            label="Drag & drop an image here"
+                            onFileSelected={handleImageSelected}
+                            previewUrl={imagePreview}
+                            onClear={() => { setImageFile(null); setImagePreview(null); }}
                         />
                     </div>
                 </div>

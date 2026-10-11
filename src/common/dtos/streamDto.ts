@@ -11,6 +11,8 @@ export type SeasonDto = {
     number: number;
     title: string;
     description?: string;
+    // Cover shared by the season's episodes that have no image of their own
+    imageUrl?: string;
 };
 
 export type StreamDto = {

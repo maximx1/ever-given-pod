@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { EpisodeDto } from '@/common/dtos/episodeDto';
 import { SeasonDto } from '@/common/dtos/streamDto';
@@ -38,10 +38,35 @@ export default function SeasonCard({
 }: SeasonCardProps) {
     const [expanded, setExpanded] = useState(false),
         [deleteOpen, setDeleteOpen] = useState(false),
-        [busy, setBusy] = useState(false);
+        [busy, setBusy] = useState(false),
+        coverInputRef = useRef<HTMLInputElement>(null);
 
     const podcastFallback = resolveAssetUrl('/icons/podcast.svg');
-    const coverSrc = episodes[0]?.imageUrl || streamImageUrl || podcastFallback;
+    const coverSrc = season.imageUrl || episodes[0]?.imageUrl || streamImageUrl || podcastFallback;
+
+    const handleCoverSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file || busy) return;
+
+        setBusy(true);
+        let message = '';
+        try {
+            const formData = new FormData();
+            formData.append('seasonId', season.id);
+            formData.append('image', file);
+            const res = await fetch(resolveApiUrl(`/${stream}/season-image`), { method: 'POST', body: formData });
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+                message = data?.error || 'Could not change the season cover.';
+            }
+        } catch {
+            message = 'Could not change the season cover.';
+        }
+        if (message) toast.error(message);
+        setBusy(false);
+        onChanged();
+    };
 
     // Sends one change to the API, then reloads the list whether or not it worked
     const send = async (path: string, method: string, body: object, failure: string) => {
@@ -91,8 +116,20 @@ export default function SeasonCard({
                         const target = e.target as HTMLImageElement;
                         if (target.src !== podcastFallback) target.src = podcastFallback;
                     }}
-                    className="w-14 h-14 object-contain flex-shrink-0"
+                    onClick={canEdit ? (e) => { e.stopPropagation(); coverInputRef.current?.click(); } : undefined}
+                    title={canEdit ? 'Change cover' : undefined}
+                    className={`w-14 h-14 object-contain flex-shrink-0 ${canEdit ? 'hover:opacity-70' : ''}`}
                 />
+                {canEdit && (
+                    <input
+                        ref={coverInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={handleCoverSelected}
+                    />
+                )}
                 <div className="flex-grow min-w-0">
                     <p className="text-xs font-semibold text-purple-800">
                         Season {season.number} &middot; {episodes.length} episode{episodes.length === 1 ? '' : 's'}
@@ -199,6 +236,7 @@ export default function SeasonCard({
                         <p className="text-sm text-gray-600 mb-4">
                             This removes <strong>{season.title}</strong>.
                             {episodes.length > 0 && ` Its ${episodes.length} episode${episodes.length === 1 ? '' : 's'} will stay in the stream as ungrouped episodes.`}
+                            {season.imageUrl && ' The season cover is deleted.'}
                         </p>
                         <div className="flex justify-end gap-2 mt-4">
                             <button

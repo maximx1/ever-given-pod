@@ -68,6 +68,9 @@ export default async function handler(
         if (removed.imageUrl) {
             filesToDelete.push(removed.imageUrl);
         }
+        for (const season of removed.seasons ?? []) {
+            if (season.imageUrl) filesToDelete.push(season.imageUrl);
+        }
         for (const ep of removed.episodes ?? []) {
             if (ep.imageUrl) filesToDelete.push(ep.imageUrl);
             if (ep.url) filesToDelete.push(ep.url);

@@ -1,8 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import fs from 'fs/promises';
+import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { canViewStream, parseSessionCookie } from '../../../common/helpers/auth';
 import { getStream, getSeasons, createSeason, updateSeason, deleteSeason, reorderSeason } from '../../../common/data/db';
 import { FIELD_LIMITS } from '../../../common/limits';
+import { prepareSeasonItem } from '../../../common/helpers/data';
 
 const validateText = (title: unknown, description: unknown, titleRequired: boolean): string | null => {
     if (title !== undefined || titleRequired) {
@@ -39,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!canViewStream(streamData, session)) {
             return res.status(403).json({ message: 'Access denied' });
         }
-        return res.status(200).json(await getSeasons(streamData.id));
+        return res.status(200).json((await getSeasons(streamData.id)).map(prepareSeasonItem));
     }
 
     if (!session?.userId) {
@@ -65,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(500).json({ message: 'Failed to create season' });
         }
 
-        return res.status(201).json(created);
+        return res.status(201).json(prepareSeasonItem(created));
     }
 
     if (req.method === 'PATCH') {
@@ -100,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(500).json({ message: 'Failed to update season' });
         }
 
-        return res.status(200).json(updated);
+        return res.status(200).json(prepareSeasonItem(updated));
     }
 
     if (req.method === 'DELETE') {
@@ -112,6 +115,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const removed = await deleteSeason(streamData.id, seasonId);
         if (!removed) {
             return res.status(404).json({ message: 'Season not found' });
+        }
+
+        if (removed.imageUrl) {
+            await fs.unlink(path.join(process.cwd(), 'uploads', removed.imageUrl)).catch(() => {});
         }
 
         return res.status(200).json({ message: 'Season removed' });
