@@ -30,6 +30,20 @@ npm start
 
 You may also use yarn, pnpm, or bun to build this project.
 
+## Requirements
+
+- **Node.js** to build and run the app.
+- **ffmpeg and ffprobe** on the server's `PATH`. They are required for splitting long uploads into parts. Without them the app still runs, but long audio is published as a single episode and "Split into parts" reports that ffmpeg is missing.
+
+  ```bash
+  # Debian / Ubuntu
+  sudo apt install ffmpeg
+  # macOS
+  brew install ffmpeg
+  ```
+
+  If they live somewhere else, point the app at them with `FFMPEG_PATH` and `FFPROBE_PATH`.
+
 ## Configuration
 
 ### NEXT_PUBLIC_API_BASE_URL
@@ -50,6 +64,16 @@ JWT_SECRET="$(openssl rand -hex 32)" npm start
 ```
 
 If it is missing, the app logs a warning and uses a temporary secret, which signs everyone out each time the server restarts.
+
+### Splitting long uploads
+
+Podcast apps often fail to download very large files, so long audio is split into a season of parts. This is on by default and set per stream, under **Settings** on the stream page:
+
+- **Split long uploads into parts** turns it on or off for new uploads.
+- **Part length** defaults to 60 minutes. Audio longer than one and a half times that is cut into equal parts no longer than the part length. At typical audiobook bitrates a 60-minute part is roughly 30 to 55 MB.
+- Audio with chapter markers is split at the chapters instead, one part per chapter.
+
+Splitting copies the audio without re-encoding, runs in the background after the upload finishes, and removes the original file once the parts exist. An episode uploaded earlier can be split from its **Split into parts** button.
 
 ### Database
 

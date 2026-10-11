@@ -35,6 +35,8 @@ export default function EpisodeCard({
     stream,
     onTitleChanged,
     episodeNumber,
+    splitStatus,
+    splitError,
     actions,
 }: EpisodeCardProps) {
     const { requestPlayNow, requestAddToQueue } = usePlayer();
@@ -66,6 +68,8 @@ export default function EpisodeCard({
 
     const podcastFallback = resolveAssetUrl('/icons/podcast.svg');
     const imgSrc = imageUrl || fallbackImageUrl || podcastFallback;
+    // The file is replaced by its parts when the split finishes, so it is not offered meanwhile
+    const playable = !!url && splitStatus !== 'pending';
 
     return (
         <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
@@ -124,6 +128,12 @@ export default function EpisodeCard({
                         {descriptionExpanded ? 'Show Less' : 'Show More'}
                     </button>
                 )}
+                {splitStatus === 'pending' && (
+                    <p className="mt-2 text-sm font-semibold text-purple-700">Splitting into parts...</p>
+                )}
+                {splitStatus === 'failed' && canEdit && (
+                    <p className="mt-2 text-sm text-red-600">Could not split into parts{splitError ? `: ${splitError}` : ''}</p>
+                )}
                 <div className="mt-2 text-sm text-gray-500">
                     <p>By: {author}</p>
                     <p>Uploaded: {uploadDate ?
@@ -134,7 +144,7 @@ export default function EpisodeCard({
                         }) : "Unknown"}</p>
                 </div>
                 <div className="flex flex-wrap">
-                    {url &&
+                    {playable &&
                         <IconExpandTextButton
                             icon={<PlaySvg />}
                         iconAlt="Play Now"
@@ -143,7 +153,7 @@ export default function EpisodeCard({
                         onClick={() => requestPlayNow(buildQueueItem())}
                         />
                     }
-                    {url &&
+                    {playable &&
                         <IconExpandTextButton
                             icon={<AddToQueueSvg />}
                             iconAlt="Add to Queue"
@@ -152,7 +162,7 @@ export default function EpisodeCard({
                             onClick={() => requestAddToQueue(buildQueueItem())}
                         />
                     }
-                    {url &&
+                    {playable && url &&
                         <DownloadIconButton
                             href={url}
                             icon={<DownloadSvg />}

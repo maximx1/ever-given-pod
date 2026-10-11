@@ -30,7 +30,8 @@ export async function handleFeedRequest(
         feedToken = streamData.isPrivate ? token : undefined,
         data = prepareStreamItem(streamData, owner?.username),
         seasonNumbers = new Map(streamData.seasons?.map((s) => [s.id, s.number])),
-        items = (await getEpisodes(streamData.id)).map((ep) => {
+        // An episode still being split is about to be replaced by its parts
+        items = (await getEpisodes(streamData.id)).filter((ep) => ep.splitStatus !== 'pending').map((ep) => {
             const uploaded = Number(ep.uploadDate);
             return {
                 ...prepareEpisodeItem(ep, feedToken, streamData.seasons),

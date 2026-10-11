@@ -12,6 +12,8 @@ import ShareDialog from '@/app/common/components/shareDialog';
 import IconExpandTextButton from '@/app/common/components/buttons/iconExpandTextButton';
 import EditableText from '@/app/common/components/editableText';
 import PersonIcon from '@/app/common/components/icons/personIcon';
+import GearIcon from '@/app/common/components/icons/gearIcon';
+import StreamSettingsDialog from './streamSettingsDialog';
 import KeySvg from '@/icons/key.svg';
 import CopySvg from '@/icons/copy.svg';
 import { FIELD_LIMITS } from '@/common/limits';
@@ -44,6 +46,7 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
         [isPrivate, setIsPrivate] = useState(false),
         [accessList, setAccessList] = useState<AccessUser[]>([]),
         [showShareDialog, setShowShareDialog] = useState(false),
+        [showSettingsDialog, setShowSettingsDialog] = useState(false),
         [feedToken, setFeedToken] = useState<string | undefined>(),
         [feedUrl, setFeedUrl] = useState<string>(''),
         [tokenRevealed, setTokenRevealed] = useState(false),
@@ -294,6 +297,14 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                                 {canEdit && (
                                     <PrivacyToggle isPrivate={isPrivate} onChange={handlePrivacyToggle} />
                                 )}
+                                {canEdit && (
+                                    <IconExpandTextButton
+                                        icon={<GearIcon size={20} />}
+                                        iconAlt="Settings"
+                                        text="Settings"
+                                        onClick={() => setShowSettingsDialog(true)}
+                                    />
+                                )}
                                 {isPrivate && canEdit && (
                                     <IconExpandTextButton
                                         icon={<PersonIcon size={20} />}
@@ -333,6 +344,16 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                     </div>
                 </div>
             </div>
+
+            {showSettingsDialog && summaryData.id && (
+                <StreamSettingsDialog
+                    streamId={summaryData.id}
+                    autoSplit={summaryData.autoSplit}
+                    splitMinutes={summaryData.splitMinutes}
+                    onSaved={(settings) => setSummaryData((prev) => prev ? { ...prev, ...settings } : prev)}
+                    onClose={() => setShowSettingsDialog(false)}
+                />
+            )}
 
             {showShareDialog && summaryData.id && (
                 <ShareDialog

@@ -17,4 +17,7 @@ export type EpisodeDto = {
     playbackPositions?: PlaybackPosition[];
     seasonId?: string;
     episodeNumber?: number;
+    // 'pending' while the audio is waiting to be, or being, split into parts
+    splitStatus?: 'pending' | 'failed';
+    splitError?: string;
 };
