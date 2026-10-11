@@ -5,6 +5,14 @@ export type StreamAccessEntry = {
     feedToken: string;
 };
 
+// A season groups episodes into an ordered set: a show's season, or one book and its parts
+export type SeasonDto = {
+    id: string;
+    number: number;
+    title: string;
+    description?: string;
+};
+
 export type StreamDto = {
     id: string;
     userId: string;
@@ -22,6 +30,7 @@ export type StreamDto = {
     pubDate?: string;
     ttl?: number;
     episodes?: EpisodeDto[];
+    seasons?: SeasonDto[];
     isPrivate?: boolean;
     accessList?: StreamAccessEntry[];
   };

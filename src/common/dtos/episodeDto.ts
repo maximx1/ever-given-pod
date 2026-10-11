@@ -15,4 +15,6 @@ export type EpisodeDto = {
     author?: string;
     playCount?: number;
     playbackPositions?: PlaybackPosition[];
+    seasonId?: string;
+    episodeNumber?: number;
 };
