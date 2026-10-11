@@ -98,6 +98,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 title: title.trim(),
                 description: description.trim() || undefined,
                 imageUrl: imageFileName,
+                seasonMode: false,
+                defaultAddType: 'episode',
             };
 
             await createStream(stream);

@@ -3,13 +3,14 @@ import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import multiparty from 'multiparty';
-import { getEpisodes, getStream, publishEpisode } from '../../../common/data/db';
+import { getEpisodes, getEpisodesGrouped, getStream, publishEpisode, getStreamSettings, getNextSeasonNumber, getNextEpisodeNumber } from '../../../common/data/db';
 import { EpisodeDto } from '../../../common/dtos/episodeDto';
+import { SeasonsResponse, SeasonGroup } from '../../../common/data/db';
 import { prepareEpisodeItem } from '../../../common/helpers/data';
 import { FIELD_LIMITS } from '../../../common/limits';
 import { parseSessionCookie } from '../../../common/helpers/auth';
 
-const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
+const get = async (req: NextApiRequest, res: NextApiResponse<SeasonsResponse | { error: string }>) => {
   const stream = req.query.stream as string;
   const streamData = await getStream(stream);
   if (!streamData) {
@@ -28,11 +29,22 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
     }
   }
 
-  const episodes = (await getEpisodes(streamData.id))
-      .map((ep) => prepareEpisodeItem(ep))
-      .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
+  const result = await getEpisodesGrouped(streamData.id);
+  
+  const response: SeasonsResponse = {
+    seasonMode: result.seasonMode,
+    defaultAddType: result.defaultAddType,
+    episodes: result.episodes.map((ep: EpisodeDto) => prepareEpisodeItem(ep)),
+  };
 
-  res.status(200).json(episodes);
+  if (result.seasons) {
+    response.seasons = result.seasons.map((s: SeasonGroup) => ({
+      ...s,
+      episodes: s.episodes.map((ep: EpisodeDto) => prepareEpisodeItem(ep)),
+    }));
+  }
+
+  res.status(200).json(response);
 };
 
 export const config = {
@@ -96,6 +108,49 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       await fs.rename(imageFile.path, imageFilePath);
       await fs.rename(episodeFile.path, episodeFilePath);
 
+      // Determine the type (episode or season)
+      const type = (fields.type?.[0] as 'episode' | 'season' | undefined) || 'episode';
+      
+      // For season headers, url (audio file) is not required
+      // For regular episodes, image and file are required
+      if (!imageFile || !episodeFile) {
+        if (type === 'episode') {
+          return res.status(400).json({ error: 'Missing image or file for episode' });
+        }
+        // For season type, image is optional (falls back to stream default)
+      }
+
+      // Get season metadata
+      let season = 1;
+      let episodeNumber = 1;
+      let seasonTitle = title || null;
+
+      // Determine season mode
+      const seasonMode = streamData.seasonMode ?? false;
+      
+      if (seasonMode || type === 'season') {
+        if (type === 'season') {
+          // New season header - no file upload required
+          season = await getNextSeasonNumber(streamData.id);
+          episodeNumber = 1;
+        } else {
+          // Regular episode in a season - assign season/episode numbers
+          // If season field is provided, use it; otherwise, use the stream's default add type
+          const seasonField = fields.season?.[0];
+          if (seasonField) {
+            season = parseInt(seasonField, 10);
+            if (isNaN(season)) {
+              return res.status(400).json({ error: 'Invalid season number' });
+            }
+          } else if (streamData.defaultAddType === 'season') {
+            // Default to adding a new season
+            season = await getNextSeasonNumber(streamData.id);
+          }
+          
+          episodeNumber = await getNextEpisodeNumber(streamData.id, season);
+        }
+      }
+
       const episodeData: EpisodeDto = {
         episodeId: uuidv4(),
         streamId: streamData.id,
@@ -105,6 +160,10 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         author,
         imageUrl: imageFileName,
         url: episodeFileName,
+        season: seasonMode ? season : null,
+        episodeNumber: seasonMode ? episodeNumber : null,
+        seasonTitle: seasonMode ? seasonTitle : null,
+        type,
       };
 
       await publishEpisode(episodeData);

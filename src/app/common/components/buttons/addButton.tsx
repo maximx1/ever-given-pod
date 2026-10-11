@@ -1,15 +1,25 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { resolveApiUrl } from '@/common/helpers/api';
+import { resolveApiUrl, resolveAppUrl } from '@/common/helpers/api';
 import { useAuth } from '@/app/common/context/AuthContext';
 import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
 import { StreamDto } from '@/common/dtos/streamDto';
 import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
 import FileDropZone from '@/app/common/components/fileDropZone';
+import SeasonPublishForm from '@/app/[username]/[stream]/publish/seasonForm';
 
-export default function AddButton({ stream, onEpisodeCreated }: { stream?: string | string[]; onEpisodeCreated?: () => void }) {
+type AddButtonProps = {
+    stream?: string | string[];
+    onEpisodeCreated?: () => void;
+    onSeasonCreated?: () => void;
+    seasonMode?: boolean;
+    defaultAddType?: 'episode' | 'season';
+    selectedSeason?: number;
+};
+
+export default function AddButton({ stream, onEpisodeCreated, onSeasonCreated, seasonMode = false, defaultAddType = 'episode', selectedSeason }: AddButtonProps) {
     const { user } = useAuth(),
         visibleFooterHeight = useFooterHeight(),
         [isOwner, setIsOwner] = useState(false),
@@ -22,7 +32,8 @@ export default function AddButton({ stream, onEpisodeCreated }: { stream?: strin
         [imagePreview, setImagePreview] = useState<string | null>(null),
         [audioFile, setAudioFile] = useState<File | null>(null),
         [submitting, setSubmitting] = useState(false),
-        [progress, setProgress] = useState(-1);
+        [progress, setProgress] = useState(-1),
+        [showSeasonForm, setShowSeasonForm] = useState(false);
 
     useEffect(() => {
         if (!user || !stream) {
@@ -112,15 +123,51 @@ export default function AddButton({ stream, onEpisodeCreated }: { stream?: strin
         return null;
     }
 
+    const handleAddClick = () => {
+        if (seasonMode && defaultAddType === 'season') {
+            setShowSeasonForm(true);
+        } else {
+            setDialogOpen(true);
+        }
+    };
+
     return (
         <>
             <div
-                onClick={() => setDialogOpen(true)}
+                onClick={handleAddClick}
                 style={{ position: 'fixed', bottom: `${16 + visibleFooterHeight}px`, right: '16px' }}
                 className="w-16 h-16 z-10 shadow-md rounded-full flex items-center justify-center bg-purple-500 cursor-pointer hover:bg-purple-600 transition-colors"
             >
                 <span className="text-3xl font-bold text-white">+</span>
             </div>
+
+            {/* Season Form */}
+            {showSeasonForm && stream && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                    onClick={() => setShowSeasonForm(false)}
+                >
+                    <div
+                        className="bg-purple-200 rounded-lg shadow-xl w-full max-w-4xl mx-4 my-8"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-4">
+                            <button
+                                type="button"
+                                onClick={() => setShowSeasonForm(false)}
+                                className="float-right text-gray-400 hover:text-gray-600 text-xl"
+                            >
+                                ✕
+                            </button>
+                            <h3 className="text-lg font-bold text-gray-800 mb-4">New Season</h3>
+                            <SeasonPublishForm stream={stream} onSeasonCreated={() => {
+                                onSeasonCreated?.();
+                                setShowSeasonForm(false);
+                            }} />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {dialogOpen && (
                 <div

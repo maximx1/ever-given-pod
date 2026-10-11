@@ -24,4 +24,29 @@ export type StreamDto = {
     episodes?: EpisodeDto[];
     isPrivate?: boolean;
     accessList?: StreamAccessEntry[];
-  };
+    seasonMode: boolean;
+    defaultAddType: 'episode' | 'season';
+};
+
+// Derived type for season card rendering
+export type SeasonCardData = {
+    season: number;
+    title: string;
+    episodeCount: number;
+    imageUrl?: string;
+    episodes: EpisodeDto[];
+};
+
+// Settings for a stream
+export type StreamSettings = {
+    seasonMode: boolean;
+    defaultAddType: 'episode' | 'season';
+};
+
+// Response type for grouped episode lists
+export type GroupedEpisodes = {
+    seasonMode: boolean;
+    defaultAddType: 'episode' | 'season';
+    episodes: EpisodeDto[];
+    seasons: SeasonCardData[];
+};

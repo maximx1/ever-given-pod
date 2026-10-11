@@ -1,8 +1,10 @@
 "use client";
 
 import EpisodeCard from './episodeCard';
+import SeasonCard from './seasonCard';
 import { useEffect, useState, useCallback } from 'react';
 import { EpisodeDto } from '@/common/dtos/episodeDto';
+import { SeasonGroup } from '@/common/data/db';
 import { StreamDto } from '@/common/dtos/streamDto';
 import AddButton from '@/app/common/components/buttons/addButton';
 import { resolveApiUrl } from '@/common/helpers/api';
@@ -28,8 +30,17 @@ const ARROW_RIGHT = ADD_BTN_OFFSET + (ADD_BTN_SIZE - ARROW_SIZE) / 2 - 8;
 const DOWN_BOTTOM = ADD_BTN_OFFSET + ADD_BTN_SIZE + GAP_ABOVE_ADD;
 const UP_BOTTOM = DOWN_BOTTOM + ARROW_SIZE + GAP_BETWEEN_ARROWS;
 
+type SeasonsResponse = {
+    seasonMode: boolean;
+    defaultAddType: 'episode' | 'season';
+    episodes: EpisodeDto[];
+    seasons?: SeasonGroup[];
+};
+
 export default function EpisodeList({ stream, streamImageUrl, streamName }: EpisodeListProps) {
     const [episodeData, setEpisodeData] = useState<EpisodeDto[]>([]);
+    const [seasonMode, setSeasonMode] = useState(false);
+    const [seasons, setSeasons] = useState<SeasonGroup[]>([]);
     const [sortDir, setSortDir] = useState<SortDir>('desc');
     const [isOwner, setIsOwner] = useState(false);
     const visibleFooterHeight = useFooterHeight();
@@ -38,10 +49,17 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
     const fetchEpisodes = useCallback(() => {
         fetch(resolveApiUrl(`/${stream}/podcasts`))
             .then((res) => {
-                if (!res.ok) return [];
+                if (!res.ok) return null;
                 return res.json();
             })
-            .then((data) => setEpisodeData(Array.isArray(data) ? data : []));
+            .then((data: SeasonsResponse | null) => {
+                if (!data) return;
+                setSeasonMode(data.seasonMode);
+                setEpisodeData(Array.isArray(data.episodes) ? data.episodes : []);
+                if (data.seasons) {
+                    setSeasons(data.seasons);
+                }
+            });
     }, [stream]);
 
     useEffect(() => {
@@ -62,11 +80,38 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
         ));
     };
 
+    const handleSeasonTitleChanged = (season: number, newTitle: string) => {
+        setSeasons((prev) => prev.map((s) =>
+            s.season === season ? { ...s, title: newTitle } : s
+        ));
+    };
+
     const sorted = [...episodeData].sort((a, b) => {
         const aTime = Number(a.uploadDate) || 0;
         const bTime = Number(b.uploadDate) || 0;
         return sortDir === 'desc' ? bTime - aTime : aTime - bTime;
     });
+
+    if (seasonMode && seasons.length > 0) {
+        return (
+            <div className="episode-list relative max-w-[800px] mx-auto w-full px-4">
+                <AddButton stream={stream} onEpisodeCreated={fetchEpisodes} />
+                {seasons.map((season) => (
+                    <SeasonCard
+                        key={season.season}
+                        season={season.season}
+                        title={season.title}
+                        episodes={season.episodes}
+                        seasonMode={seasonMode}
+                        isOwner={isOwner}
+                        stream={stream}
+                        onTitleChanged={handleSeasonTitleChanged}
+                        onEpisodeCreated={fetchEpisodes}
+                    />
+                ))}
+            </div>
+        );
+    }
 
     return (
         <div className="episode-list relative max-w-[800px] mx-auto w-full px-4">
@@ -109,6 +154,11 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                             canEdit={isOwner}
                             stream={stream}
                             onTitleChanged={handleEpisodeTitleChanged}
+                            seasonMode={seasonMode}
+                            season={episode.season}
+                            episodeNumber={episode.episodeNumber}
+                            seasonTitle={episode.seasonTitle}
+                            type={episode.type}
                         />
                     </div>
                 ))

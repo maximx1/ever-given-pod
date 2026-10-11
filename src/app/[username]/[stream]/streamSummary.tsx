@@ -12,9 +12,11 @@ import ShareDialog from '@/app/common/components/shareDialog';
 import IconExpandTextButton from '@/app/common/components/buttons/iconExpandTextButton';
 import EditableText from '@/app/common/components/editableText';
 import PersonIcon from '@/app/common/components/icons/personIcon';
+import GearIcon from '@/app/common/components/icons/gearIcon';
 import KeySvg from '@/icons/key.svg';
 import CopySvg from '@/icons/copy.svg';
 import { FIELD_LIMITS } from '@/common/limits';
+import SettingsDialog from './settingsDialog';
 // Image optimization handled by ImageWithActions — don't import `next/image` here
 import { toast } from 'react-toastify';
 
@@ -47,6 +49,8 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
         [feedToken, setFeedToken] = useState<string | undefined>(),
         [feedUrl, setFeedUrl] = useState<string>(''),
         [tokenRevealed, setTokenRevealed] = useState(false),
+        [showSettingsDialog, setShowSettingsDialog] = useState(false),
+        [settings, setSettings] = useState({ seasonMode: false, defaultAddType: 'episode' }),
         tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null),
         { user } = useAuth(),
         router = useRouter(),
@@ -292,7 +296,14 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                         {(canEdit || (isPrivate && user)) && (
                             <div className="flex items-center gap-2">
                                 {canEdit && (
-                                    <PrivacyToggle isPrivate={isPrivate} onChange={handlePrivacyToggle} />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSettingsDialog(true)}
+                                        className="cursor-pointer hover:opacity-70 text-purple-500"
+                                        title="Stream Settings"
+                                    >
+                                        <GearIcon size={20} />
+                                    </button>
                                 )}
                                 {isPrivate && canEdit && (
                                     <IconExpandTextButton
@@ -341,6 +352,14 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                     onAccessAdded={handleAccessAdded}
                     onAccessRemoved={handleAccessRemoved}
                     onClose={() => setShowShareDialog(false)}
+                />
+            )}
+
+            {showSettingsDialog && summaryData.id && (
+                <SettingsDialog
+                    streamId={summaryData.id}
+                    onClose={() => setShowSettingsDialog(false)}
+                    onSettingsChange={setSettings}
                 />
             )}
         </div>

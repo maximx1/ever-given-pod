@@ -18,6 +18,7 @@ type EpisodeCardProps = EpisodeDto & {
     canEdit?: boolean;
     stream?: string | string[];
     onTitleChanged?: (episodeId: string, newTitle: string) => void;
+    seasonMode?: boolean;
 };
 
 export default function EpisodeCard({
@@ -33,6 +34,11 @@ export default function EpisodeCard({
     canEdit = false,
     stream,
     onTitleChanged,
+    season = null,
+    episodeNumber = null,
+    seasonTitle = null,
+    type = 'episode',
+    seasonMode = false,
 }: EpisodeCardProps) {
     const { requestPlayNow, requestAddToQueue } = usePlayer();
 
@@ -63,6 +69,54 @@ export default function EpisodeCard({
 
     const podcastFallback = resolveAssetUrl('/icons/podcast.svg');
     const imgSrc = imageUrl || fallbackImageUrl || podcastFallback;
+    const isSeason = type === 'season';
+    const isRegularEpisode = season === null && episodeNumber === null;
+    const isGroupedEpisode = season !== null && episodeNumber !== null;
+    const isConvertableToSeason = canEdit && type === 'episode' && isRegularEpisode && seasonMode;
+    const isConvertableToEpisode = canEdit && type === 'season' && seasonMode;
+    const isExpandable = canEdit && type === 'season' && seasonMode;
+
+    const handleConvertToSeason = async () => {
+        if (!stream || !episodeId) return;
+        try {
+            const res = await fetch(resolveApiUrl(`/${stream}/convert-to-season`), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ episodeId }),
+            });
+            if (res.ok) {
+                onTitleChanged?.(episodeId, title ?? '');
+            }
+        } catch { /* ignore */ }
+    };
+
+    const handleConvertToEpisode = async () => {
+        if (!stream || !episodeId) return;
+        try {
+            const res = await fetch(resolveApiUrl(`/${stream}/convert-to-episode`), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ episodeId }),
+            });
+            if (res.ok) {
+                onTitleChanged?.(episodeId, title ?? '');
+            }
+        } catch { /* ignore */ }
+    };
+
+    const handleExpandSeason = async () => {
+        if (!stream || !season) return;
+        try {
+            const res = await fetch(resolveApiUrl(`/${stream}/expand-season`), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ season }),
+            });
+            if (res.ok) {
+                onTitleChanged?.(episodeId ?? '', title ?? '');
+            }
+        } catch { /* ignore */ }
+    };
 
     return (
         <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
@@ -157,6 +211,36 @@ export default function EpisodeCard({
                             debounceMs={2000}
                         />
                     }
+                    {isConvertableToSeason && (
+                        <button
+                            type="button"
+                            onClick={handleConvertToSeason}
+                            className="mt-4 text-sm text-gray-500 hover:text-purple-600"
+                            title="Convert to Season"
+                        >
+                            → Season
+                        </button>
+                    )}
+                    {isConvertableToEpisode && (
+                        <button
+                            type="button"
+                            onClick={handleConvertToEpisode}
+                            className="mt-4 text-sm text-gray-500 hover:text-purple-600"
+                            title="Convert Season to Episode"
+                        >
+                            ← Episode
+                        </button>
+                    )}
+                    {isExpandable && (
+                        <button
+                            type="button"
+                            onClick={handleExpandSeason}
+                            className="mt-4 text-sm text-gray-500 hover:text-purple-600"
+                            title="Expand Season into Episodes"
+                        >
+                            → Expand
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
