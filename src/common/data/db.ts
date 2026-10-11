@@ -93,11 +93,23 @@ export const getRandomStreams = async (limit: number = 12) => {
     return shuffled.slice(0, limit);
 };
 
-export const publishEpisode = async (episode: EpisodeDto) => {
+const nextEpisodeNumber = (stream: StreamDto, seasonId: string) => {
+    const numbers = (stream.episodes ?? [])
+        .filter((e) => e.seasonId === seasonId)
+        .map((e) => e.episodeNumber ?? 0);
+    return Math.max(0, ...numbers) + 1;
+};
+
+// With a seasonId the episode is added to the end of that season
+export const publishEpisode = async (episode: EpisodeDto, seasonId?: string) => {
     await queueWrite(async () => {
         const stream = db.data?.streams.find((s) => s.id === episode.streamId);
         if (stream) {
             if (!stream.episodes) stream.episodes = [];
+            if (seasonId && stream.seasons?.some((s) => s.id === seasonId)) {
+                episode.episodeNumber = nextEpisodeNumber(stream, seasonId);
+                episode.seasonId = seasonId;
+            }
             stream.episodes.push(episode);
             await db.write();
         }
@@ -419,11 +431,8 @@ export const moveEpisodeToSeason = async (idOrName: string, episodeId: string, s
     if (previousSeasonId === (seasonId ?? undefined)) return episode;
 
     if (seasonId) {
-        const numbers = (stream.episodes ?? [])
-            .filter((e) => e.seasonId === seasonId)
-            .map((e) => e.episodeNumber ?? 0);
+        episode.episodeNumber = nextEpisodeNumber(stream, seasonId);
         episode.seasonId = seasonId;
-        episode.episodeNumber = Math.max(0, ...numbers) + 1;
     } else {
         delete episode.seasonId;
         delete episode.episodeNumber;
