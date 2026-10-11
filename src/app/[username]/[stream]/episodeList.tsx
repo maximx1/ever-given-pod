@@ -2,7 +2,6 @@
 
 import EpisodeCard from './episodeCard';
 import SeasonCard from './seasonCard';
-import SeasonDialog from './seasonDialog';
 import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { EpisodeDto } from '@/common/dtos/episodeDto';
@@ -36,7 +35,6 @@ const UP_BOTTOM = DOWN_BOTTOM + ARROW_SIZE + GAP_BETWEEN_ARROWS;
 export default function EpisodeList({ stream, streamImageUrl, streamName }: EpisodeListProps) {
     const [episodeData, setEpisodeData] = useState<EpisodeDto[]>([]);
     const [seasons, setSeasons] = useState<SeasonDto[]>([]);
-    const [seasonDialogOpen, setSeasonDialogOpen] = useState(false);
     const [sortDir, setSortDir] = useState<SortDir>('desc');
     const [isOwner, setIsOwner] = useState(false);
     const visibleFooterHeight = useFooterHeight();
@@ -154,20 +152,6 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                 </>
             )}
             <AddButton stream={stream} onEpisodeCreated={fetchEpisodes} seasons={sortedSeasons} />
-            {isOwner && (
-                <div className="flex justify-end mx-4 mt-4">
-                    <button
-                        type="button"
-                        onClick={() => setSeasonDialogOpen(true)}
-                        className="bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm cursor-pointer"
-                    >
-                        New Season
-                    </button>
-                </div>
-            )}
-            {seasonDialogOpen && (
-                <SeasonDialog stream={stream} onCreated={fetchEpisodes} onClose={() => setSeasonDialogOpen(false)} />
-            )}
             {
                 // Empty seasons are only useful to the owner, who can fill them
                 sortedSeasons
