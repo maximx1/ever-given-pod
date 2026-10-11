@@ -23,6 +23,10 @@ export const convertUrlToPublic = (url?: string, max?: number) => {
     return max ? `${base}?max=${max}` : base;
 };
 
+// Files of a private stream are only served with a feed token (or a session), images included
+export const withFeedToken = (url?: string, token?: string) =>
+    url && token ? `${url}${url.includes('?') ? '&' : '?'}token=${token}` : url;
+
 export const prepareSeasonItem = (season: SeasonDto) => ({
     ...season,
     imageUrl: convertUrlToPublic(season.imageUrl, 600),
@@ -40,10 +44,7 @@ export const prepareEpisodeItem = (episode: EpisodeDto, token?: string, seasons?
             // File may not exist on disk
         }
     }
-    let fileUrl = convertUrlToPublic(episode.url);
-    if (fileUrl && token) {
-        fileUrl += `${fileUrl.includes('?') ? '&' : '?'}token=${token}`;
-    }
+    const fileUrl = withFeedToken(convertUrlToPublic(episode.url), token);
 
     const seasonImageUrl = episode.seasonId ? seasons?.find((s) => s.id === episode.seasonId)?.imageUrl : undefined;
     const publicEpisode = { ...episode };
@@ -51,7 +52,7 @@ export const prepareEpisodeItem = (episode: EpisodeDto, token?: string, seasons?
 
     return {
         ...publicEpisode,
-        imageUrl: convertUrlToPublic(episode.imageUrl ?? seasonImageUrl, 600),
+        imageUrl: withFeedToken(convertUrlToPublic(episode.imageUrl ?? seasonImageUrl, 600), token),
         url: fileUrl,
         enclosure: {
             url: fileUrl ?? '',

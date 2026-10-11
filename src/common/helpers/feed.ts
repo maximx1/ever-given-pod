@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Podcast } from 'podcast';
 import { getEpisodes, getUserById } from '../data/db';
-import { prepareEpisodeItem, prepareStreamItem } from './data';
+import { prepareEpisodeItem, prepareStreamItem, withFeedToken } from './data';
 import { parseSessionCookie } from './auth';
 import { StreamDto } from '../dtos/streamDto';
 
@@ -41,7 +41,11 @@ export async function handleFeedRequest(
             };
         }),
         // Streams with seasons are meant to be played in order, so apps should list oldest first
-        feed = new Podcast({ ...data, itunesType: streamData.seasons?.length ? 'serial' : undefined });
+        feed = new Podcast({
+            ...data,
+            imageUrl: withFeedToken(data?.imageUrl, feedToken),
+            itunesType: streamData.seasons?.length ? 'serial' : undefined,
+        });
 
     items.forEach(item => feed.addItem(item));
     res.setHeader('Content-Type', 'application/xml');
