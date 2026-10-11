@@ -33,7 +33,7 @@ You may also use yarn, pnpm, or bun to build this project.
 ## Requirements
 
 - **Node.js** to build and run the app.
-- **ffmpeg and ffprobe** on the server's `PATH`. They are required for splitting long uploads into parts. Without them the app still runs, but long audio is published as a single episode and "Split into parts" reports that ffmpeg is missing.
+- **ffmpeg and ffprobe** on the server's `PATH`. They are required for splitting long uploads into parts. Without them the app still runs, but long audio is published as a single episode.
 
   ```bash
   # Debian / Ubuntu
@@ -73,7 +73,7 @@ Podcast apps often fail to download very large files, so long audio is split int
 - **Part length** defaults to 60 minutes. Audio longer than one and a half times that is cut into equal parts no longer than the part length. At typical audiobook bitrates a 60-minute part is roughly 30 to 55 MB.
 - Audio with chapter markers is split at the chapters instead, one part per chapter.
 
-Splitting copies the audio without re-encoding, runs in the background after the upload finishes, and removes the original file once the parts exist. An episode uploaded earlier can be split from its **Split into parts** button.
+Splitting copies the audio without re-encoding, runs in the background after the upload finishes, and removes the original file once the parts exist. Only new uploads are split; to split an episode uploaded earlier, upload its file again.
 
 ### Database
 

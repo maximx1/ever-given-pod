@@ -92,7 +92,7 @@ export default function StreamSettingsDialog({ streamId, autoSplit = true, split
                         />
                         <p className={`text-xs mt-1 ${minutesValid ? 'text-gray-500' : 'text-red-600'}`}>
                             {minutesValid
-                                ? `Audio longer than ${parsedMinutes * 1.5} minutes is cut into equal parts of at most ${parsedMinutes} minutes. Also used by "Split into parts" on an episode.`
+                                ? `Audio longer than ${parsedMinutes * 1.5} minutes is cut into equal parts of at most ${parsedMinutes} minutes.`
                                 : `Enter a whole number from ${SPLIT_MINUTES_RANGE.min} to ${SPLIT_MINUTES_RANGE.max}.`}
                         </p>
                     </div>
