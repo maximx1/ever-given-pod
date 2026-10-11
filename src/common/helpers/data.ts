@@ -57,7 +57,10 @@ export const prepareEpisodeItem = (episode: EpisodeDto, token?: string) => {
 export const prepareStreamItem = (stream?: StreamDto, ownerUsername?: string) => {
     if (!stream) return undefined;
 
-    const { ...streamWithoutEpisodes } = stream;
+    // Episodes carry listener data and the access list carries feed tokens; neither belongs in a stream summary
+    const streamWithoutEpisodes = { ...stream };
+    delete streamWithoutEpisodes.episodes;
+    delete streamWithoutEpisodes.accessList;
     const imageUrl = stream.imageUrl ? convertUrlToPublic(stream.imageUrl, 600) : undefined;
     const slug = encodeURIComponent(stream.name || stream.id);
     const basePath = ownerUsername ? `/${encodeURIComponent(ownerUsername)}/${slug}` : `/${slug}`;
