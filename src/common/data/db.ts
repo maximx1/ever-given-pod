@@ -249,7 +249,7 @@ export const searchUsers = async (query: string, excludeUserId?: string, limit: 
             (u.email && u.email.toLowerCase().includes(q))
         )
         .slice(0, limit)
-        .map(({ ...rest }) => rest);
+        .map(({ id, username, name, imageUrl }) => ({ id, username, name, imageUrl }));
 };
 
 export const updateStreamTitle = async (idOrName: string, title: string) => {

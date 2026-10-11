@@ -39,8 +39,11 @@ export const prepareEpisodeItem = (episode: EpisodeDto, token?: string) => {
         fileUrl += `${fileUrl.includes('?') ? '&' : '?'}token=${token}`;
     }
 
+    const publicEpisode = { ...episode };
+    delete publicEpisode.playbackPositions;
+
     return {
-        ...episode,
+        ...publicEpisode,
         imageUrl: convertUrlToPublic(episode.imageUrl, 600),
         url: fileUrl,
         enclosure: {

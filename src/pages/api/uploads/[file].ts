@@ -10,6 +10,11 @@ const SUPPORTED_IMAGE_TYPES = new Set([
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/tiff',
 ]);
 
+const INLINE_MEDIA_TYPES = new Set(['application/mp4', 'application/ogg']);
+
+const isInlineSafe = (type: string) =>
+    SUPPORTED_IMAGE_TYPES.has(type) || INLINE_MEDIA_TYPES.has(type) || type.startsWith('audio/') || type.startsWith('video/');
+
 async function getResizedPath(originalPath: string, max: number): Promise<string | null> {
     const ext = path.extname(originalPath);
     const base = path.basename(originalPath, ext);
@@ -73,7 +78,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     }
 
-    const contentType = mime.lookup(filePath) || 'application/octet-stream';
+    // Anything that is not plain media is sent as a download so it can never run as a page on this origin
+    const detectedType = mime.lookup(filePath) || 'application/octet-stream';
+    const contentType = isInlineSafe(detectedType) ? detectedType : 'application/octet-stream';
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (!isInlineSafe(detectedType)) {
+        res.setHeader('Content-Disposition', 'attachment');
+    }
 
     const maxParam = req.query.max as string | undefined;
     const max = maxParam ? Math.min(parseInt(maxParam, 10), 2000) : NaN;
@@ -83,6 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const resizedPath = await getResizedPath(filePath, max);
             const servePath = resizedPath ?? filePath;
             res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            res.setHeader('Content-Type', contentType);
             fs.createReadStream(servePath).pipe(res);
             return;
         } catch {

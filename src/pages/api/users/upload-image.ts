@@ -8,6 +8,7 @@ import { parseSessionCookie } from '../../../common/helpers/auth';
 import { getUserById, updateUserImage } from '../../../common/data/db';
 
 import { MAX_IMAGE_SIZE } from '../../../common/limits';
+import { discardUploads } from '../../../common/helpers/uploads';
 
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -78,6 +79,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } catch (error) {
             console.error('Error uploading image:', error);
             return res.status(500).json({ error: 'Error uploading image' });
+        } finally {
+            await discardUploads(files);
         }
     });
 }
