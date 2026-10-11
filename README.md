@@ -41,6 +41,16 @@ NEXT_PUBLIC_API_BASE_URL="https://pod.sample.com" npm run build
 NEXT_PUBLIC_API_BASE_URL="https://pod.sample.com" npm start
 ```
 
+### JWT_SECRET
+
+Set `JWT_SECRET` to a long random value. It signs login sessions, so anyone who knows it can sign in as any user.
+
+```bash
+JWT_SECRET="$(openssl rand -hex 32)" npm start
+```
+
+If it is missing, the app logs a warning and uses a temporary secret, which signs everyone out each time the server restarts.
+
 ### Database
 
 The app uses lowdb (a JSON file database). It ships with a default user:

@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import multiparty from 'multiparty';
 import { parseSessionCookie } from '../../../common/helpers/auth';
 import { getStream, updateStreamImage } from '../../../common/data/db';
+import { discardUploads, getUploadExtension, validateImageUpload } from '../../../common/helpers/uploads';
 
 export const config = {
     api: {
@@ -53,7 +54,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(400).json({ error: 'Missing image file' });
             }
 
-            const imageFileName = `${uuidv4()}${path.extname(imageFile.originalFilename)}`;
+            const imageError = await validateImageUpload(imageFile);
+            if (imageError) {
+                return res.status(400).json({ error: imageError });
+            }
+
+            const imageFileName = `${uuidv4()}${getUploadExtension(imageFile)}`;
             const imageFilePath = path.join(uploadDir, imageFileName);
 
             await fs.rename(imageFile.path, imageFilePath);
@@ -73,6 +79,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } catch (error) {
             console.error('Error uploading image:', error);
             return res.status(500).json({ error: 'Error uploading image' });
+        } finally {
+            await discardUploads(files);
         }
     });
 }

@@ -8,6 +8,7 @@ import { parseSessionCookie } from '../../common/helpers/auth';
 import { createStream, getStreams } from '../../common/data/db';
 import { StreamDto } from '../../common/dtos/streamDto';
 import { FIELD_LIMITS, MAX_IMAGE_SIZE } from '../../common/limits';
+import { discardUploads } from '../../common/helpers/uploads';
 
 const VALID_NAME_PATTERN = /^[a-z0-9_-]+$/;
 
@@ -106,6 +107,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } catch (error) {
             console.error('Error creating stream:', error);
             return res.status(500).json({ error: 'Error creating stream' });
+        } finally {
+            await discardUploads(files);
         }
     });
 }

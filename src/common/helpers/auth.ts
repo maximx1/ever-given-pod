@@ -1,8 +1,23 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { parse, serialize } from 'cookie';
+import { StreamDto } from '../dtos/streamDto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change-me-now';
 const JWT_EXPIRES_IN = '1h';
+const PLACEHOLDER_SECRETS = new Set(['change-me-now', 'super-secret-please-change-me']);
+const globalForAuth = globalThis as typeof globalThis & { ephemeralJwtSecret?: string };
+
+// Without a real secret configured, sign with a random per-process one rather than a publicly known default
+const getJwtSecret = (): string => {
+    const configured = process.env.JWT_SECRET;
+    if (configured && !PLACEHOLDER_SECRETS.has(configured)) return configured;
+
+    if (!globalForAuth.ephemeralJwtSecret) {
+        globalForAuth.ephemeralJwtSecret = crypto.randomBytes(48).toString('hex');
+        console.warn('JWT_SECRET is not set (or is a placeholder). Using a temporary secret; everyone is signed out when the server restarts.');
+    }
+    return globalForAuth.ephemeralJwtSecret;
+};
 
 export type SessionPayload = {
     userId: string;
@@ -12,12 +27,12 @@ export type SessionPayload = {
 };
 
 export const signSession = (payload: SessionPayload): string => {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    return jwt.sign(payload, getJwtSecret(), { expiresIn: JWT_EXPIRES_IN });
 };
 
 export const verifyRawSession = (token: string): SessionPayload | null => {
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, getJwtSecret());
         return decoded as SessionPayload;
     } catch {
         return null;
@@ -37,6 +52,12 @@ export const parseSessionCookie = (cookieHeader?: string) => {
     const token = parsed.session;
     if (!token) return null;
     return verifySession(token);
+};
+
+export const canViewStream = (stream: StreamDto, session: SessionPayload | null) => {
+    if (!stream.isPrivate) return true;
+    if (!session) return false;
+    return session.userId === stream.userId || !!stream.accessList?.some((a) => a.userId === session.userId);
 };
 
 export const buildSessionCookieHeader = (token: string) =>

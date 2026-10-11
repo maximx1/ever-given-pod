@@ -8,6 +8,7 @@ import { EpisodeDto } from '../../../common/dtos/episodeDto';
 import { prepareEpisodeItem } from '../../../common/helpers/data';
 import { FIELD_LIMITS } from '../../../common/limits';
 import { parseSessionCookie } from '../../../common/helpers/auth';
+import { discardUploads, getUploadExtension, isAudioUpload, validateImageUpload } from '../../../common/helpers/uploads';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
   const stream = req.query.stream as string;
@@ -48,9 +49,17 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Invalid stream parameter' });
   }
 
+  const session = parseSessionCookie(req.headers.cookie);
+  if (!session?.userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
   const streamData = await getStream(stream);
   if (!streamData) {
     return res.status(404).json({ error: 'Stream not found' });
+  }
+  if (streamData.userId !== session.userId) {
+    return res.status(403).json({ error: 'Not authorized' });
   }
 
   const uploadDir = path.join(process.cwd(), 'uploads');
@@ -87,8 +96,16 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).json({ error: 'Missing image or file' });
       }
 
-      const imageFileName = `${uuidv4()}${path.extname(imageFile.originalFilename)}`;
-      const episodeFileName = `${uuidv4()}${path.extname(episodeFile.originalFilename)}`;
+      const imageError = await validateImageUpload(imageFile);
+      if (imageError) {
+        return res.status(400).json({ error: imageError });
+      }
+      if (!isAudioUpload(episodeFile)) {
+        return res.status(400).json({ error: 'Only audio files are allowed' });
+      }
+
+      const imageFileName = `${uuidv4()}${getUploadExtension(imageFile)}`;
+      const episodeFileName = `${uuidv4()}${getUploadExtension(episodeFile)}`;
 
       const imageFilePath = path.join(uploadDir, imageFileName);
       const episodeFilePath = path.join(uploadDir, episodeFileName);
@@ -114,6 +131,8 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
     } catch (error) {
       console.error('Error handling request:', error);
       res.status(500).json({ error: 'Internal server error' });
+    } finally {
+      await discardUploads(files);
     }
   });
 };
