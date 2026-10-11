@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs/promises';
 import bcrypt from 'bcrypt';
 import { JSONFilePreset } from 'lowdb/node';
 import { UserDto } from '../dtos/userDto';
@@ -37,7 +38,25 @@ const defaultData: DatabaseSchema = {
         },
     ],
 };
-const db = await JSONFilePreset(path.join(process.cwd(), 'db.json'), defaultData)
+const dbPath = path.join(process.cwd(), 'db.json');
+
+// A blank db.json is treated like a missing one. Anything else that is not valid JSON still stops
+// the app, so a damaged database is never silently replaced with the defaults.
+const existingFile = await fs.readFile(dbPath, 'utf8').catch(() => null);
+if (existingFile !== null && existingFile.trim() === '') {
+    await fs.rm(dbPath, { force: true });
+}
+
+const db = await JSONFilePreset(dbPath, defaultData)
+
+// A hand-reset file such as {} has none of the collections the rest of the app reads
+const fillMissingCollections = () => {
+    db.data ??= defaultData;
+    db.data.schema_version ??= defaultData.schema_version;
+    db.data.users ??= [];
+    db.data.streams ??= [];
+};
+fillMissingCollections();
 const writeQueue: (() => Promise<void>)[] = [];
 let isWriting = false;
 
@@ -63,7 +82,7 @@ const queueWrite = async (task: () => Promise<void>) => {
 
 export const initDb = async () => {
     await db.read();
-    db.data ??= defaultData;
+    fillMissingCollections();
     await db.write();
 };
 
