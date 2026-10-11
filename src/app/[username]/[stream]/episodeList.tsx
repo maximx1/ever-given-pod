@@ -12,6 +12,8 @@ import { resolveApiUrl } from '@/common/helpers/api';
 import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
 import { useAuth } from '@/app/common/context/AuthContext';
 import ArrowIcon from '@/app/common/components/icons/arrowIcon';
+import IconExpandTextButton from '@/app/common/components/buttons/iconExpandTextButton';
+import ScissorsSvg from '@/icons/scissors.svg';
 
 type SortDir = 'desc' | 'asc';
 
@@ -59,6 +61,14 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
         fetchEpisodes();
     }, [fetchEpisodes]);
 
+    // A split replaces an episode with its parts in the background, so keep looking until it lands
+    const isSplitting = episodeData.some((episode) => episode.splitStatus === 'pending');
+    useEffect(() => {
+        if (!isSplitting) return;
+        const timer = setInterval(fetchEpisodes, 4000);
+        return () => clearInterval(timer);
+    }, [isSplitting, fetchEpisodes]);
+
     useEffect(() => {
         if (!user || !stream) { setIsOwner(false); return; }
         fetch(resolveApiUrl(`/${stream}`))
@@ -83,6 +93,25 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
             if (!res.ok) toast.error('Could not move the episode.');
         } catch {
             toast.error('Could not move the episode.');
+        }
+        fetchEpisodes();
+    };
+
+    const handleSplit = async (episodeId: string | undefined) => {
+        try {
+            const res = await fetch(resolveApiUrl(`/${stream}/split-episode`), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ episodeId }),
+            });
+            const data = await res.json().catch(() => null);
+            if (res.ok) {
+                toast(`Splitting into ${data?.parts ?? 'several'} parts. The original is removed when it finishes.`);
+            } else {
+                toast.error(data?.message || 'Could not split the episode.');
+            }
+        } catch {
+            toast.error('Could not split the episode.');
         }
         fetchEpisodes();
     };
@@ -173,18 +202,32 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                             canEdit={isOwner}
                             stream={stream}
                             onTitleChanged={handleEpisodeTitleChanged}
-                            actions={isOwner && seasons.length > 0 && (
-                                <select
-                                    value=""
-                                    onChange={(e) => handleMoveToSeason(episode.episodeId, e.target.value)}
-                                    className="mt-4 max-w-[160px] text-sm bg-transparent border border-purple-400 rounded-sm px-2 py-1.5 text-gray-700 cursor-pointer"
-                                    title="Add to a season"
-                                >
-                                    <option value="" disabled>Add to season...</option>
-                                    {sortedSeasons.map((season) => (
-                                        <option key={season.id} value={season.id}>{season.title}</option>
-                                    ))}
-                                </select>
+                            splitStatus={episode.splitStatus}
+                            splitError={episode.splitError}
+                            actions={isOwner && episode.splitStatus !== 'pending' && (
+                                <>
+                                    <IconExpandTextButton
+                                        icon={<ScissorsSvg />}
+                                        iconAlt="Split into parts"
+                                        text="Split into parts"
+                                        className="mt-4"
+                                        debounceMs={2000}
+                                        onClick={() => handleSplit(episode.episodeId)}
+                                    />
+                                    {seasons.length > 0 && (
+                                        <select
+                                            value=""
+                                            onChange={(e) => handleMoveToSeason(episode.episodeId, e.target.value)}
+                                            className="mt-4 max-w-[160px] text-sm bg-transparent border border-purple-400 rounded-sm px-2 py-1.5 text-gray-700 cursor-pointer"
+                                            title="Add to a season"
+                                        >
+                                            <option value="" disabled>Add to season...</option>
+                                            {sortedSeasons.map((season) => (
+                                                <option key={season.id} value={season.id}>{season.title}</option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </>
                             )}
                         />
                     </div>

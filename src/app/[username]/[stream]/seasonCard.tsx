@@ -189,6 +189,8 @@ export default function SeasonCard({
                                 stream={stream}
                                 onTitleChanged={onEpisodeTitleChanged}
                                 episodeNumber={episode.episodeNumber}
+                                splitStatus={episode.splitStatus}
+                                splitError={episode.splitError}
                                 actions={canEdit && (
                                     <>
                                         <IconExpandTextButton

@@ -33,6 +33,10 @@ export type StreamDto = {
     ttl?: number;
     episodes?: EpisodeDto[];
     seasons?: SeasonDto[];
+    // Long uploads are split into parts unless this is false
+    autoSplit?: boolean;
+    // Longest a part may be; defaults to DEFAULT_SPLIT_MINUTES
+    splitMinutes?: number;
     isPrivate?: boolean;
     accessList?: StreamAccessEntry[];
   };

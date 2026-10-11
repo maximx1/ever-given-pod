@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Podcast } from 'podcast';
 import { getEpisodes, getUserById } from '../data/db';
-import { prepareEpisodeItem, prepareStreamItem } from './data';
+import { prepareEpisodeItem, prepareStreamItem, withFeedToken } from './data';
 import { parseSessionCookie } from './auth';
 import { StreamDto } from '../dtos/streamDto';
 
@@ -30,7 +30,8 @@ export async function handleFeedRequest(
         feedToken = streamData.isPrivate ? token : undefined,
         data = prepareStreamItem(streamData, owner?.username),
         seasonNumbers = new Map(streamData.seasons?.map((s) => [s.id, s.number])),
-        items = (await getEpisodes(streamData.id)).map((ep) => {
+        // An episode still being split is about to be replaced by its parts
+        items = (await getEpisodes(streamData.id)).filter((ep) => ep.splitStatus !== 'pending').map((ep) => {
             const uploaded = Number(ep.uploadDate);
             return {
                 ...prepareEpisodeItem(ep, feedToken, streamData.seasons),
@@ -40,7 +41,11 @@ export async function handleFeedRequest(
             };
         }),
         // Streams with seasons are meant to be played in order, so apps should list oldest first
-        feed = new Podcast({ ...data, itunesType: streamData.seasons?.length ? 'serial' : undefined });
+        feed = new Podcast({
+            ...data,
+            imageUrl: withFeedToken(data?.imageUrl, feedToken),
+            itunesType: streamData.seasons?.length ? 'serial' : undefined,
+        });
 
     items.forEach(item => feed.addItem(item));
     res.setHeader('Content-Type', 'application/xml');
