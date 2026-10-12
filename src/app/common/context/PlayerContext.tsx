@@ -102,8 +102,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }, [isPlaying, user, queue, currentIndex]);
 
     // --- Persist queue and playback state to localStorage and restore on load ---
+    // Keyed on the user's id, not the user object: restoring reloads the audio element, so it must
+    // only happen when the person actually changes, never on a routine session poll
+    const userId = user?.id;
     useEffect(() => {
-        const key = user ? `playerState:${user.id}` : 'playerState:guest';
+        const key = userId ? `playerState:${userId}` : 'playerState:guest';
         try {
             const raw = localStorage.getItem(key);
             if (!raw) return;
@@ -133,15 +136,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         } catch {
             // ignore parse errors
         }
-    }, [user]);
+    }, [userId]);
 
     useEffect(() => {
-        const key = user ? `playerState:${user.id}` : 'playerState:guest';
+        const key = userId ? `playerState:${userId}` : 'playerState:guest';
         try {
             const toSave: PersistedPlayer = { queue, currentIndex, currentTime, isPlaying };
             localStorage.setItem(key, JSON.stringify(toSave));
         } catch { /* ignore */ }
-    }, [queue, currentIndex, currentTime, isPlaying, user]);
+    }, [queue, currentIndex, currentTime, isPlaying, userId]);
 
     // --- Increment play count when a new track starts playing ---
     const recordPlayCount = useCallback((item: QueueItem) => {

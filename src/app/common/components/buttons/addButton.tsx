@@ -61,19 +61,23 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
         [submitting, setSubmitting] = useState(false),
         [progress, setProgress] = useState(-1),
         [uploadingName, setUploadingName] = useState(''),
-        [batchStarted, setBatchStarted] = useState(false);
+        [batchStarted, setBatchStarted] = useState(false),
+        [tab, setTab] = useState<'episode' | 'season'>('episode');
 
-    // Several files become the episodes of one season, in file name order.
+    // The Season tab starts a new season, with any number of files as its first episodes.
+    // The Episode tab adds one episode, or several files at once to an existing season.
     // A batch that failed part-way stays a batch, even with one file left to retry.
-    const isMulti = audioFiles.length > 1 || batchStarted;
-    const createsSeason = isMulti && !seasonId;
-    const showsEpisodeFields = !isMulti;
-    const showsTextFields = showsEpisodeFields || createsSeason;
-    const imageRequired = showsEpisodeFields && !seasonId;
-    const canSubmit = audioFiles.length > 0
+    const createsSeason = tab === 'season';
+    const isBatch = !createsSeason && (audioFiles.length > 1 || batchStarted);
+    const titlesFromFiles = createsSeason || isBatch;
+    const showsTextFields = !isBatch;
+    const imageRequired = !titlesFromFiles && !seasonId;
+    const needsSeasonChoice = isBatch && !seasonId;
+    const canSubmit = !submitting
+        && (createsSeason ? !!title.trim() : audioFiles.length > 0)
         && (!showsTextFields || !!title.trim())
-        && (!imageRequired || !!imageFile)
-        && !submitting;
+        && !needsSeasonChoice
+        && (!imageRequired || !!imageFile);
 
     useEffect(() => {
         if (!user || !stream) {
@@ -107,10 +111,13 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
     };
 
     const handleAudioSelected = (files: File[]) => {
-        setAudioFiles((prev) => {
-            const known = new Set(prev.map((file) => `${file.name}:${file.size}`));
-            return [...prev, ...files.filter((file) => !known.has(`${file.name}:${file.size}`))].sort(byFileName);
-        });
+        const known = new Set(audioFiles.map((file) => `${file.name}:${file.size}`));
+        const merged = [...audioFiles, ...files.filter((file) => !known.has(`${file.name}:${file.size}`))].sort(byFileName);
+        setAudioFiles(merged);
+        // Several files with no season to put them in: they start a new one
+        if (tab === 'episode' && merged.length > 1 && !seasonId && !batchStarted) {
+            setTab('season');
+        }
     };
 
     const resetForm = () => {
@@ -124,6 +131,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
         setProgress(-1);
         setUploadingName('');
         setBatchStarted(false);
+        setTab('episode');
     };
 
     const closeDialog = () => {
@@ -143,6 +151,8 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
 
         // From here on a retry adds to this season instead of creating another
         setSeasonId(created.id);
+        setTab('episode');
+        setBatchStarted(true);
         onEpisodeCreated?.();
 
         if (imageFile) {
@@ -160,8 +170,9 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
         if (!canSubmit) return;
 
         setSubmitting(true);
-        if (isMulti) setBatchStarted(true);
+        if (isBatch) setBatchStarted(true);
         const files = [...audioFiles];
+        const fromFileNames = titlesFromFiles;
         let uploaded = 0;
         try {
             const targetSeasonId = createsSeason ? await createSeason() : seasonId;
@@ -171,11 +182,11 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                 setProgress(0);
 
                 const formData = new FormData();
-                formData.append('title', isMulti ? titleFromFileName(file) : title.trim());
-                formData.append('description', isMulti ? '' : description.trim());
+                formData.append('title', fromFileNames ? titleFromFileName(file) : title.trim());
+                formData.append('description', fromFileNames ? '' : description.trim());
                 formData.append('author', author.trim());
                 if (targetSeasonId) formData.append('seasonId', targetSeasonId);
-                if (!isMulti && imageFile) formData.append('image', imageFile);
+                if (!fromFileNames && imageFile) formData.append('image', imageFile);
                 formData.append('file', file);
 
                 await postForm(`/${stream}/podcasts`, formData, setProgress);
@@ -196,6 +207,12 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
         }
     };
 
+    const fileCount = `${audioFiles.length} file${audioFiles.length === 1 ? '' : 's'}`;
+    const submitLabel = submitting ? (audioFiles.length > 0 ? 'Uploading...' : 'Creating...')
+        : createsSeason ? (audioFiles.length > 0 ? `Create Season and Upload ${fileCount}` : 'Create Season')
+        : isBatch ? `Upload ${fileCount}`
+        : 'Upload';
+
     if (loading || !isOwner) {
         return null;
     }
@@ -211,15 +228,31 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
             </div>
 
             {dialogOpen && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                    onClick={() => { if (!submitting) closeDialog(); }}
-                >
-                    <div
-                        className="bg-white rounded-lg shadow-lg p-6 w-[420px] max-h-[90vh] overflow-y-auto"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">{isMulti ? 'New Episodes' : 'New Episode'}</h3>
+                // Clicking outside does not close this dialog: a stray click would throw away what was typed
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-[420px] max-h-[90vh] overflow-y-auto">
+                        <div role="tablist" className="flex border-b border-gray-200 mb-4">
+                            {(['episode', 'season'] as const).map((name) => (
+                                <button
+                                    key={name}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={tab === name}
+                                    onClick={() => setTab(name)}
+                                    disabled={submitting || batchStarted}
+                                    className={`px-4 py-2 -mb-px text-lg font-bold border-b-2 transition-colors disabled:cursor-not-allowed ${
+                                        tab === name ? 'border-purple-600 text-gray-800' : 'border-transparent text-gray-400 hover:text-gray-600'
+                                    }`}
+                                >
+                                    {name === 'episode' ? 'Episode' : 'Season'}
+                                </button>
+                            ))}
+                        </div>
+                        {createsSeason && (
+                            <p className="text-sm text-gray-500 mb-3">
+                                A season groups episodes in order: a season of a show, or one book and its parts. Add its first episodes now, or add them later from the Episode tab.
+                            </p>
+                        )}
                         <div className="space-y-3">
                             {showsTextFields && (
                                 <div>
@@ -274,7 +307,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                     onKeyDown={(e) => { if (e.key === 'Escape' && !submitting) closeDialog(); }}
                                 />
                             </div>
-                            {seasons.length > 0 && (
+                            {!createsSeason && (seasons.length > 0 || isBatch) && (
                                 <div>
                                     <label className="text-sm font-medium text-gray-700 block mb-1">Season</label>
                                     <select
@@ -283,11 +316,16 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                         className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none bg-white"
                                         disabled={submitting}
                                     >
-                                        <option value="">{isMulti ? 'New season' : 'No season'}</option>
+                                        <option value="">{isBatch ? 'Choose a season' : 'No season'}</option>
                                         {seasons.map((season) => (
                                             <option key={season.id} value={season.id}>{season.title}</option>
                                         ))}
                                     </select>
+                                    {needsSeasonChoice && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                            Choose the season these files belong to, or use the Season tab to start a new one.
+                                        </p>
+                                    )}
                                 </div>
                             )}
                             {showsTextFields && (
@@ -305,13 +343,15 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                 </div>
                             )}
                             <div>
-                                <label className="text-sm font-medium text-gray-700 block mb-1">{isMulti ? 'Audio Files' : 'Audio File'}</label>
+                                <label className="text-sm font-medium text-gray-700 block mb-1">
+                                    {createsSeason ? 'Audio Files (optional)' : isBatch ? 'Audio Files' : 'Audio File'}
+                                </label>
                                 {audioFiles.length > 0 && (
                                     <ol className="border border-gray-300 rounded-md bg-gray-50 mb-2 max-h-[180px] overflow-y-auto divide-y divide-gray-200">
                                         {audioFiles.map((file, index) => (
                                             <li key={`${file.name}:${file.size}`} className="flex items-center justify-between px-3 py-2">
                                                 <span className="text-sm text-gray-700 truncate">
-                                                    {isMulti && <span className="text-gray-400 mr-2">{index + 1}.</span>}
+                                                    {titlesFromFiles && <span className="text-gray-400 mr-2">{index + 1}.</span>}
                                                     {file.name}
                                                 </span>
                                                 <button
@@ -327,9 +367,9 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                         ))}
                                     </ol>
                                 )}
-                                {isMulti && (
+                                {titlesFromFiles && audioFiles.length > 0 && (
                                     <p className="text-xs text-gray-500 mb-2">
-                                        Each file becomes an episode of {createsSeason ? 'a new season' : 'the chosen season'}, in this order. Titles come from the file names.
+                                        Each file becomes an episode of {createsSeason ? 'the new season' : 'the chosen season'}, in this order. Titles come from the file names.
                                     </p>
                                 )}
                                 {!submitting && (
@@ -370,7 +410,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                 className="px-4 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
                                 disabled={!canSubmit}
                             >
-                                {submitting ? 'Uploading...' : isMulti ? `Upload ${audioFiles.length} file${audioFiles.length === 1 ? '' : 's'}` : 'Upload'}
+                                {submitLabel}
                             </button>
                         </div>
                     </div>

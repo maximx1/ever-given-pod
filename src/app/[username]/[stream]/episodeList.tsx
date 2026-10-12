@@ -2,7 +2,6 @@
 
 import EpisodeCard from './episodeCard';
 import SeasonCard from './seasonCard';
-import SeasonDialog from './seasonDialog';
 import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { EpisodeDto } from '@/common/dtos/episodeDto';
@@ -12,8 +11,6 @@ import { resolveApiUrl } from '@/common/helpers/api';
 import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
 import { useAuth } from '@/app/common/context/AuthContext';
 import ArrowIcon from '@/app/common/components/icons/arrowIcon';
-import IconExpandTextButton from '@/app/common/components/buttons/iconExpandTextButton';
-import ScissorsSvg from '@/icons/scissors.svg';
 
 type SortDir = 'desc' | 'asc';
 
@@ -36,7 +33,6 @@ const UP_BOTTOM = DOWN_BOTTOM + ARROW_SIZE + GAP_BETWEEN_ARROWS;
 export default function EpisodeList({ stream, streamImageUrl, streamName }: EpisodeListProps) {
     const [episodeData, setEpisodeData] = useState<EpisodeDto[]>([]);
     const [seasons, setSeasons] = useState<SeasonDto[]>([]);
-    const [seasonDialogOpen, setSeasonDialogOpen] = useState(false);
     const [sortDir, setSortDir] = useState<SortDir>('desc');
     const [isOwner, setIsOwner] = useState(false);
     const visibleFooterHeight = useFooterHeight();
@@ -97,25 +93,6 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
         fetchEpisodes();
     };
 
-    const handleSplit = async (episodeId: string | undefined) => {
-        try {
-            const res = await fetch(resolveApiUrl(`/${stream}/split-episode`), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ episodeId }),
-            });
-            const data = await res.json().catch(() => null);
-            if (res.ok) {
-                toast(`Splitting into ${data?.parts ?? 'several'} parts. The original is removed when it finishes.`);
-            } else {
-                toast.error(data?.message || 'Could not split the episode.');
-            }
-        } catch {
-            toast.error('Could not split the episode.');
-        }
-        fetchEpisodes();
-    };
-
     const sorted = [...episodeData].sort((a, b) => {
         const aTime = Number(a.uploadDate) || 0;
         const bTime = Number(b.uploadDate) || 0;
@@ -154,20 +131,6 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                 </>
             )}
             <AddButton stream={stream} onEpisodeCreated={fetchEpisodes} seasons={sortedSeasons} />
-            {isOwner && (
-                <div className="flex justify-end mx-4 mt-4">
-                    <button
-                        type="button"
-                        onClick={() => setSeasonDialogOpen(true)}
-                        className="bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm cursor-pointer"
-                    >
-                        New Season
-                    </button>
-                </div>
-            )}
-            {seasonDialogOpen && (
-                <SeasonDialog stream={stream} onCreated={fetchEpisodes} onClose={() => setSeasonDialogOpen(false)} />
-            )}
             {
                 // Empty seasons are only useful to the owner, who can fill them
                 sortedSeasons
@@ -204,30 +167,18 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                             onTitleChanged={handleEpisodeTitleChanged}
                             splitStatus={episode.splitStatus}
                             splitError={episode.splitError}
-                            actions={isOwner && episode.splitStatus !== 'pending' && (
-                                <>
-                                    <IconExpandTextButton
-                                        icon={<ScissorsSvg />}
-                                        iconAlt="Split into parts"
-                                        text="Split into parts"
-                                        className="mt-4"
-                                        debounceMs={2000}
-                                        onClick={() => handleSplit(episode.episodeId)}
-                                    />
-                                    {seasons.length > 0 && (
-                                        <select
-                                            value=""
-                                            onChange={(e) => handleMoveToSeason(episode.episodeId, e.target.value)}
-                                            className="mt-4 max-w-[160px] text-sm bg-transparent border border-purple-400 rounded-sm px-2 py-1.5 text-gray-700 cursor-pointer"
-                                            title="Add to a season"
-                                        >
-                                            <option value="" disabled>Add to season...</option>
-                                            {sortedSeasons.map((season) => (
-                                                <option key={season.id} value={season.id}>{season.title}</option>
-                                            ))}
-                                        </select>
-                                    )}
-                                </>
+                            actions={isOwner && episode.splitStatus !== 'pending' && seasons.length > 0 && (
+                                <select
+                                    value=""
+                                    onChange={(e) => handleMoveToSeason(episode.episodeId, e.target.value)}
+                                    className="mt-4 max-w-[160px] text-sm bg-transparent border border-purple-400 rounded-sm px-2 py-1.5 text-gray-700 cursor-pointer"
+                                    title="Add to a season"
+                                >
+                                    <option value="" disabled>Add to season...</option>
+                                    {sortedSeasons.map((season) => (
+                                        <option key={season.id} value={season.id}>{season.title}</option>
+                                    ))}
+                                </select>
                             )}
                         />
                     </div>
