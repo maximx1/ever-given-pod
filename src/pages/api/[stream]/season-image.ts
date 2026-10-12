@@ -7,6 +7,7 @@ import { parseSessionCookie } from '../../../common/helpers/auth';
 import { getStream, updateSeasonImage } from '../../../common/data/db';
 import { prepareSeasonItem } from '../../../common/helpers/data';
 import { discardUploads, getUploadExtension, validateImageUpload } from '../../../common/helpers/uploads';
+import { UPLOADS_DIR } from '../../../common/helpers/paths';
 
 export const config = {
     api: {
@@ -34,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(403).json({ error: 'Not authorized to update this stream' });
     }
 
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = UPLOADS_DIR;
     await fs.mkdir(uploadDir, { recursive: true });
 
     const form = new multiparty.Form({ uploadDir });

@@ -4,6 +4,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { getStream, getStreams, replaceEpisodeWithParts, setEpisodeSplitStatus } from '../data/db';
 import { DEFAULT_SPLIT_MINUTES } from '../limits';
+import { UPLOADS_DIR } from './paths';
 
 const FFMPEG = process.env.FFMPEG_PATH || 'ffmpeg';
 const FFPROBE = process.env.FFPROBE_PATH || 'ffprobe';
@@ -138,7 +139,7 @@ const runSplit = async (streamId: string, episodeId: string) => {
     const episode = stream?.episodes?.find((e) => e.episodeId === episodeId);
     if (!stream || !episode?.url || episode.splitStatus !== 'pending') return;
 
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = UPLOADS_DIR;
     const filePath = path.join(uploadDir, episode.url);
     try {
         const plan = planSplit(await probeAudio(filePath), stream.splitMinutes ?? DEFAULT_SPLIT_MINUTES);

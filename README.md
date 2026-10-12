@@ -30,6 +30,19 @@ npm start
 
 You may also use yarn, pnpm, or bun to build this project.
 
+### Docker
+
+The repository includes a `Dockerfile` and `compose.yaml` that package the app with ffmpeg:
+
+```bash
+cp template.env.docker .env     # then set APP_URL and JWT_SECRET
+docker compose up -d --build
+```
+
+See [docs/deploy.md](docs/deploy.md) for settings, storage, reverse proxy and backups, and
+[docs/deploy-agent.md](docs/deploy-agent.md) for a step-by-step checklist written for an AI
+assistant to follow on your server.
+
 ## Requirements
 
 - **Node.js** to build and run the app.
@@ -55,6 +68,8 @@ NEXT_PUBLIC_API_BASE_URL="https://pod.sample.com" npm run build
 NEXT_PUBLIC_API_BASE_URL="https://pod.sample.com" npm start
 ```
 
+`NEXT_PUBLIC_*` values are copied into the browser code by `npm run build`, so the build needs it, not just `npm start`. After changing it, build again.
+
 ### JWT_SECRET
 
 Set `JWT_SECRET` to a long random value. It signs login sessions, so anyone who knows it can sign in as any user.
@@ -74,6 +89,14 @@ Podcast apps often fail to download very large files, so long audio is split int
 - Audio with chapter markers is split at the chapters instead, one part per chapter.
 
 Splitting copies the audio without re-encoding, runs in the background after the upload finishes, and removes the original file once the parts exist. Only new uploads are split; to split an episode uploaded earlier, upload its file again.
+
+### DATA_DIR
+
+The app keeps `db.json` and the `uploads/` folder in the folder it is started from. Set `DATA_DIR` to keep them somewhere else.
+
+### SEED_SAMPLE_DATA
+
+Set `SEED_SAMPLE_DATA=false` to start a new database with no accounts instead of the sample user below. Do this on any server other people can reach: the sample password is public.
 
 ### Database
 

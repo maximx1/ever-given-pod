@@ -9,6 +9,7 @@ import { getUserById, updateUserImage } from '../../../common/data/db';
 
 import { MAX_IMAGE_SIZE } from '../../../common/limits';
 import { discardUploads } from '../../../common/helpers/uploads';
+import { UPLOADS_DIR } from '../../../common/helpers/paths';
 
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -28,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = UPLOADS_DIR;
     await fs.mkdir(uploadDir, { recursive: true });
 
     const form = new multiparty.Form({ uploadDir });

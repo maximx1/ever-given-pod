@@ -5,6 +5,7 @@ import { getStream, getUserById, deleteStream, updateStreamTitle } from '../../c
 import { FIELD_LIMITS } from '../../common/limits';
 import { prepareStreamItem } from '../../common/helpers/data';
 import { parseSessionCookie } from '../../common/helpers/auth';
+import { UPLOADS_DIR } from '../../common/helpers/paths';
 
 export default async function handler(
     req: NextApiRequest,
@@ -62,7 +63,7 @@ export default async function handler(
         }
 
         // Clean up associated files
-        const uploadDir = path.join(process.cwd(), 'uploads');
+        const uploadDir = UPLOADS_DIR;
         const filesToDelete: string[] = [];
 
         if (removed.imageUrl) {
