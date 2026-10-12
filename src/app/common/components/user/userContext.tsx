@@ -65,7 +65,7 @@ export default function UserContext() {
                             className="h-full w-full object-cover"
                         />
                     ) : (
-                        <PersonIcon size={28} className="text-purple-500" />
+                        <PersonIcon size={40} className="text-purple-500" />
                     )}
                 </button>
                 {menuOpen && (
