@@ -45,24 +45,29 @@ export default function UserContext() {
     if (user) {
         const hasProfileImage = !!user.imageUrl;
         const imgSrc = user.imageUrl
-            ? resolveAssetUrl(`/uploads/${user.imageUrl}?max=100`)
+            ? resolveAssetUrl(`/uploads/${user.imageUrl}?max=160`)
             : undefined;
 
         return (
-            <div className="relative" ref={menuRef}>
-                {hasProfileImage ? (
-                    <img
-                        src={imgSrc}
-                        alt={user.name || user.username}
-                        onClick={() => setMenuOpen(v => !v)}
-                        className="w-[22px] h-[22px] rounded object-cover cursor-pointer hover:ring-2 hover:ring-purple-500 transition"
-                    />
-                ) : (
-                    <PersonIcon
-                        size={22}
-                        className="text-purple-500 cursor-pointer hover:ring-2 hover:ring-purple-500 transition rounded"
-                    />
-                )}
+            // A square as tall as the header, flush with its right edge
+            <div className="absolute top-0 right-0 h-full aspect-square" ref={menuRef}>
+                <button
+                    type="button"
+                    aria-label="Account menu"
+                    aria-expanded={menuOpen}
+                    onClick={() => setMenuOpen(v => !v)}
+                    className="flex h-full w-full items-center justify-center cursor-pointer hover:ring-2 hover:ring-inset hover:ring-purple-500 transition"
+                >
+                    {hasProfileImage ? (
+                        <img
+                            src={imgSrc}
+                            alt={user.name || user.username}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <PersonIcon size={28} className="text-purple-500" />
+                    )}
+                </button>
                 {menuOpen && (
                     <div className="absolute right-0 top-full mt-1 bg-white rounded-md shadow-lg py-1 min-w-[140px] z-50">
                         <a

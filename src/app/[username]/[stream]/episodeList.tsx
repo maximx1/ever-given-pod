@@ -8,7 +8,7 @@ import { EpisodeDto } from '@/common/dtos/episodeDto';
 import { SeasonDto, StreamDto } from '@/common/dtos/streamDto';
 import AddButton from '@/app/common/components/buttons/addButton';
 import { resolveApiUrl } from '@/common/helpers/api';
-import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
+import FloatingActions from '@/app/common/components/floatingActions';
 import { useAuth } from '@/app/common/context/AuthContext';
 import ArrowIcon from '@/app/common/components/icons/arrowIcon';
 
@@ -23,10 +23,10 @@ type EpisodeListProps = {
 const ADD_BTN_SIZE = 64;
 const ADD_BTN_OFFSET = 16;
 const ARROW_SIZE = Math.round(ADD_BTN_SIZE * 0.6);
-// Reduce gap above add button so arrows sit a bit lower, and nudge right a little
 const GAP_ABOVE_ADD = 8;
 const GAP_BETWEEN_ARROWS = 6;
-const ARROW_RIGHT = ADD_BTN_OFFSET + (ADD_BTN_SIZE - ARROW_SIZE) / 2 - 8;
+// Centred over the add button
+const ARROW_RIGHT = ADD_BTN_OFFSET + (ADD_BTN_SIZE - ARROW_SIZE) / 2;
 const DOWN_BOTTOM = ADD_BTN_OFFSET + ADD_BTN_SIZE + GAP_ABOVE_ADD;
 const UP_BOTTOM = DOWN_BOTTOM + ARROW_SIZE + GAP_BETWEEN_ARROWS;
 
@@ -35,7 +35,6 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
     const [seasons, setSeasons] = useState<SeasonDto[]>([]);
     const [sortDir, setSortDir] = useState<SortDir>('desc');
     const [isOwner, setIsOwner] = useState(false);
-    const visibleFooterHeight = useFooterHeight();
     const { user } = useAuth();
 
     const fetchEpisodes = useCallback(() => {
@@ -109,12 +108,12 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
     return (
         <div className="episode-list relative max-w-[800px] mx-auto w-full px-4">
             {episodeData.length > 1 && (
-                <>
+                <FloatingActions>
                     <button
                         type="button"
                         onClick={() => setSortDir('asc')}
-                        style={{ position: 'fixed', bottom: `${UP_BOTTOM + visibleFooterHeight}px`, right: `${ARROW_RIGHT}px` }}
-                        className={`z-40 cursor-pointer transition-colors ${sortDir === 'asc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
+                        style={{ bottom: `${UP_BOTTOM}px`, right: `${ARROW_RIGHT}px` }}
+                        className={`absolute cursor-pointer transition-colors ${sortDir === 'asc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
                         title="Oldest first"
                     >
                         <ArrowIcon direction="up" size={ARROW_SIZE} />
@@ -122,13 +121,13 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                     <button
                         type="button"
                         onClick={() => setSortDir('desc')}
-                        style={{ position: 'fixed', bottom: `${DOWN_BOTTOM + visibleFooterHeight}px`, right: `${ARROW_RIGHT}px` }}
-                        className={`z-40 cursor-pointer transition-colors ${sortDir === 'desc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
+                        style={{ bottom: `${DOWN_BOTTOM}px`, right: `${ARROW_RIGHT}px` }}
+                        className={`absolute cursor-pointer transition-colors ${sortDir === 'desc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
                         title="Newest first"
                     >
                         <ArrowIcon direction="down" size={ARROW_SIZE} />
                     </button>
-                </>
+                </FloatingActions>
             )}
             <AddButton stream={stream} onEpisodeCreated={fetchEpisodes} seasons={sortedSeasons} />
             {

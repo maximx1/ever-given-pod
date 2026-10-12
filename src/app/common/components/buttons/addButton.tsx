@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { resolveApiUrl } from '@/common/helpers/api';
 import { useAuth } from '@/app/common/context/AuthContext';
-import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
+import FloatingActions from '@/app/common/components/floatingActions';
 import { SeasonDto, StreamDto } from '@/common/dtos/streamDto';
 import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
@@ -47,7 +47,6 @@ const postForm = (path: string, formData: FormData, onProgress?: (percent: numbe
 
 export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { stream?: string | string[]; onEpisodeCreated?: () => void; seasons?: SeasonDto[] }) {
     const { user } = useAuth(),
-        visibleFooterHeight = useFooterHeight(),
         [isOwner, setIsOwner] = useState(false),
         [loading, setLoading] = useState(true),
         [dialogOpen, setDialogOpen] = useState(false),
@@ -219,19 +218,21 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
 
     return (
         <>
-            <div
-                onClick={() => setDialogOpen(true)}
-                style={{ position: 'fixed', bottom: `${16 + visibleFooterHeight}px`, right: '16px' }}
-                className="w-16 h-16 z-10 shadow-md rounded-full flex items-center justify-center bg-purple-500 cursor-pointer hover:bg-purple-600 transition-colors"
-            >
-                <span className="text-3xl font-bold text-white">+</span>
-            </div>
+            <FloatingActions>
+                <div
+                    onClick={() => setDialogOpen(true)}
+                    className="absolute bottom-4 right-4 w-16 h-16 shadow-md rounded-full flex items-center justify-center bg-purple-500 cursor-pointer hover:bg-purple-600 transition-colors"
+                >
+                    <span className="text-3xl font-bold text-white">+</span>
+                </div>
+            </FloatingActions>
 
             {dialogOpen && (
                 // Clicking outside does not close this dialog: a stray click would throw away what was typed
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-[420px] max-h-[90vh] overflow-y-auto">
-                        <div role="tablist" className="flex border-b border-gray-200 mb-4">
+                        {/* Stays at the top while the form scrolls. The negative margins cover the dialog's padding. */}
+                        <div role="tablist" className="sticky top-0 z-10 -mx-6 -mt-6 px-6 pt-6 bg-white flex border-b border-gray-200 mb-4">
                             {(['episode', 'season'] as const).map((name) => (
                                 <button
                                     key={name}

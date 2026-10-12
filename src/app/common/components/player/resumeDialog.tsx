@@ -37,7 +37,7 @@ export default function ResumeDialog({ episodeName, elapsed, total, onResume, on
     return (
         <div
             ref={overlayRef}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40"
             onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
         >
             <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
