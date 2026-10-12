@@ -1,4 +1,3 @@
-import path from 'path';
 import fs from 'fs/promises';
 import bcrypt from 'bcrypt';
 import { JSONFilePreset } from 'lowdb/node';
@@ -6,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { UserDto } from '../dtos/userDto';
 import { EpisodeDto } from '../dtos/episodeDto';
 import { StreamDto, StreamAccessEntry, SeasonDto } from '../dtos/streamDto';
+import { DATA_DIR, DB_PATH } from '../helpers/paths';
 
 export type DatabaseSchema = {
     schema_version: number;
@@ -13,7 +13,11 @@ export type DatabaseSchema = {
     streams: StreamDto[];
 };
 
-const defaultData: DatabaseSchema = {
+// A new database starts with a sample account whose password is published in the README.
+// A server that other people can reach should start empty instead: SEED_SAMPLE_DATA=false
+const seedSampleData = process.env.SEED_SAMPLE_DATA?.trim().toLowerCase() !== 'false';
+
+const defaultData: DatabaseSchema = seedSampleData ? {
     schema_version: 1,
     users: [
         {
@@ -38,17 +42,18 @@ const defaultData: DatabaseSchema = {
             episodes: [],
         },
     ],
-};
-const dbPath = path.join(process.cwd(), 'db.json');
+} : { schema_version: 1, users: [], streams: [] };
+
+await fs.mkdir(DATA_DIR, { recursive: true });
 
 // A blank db.json is treated like a missing one. Anything else that is not valid JSON still stops
 // the app, so a damaged database is never silently replaced with the defaults.
-const existingFile = await fs.readFile(dbPath, 'utf8').catch(() => null);
+const existingFile = await fs.readFile(DB_PATH, 'utf8').catch(() => null);
 if (existingFile !== null && existingFile.trim() === '') {
-    await fs.rm(dbPath, { force: true });
+    await fs.rm(DB_PATH, { force: true });
 }
 
-const db = await JSONFilePreset(dbPath, defaultData)
+const db = await JSONFilePreset(DB_PATH, defaultData)
 
 // A hand-reset file such as {} has none of the collections the rest of the app reads
 const fillMissingCollections = () => {

@@ -5,6 +5,7 @@ import mime from 'mime-types';
 import { EpisodeDto } from '../dtos/episodeDto';
 import { resolveApiUrl, resolveAppUrl, resolveAssetUrl } from './api';
 import { SeasonDto, StreamDto } from '../dtos/streamDto';
+import { UPLOADS_DIR } from './paths';
 
 export const getFileSize = (filePath: string): number => {
     const stats = fs.statSync(filePath);
@@ -38,7 +39,7 @@ export const prepareEpisodeItem = (episode: EpisodeDto, token?: string, seasons?
     let fileMimeType = 'application/octet-stream';
     if (episode.url) {
         try {
-            fileSize = getFileSize(path.join(process.cwd(), `uploads/${episode.url}`));
+            fileSize = getFileSize(path.join(UPLOADS_DIR, episode.url));
             fileMimeType = getFileMimeType(episode.url);
         } catch {
             // File may not exist on disk

@@ -9,6 +9,7 @@ import { createStream, getStreams } from '../../common/data/db';
 import { StreamDto } from '../../common/dtos/streamDto';
 import { FIELD_LIMITS, MAX_IMAGE_SIZE } from '../../common/limits';
 import { discardUploads } from '../../common/helpers/uploads';
+import { UPLOADS_DIR } from '../../common/helpers/paths';
 
 const VALID_NAME_PATTERN = /^[a-z0-9_-]+$/;
 
@@ -31,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = UPLOADS_DIR;
     await fs.mkdir(uploadDir, { recursive: true });
 
     const form = new multiparty.Form({ uploadDir });

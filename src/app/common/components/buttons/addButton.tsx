@@ -231,8 +231,8 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                 // Clicking outside does not close this dialog: a stray click would throw away what was typed
                 <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-[420px] max-h-[90vh] overflow-y-auto">
-                        {/* Stays at the top while the form scrolls. The negative margins cover the dialog's padding. */}
-                        <div role="tablist" className="sticky top-0 z-10 -mx-6 -mt-6 px-6 pt-6 bg-white flex border-b border-gray-200 mb-4">
+                        {/* Stays at the top while the form scrolls. The negative offsets cover the dialog's padding. */}
+                        <div role="tablist" className="sticky -top-6 z-10 -mx-6 -mt-6 px-6 pt-6 bg-white flex border-b border-gray-200 mb-4">
                             {(['episode', 'season'] as const).map((name) => (
                                 <button
                                     key={name}

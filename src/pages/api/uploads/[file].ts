@@ -5,6 +5,7 @@ import mime from 'mime-types';
 import sharp from 'sharp';
 import { getStreamByFile } from '../../../common/data/db';
 import { parseSessionCookie } from '../../../common/helpers/auth';
+import { UPLOADS_DIR } from '../../../common/helpers/paths';
 
 const SUPPORTED_IMAGE_TYPES = new Set([
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/tiff',
@@ -51,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'File not specified' });
     }
 
-    const uploadsDir = path.resolve(process.cwd(), 'uploads');
+    const uploadsDir = UPLOADS_DIR;
     const filePath = path.resolve(uploadsDir, file);
 
     if (!filePath.startsWith(uploadsDir + path.sep)) {

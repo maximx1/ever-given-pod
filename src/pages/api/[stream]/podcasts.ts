@@ -10,6 +10,7 @@ import { DEFAULT_SPLIT_MINUTES, FIELD_LIMITS } from '../../../common/limits';
 import { parseSessionCookie } from '../../../common/helpers/auth';
 import { discardUploads, getUploadExtension, isAudioUpload, validateImageUpload } from '../../../common/helpers/uploads';
 import { FfmpegMissingError, planSplit, probeAudio, queueSplit, resumePendingSplits } from '../../../common/helpers/splitter';
+import { UPLOADS_DIR } from '../../../common/helpers/paths';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
   const stream = req.query.stream as string;
@@ -65,7 +66,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(403).json({ error: 'Not authorized' });
   }
 
-  const uploadDir = path.join(process.cwd(), 'uploads');
+  const uploadDir = UPLOADS_DIR;
   await fs.mkdir(uploadDir, { recursive: true });
   const form = new multiparty.Form({
     uploadDir
