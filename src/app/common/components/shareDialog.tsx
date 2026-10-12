@@ -106,7 +106,7 @@ export default function ShareDialog({ streamId, accessList, onAccessAdded, onAcc
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-start justify-center pt-32 bg-black/30"
+            className="modal-overlay fixed inset-0 z-50 flex items-start justify-center pt-32 bg-black/30"
             onClick={handleBackdropClick}
         >
             <div

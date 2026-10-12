@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useFooterHeight } from '@/app/common/hooks/useFooterHeight';
+import FloatingActions from '@/app/common/components/floatingActions';
 import { resolveApiUrl } from '@/common/helpers/api';
 import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
@@ -12,8 +12,7 @@ type AddStreamButtonProps = {
 };
 
 export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProps) {
-    const visibleFooterHeight = useFooterHeight(),
-        [dialogOpen, setDialogOpen] = useState(false),
+    const [dialogOpen, setDialogOpen] = useState(false),
         [title, setTitle] = useState(''),
         [name, setName] = useState(''),
         [nameManuallyEdited, setNameManuallyEdited] = useState(false),
@@ -93,17 +92,18 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
 
     return (
         <>
-            <div
-                onClick={() => setDialogOpen(true)}
-                style={{ position: 'fixed', bottom: `${16 + visibleFooterHeight}px`, right: '16px' }}
-                className="w-16 h-16 z-10 shadow-md rounded-full flex items-center justify-center bg-purple-500 cursor-pointer hover:bg-purple-600 transition-colors"
-            >
-                <span className="text-3xl font-bold text-white">+</span>
-            </div>
+            <FloatingActions>
+                <div
+                    onClick={() => setDialogOpen(true)}
+                    className="absolute bottom-4 right-4 w-16 h-16 shadow-md rounded-full flex items-center justify-center bg-purple-500 cursor-pointer hover:bg-purple-600 transition-colors"
+                >
+                    <span className="text-3xl font-bold text-white">+</span>
+                </div>
+            </FloatingActions>
 
             {dialogOpen && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                    className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50"
                     onClick={() => { if (!submitting) setDialogOpen(false); }}
                 >
                     <div

@@ -213,7 +213,7 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
 
             {viewerOpen && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 cursor-pointer"
+                    className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 cursor-pointer"
                     onClick={() => setViewerOpen(false)}
                 >
                     <div
