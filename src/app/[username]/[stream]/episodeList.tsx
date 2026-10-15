@@ -11,6 +11,7 @@ import { resolveApiUrl } from '@/common/helpers/api';
 import FloatingActions from '@/app/common/components/floatingActions';
 import { useAuth } from '@/app/common/context/AuthContext';
 import ArrowIcon from '@/app/common/components/icons/arrowIcon';
+import { releaseTime } from '@/common/helpers/schedule';
 
 type SortDir = 'desc' | 'asc';
 
@@ -93,8 +94,8 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
     };
 
     const sorted = [...episodeData].sort((a, b) => {
-        const aTime = Number(a.uploadDate) || 0;
-        const bTime = Number(b.uploadDate) || 0;
+        const aTime = releaseTime(a);
+        const bTime = releaseTime(b);
         return sortDir === 'desc' ? bTime - aTime : aTime - bTime;
     });
 
@@ -156,6 +157,7 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                             title={episode.title}
                             description={episode.description}
                             uploadDate={episode.uploadDate}
+                            releaseDate={episode.releaseDate}
                             url={episode.url}
                             author={episode.author}
                             imageUrl={episode.imageUrl}
@@ -164,6 +166,7 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                             canEdit={isOwner}
                             stream={stream}
                             onTitleChanged={handleEpisodeTitleChanged}
+                            onScheduleChanged={fetchEpisodes}
                             splitStatus={episode.splitStatus}
                             splitError={episode.splitError}
                             actions={isOwner && episode.splitStatus !== 'pending' && seasons.length > 0 && (

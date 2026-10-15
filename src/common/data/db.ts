@@ -6,6 +6,7 @@ import { UserDto } from '../dtos/userDto';
 import { EpisodeDto } from '../dtos/episodeDto';
 import { StreamDto, StreamAccessEntry, SeasonDto } from '../dtos/streamDto';
 import { DATA_DIR, DB_PATH } from '../helpers/paths';
+import { isReleased, releaseTime } from '../helpers/schedule';
 
 export type DatabaseSchema = {
     schema_version: number;
@@ -112,7 +113,7 @@ export const getRandomEpisodes = async (limit: number = 20) => {
     const allEpisodes = db.data?.streams
         .filter((s) => !s.isPrivate)
         .flatMap((s) => s.episodes ?? [])
-        .filter((e) => e.splitStatus !== 'pending') ?? [];
+        .filter((e) => e.splitStatus !== 'pending' && isReleased(e)) ?? [];
     const shuffled = allEpisodes.slice().sort(() => Math.random() - 0.5);
     return shuffled.slice(0, limit);
 };
@@ -144,6 +145,16 @@ const addEpisode = async (episode: EpisodeDto, seasonId?: string) => {
             .map((e) => Number(e.uploadDate) || 0));
         if ((Number(episode.uploadDate) || 0) < latest + 1000) {
             episode.uploadDate = (latest + 1000).toString();
+        }
+        // Likewise a scheduled episode never shares a release second with another in its season,
+        // so a whole season released at once still arrives in order
+        if (episode.releaseDate) {
+            const taken = new Set(stream.episodes
+                .filter((e) => e.seasonId === seasonId)
+                .map((e) => Math.floor(releaseTime(e) / 1000)));
+            let release = Number(episode.releaseDate);
+            while (taken.has(Math.floor(release / 1000))) release += 1000;
+            episode.releaseDate = release.toString();
         }
         episode.episodeNumber = nextEpisodeNumber(stream, seasonId);
         episode.seasonId = seasonId;
@@ -335,6 +346,27 @@ export const updateEpisodeTitle = async (streamIdOrName: string, episodeId: stri
     if (!episode) return null;
 
     episode.title = title;
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return episode;
+};
+
+// A null releaseDate releases the episode now
+export const updateEpisodeReleaseDate = async (streamIdOrName: string, episodeId: string, releaseDate: string | null) => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === streamIdOrName || s.name === streamIdOrName);
+    const episode = stream?.episodes?.find((e) => e.episodeId === episodeId);
+    if (!episode) return null;
+
+    if (releaseDate) {
+        episode.releaseDate = releaseDate;
+    } else {
+        // Released now rather than at its upload time, so it reaches the top of the feed
+        if (episode.releaseDate) episode.uploadDate = Date.now().toString();
+        delete episode.releaseDate;
+    }
     await queueWrite(async () => {
         await db.write();
     });
@@ -604,6 +636,7 @@ export const replaceEpisodeWithParts = async (idOrName: string, episodeId: strin
     const seasonId = season.id;
     const firstNumber = original.episodeNumber ?? 0;
     const firstDate = Number(original.uploadDate) || Date.now();
+    const firstRelease = Number(original.releaseDate) || 0;
     const partEpisodes: EpisodeDto[] = parts.map((part, partIndex) => ({
         episodeId: uuidv4(),
         streamId: stream.id,
@@ -613,6 +646,8 @@ export const replaceEpisodeWithParts = async (idOrName: string, episodeId: strin
         url: part.url,
         // A second apart so feed dates keep the parts in order
         uploadDate: (firstDate + partIndex * 1000).toString(),
+        // A scheduled upload stays scheduled, its parts released together
+        releaseDate: firstRelease ? (firstRelease + partIndex * 1000).toString() : undefined,
         seasonId,
         // Fractions slot the parts in where the original sat; renumbering makes them whole again
         episodeNumber: firstNumber + (partIndex + 1) / (parts.length + 1),

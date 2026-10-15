@@ -13,6 +13,7 @@ import ChevronRightSvg from '@/icons/chevron-right.svg';
 import RemoveCircleSvg from '@/icons/remove-circle.svg';
 import TrashSvg from '@/icons/trash.svg';
 import EpisodeCard from './episodeCard';
+import { isReleased } from '@/common/helpers/schedule';
 
 type SeasonCardProps = {
     season: SeasonDto;
@@ -41,6 +42,8 @@ export default function SeasonCard({
         [busy, setBusy] = useState(false),
         coverInputRef = useRef<HTMLInputElement>(null);
 
+    // Only the owner is sent episodes that are not released yet
+    const scheduledCount = episodes.filter((episode) => !isReleased(episode)).length;
     const podcastFallback = resolveAssetUrl('/icons/podcast.svg');
     const coverSrc = season.imageUrl || episodes[0]?.imageUrl || streamImageUrl || podcastFallback;
 
@@ -133,6 +136,7 @@ export default function SeasonCard({
                 <div className="flex-grow min-w-0">
                     <p className="text-xs font-semibold text-purple-800">
                         Season {season.number} &middot; {episodes.length} episode{episodes.length === 1 ? '' : 's'}
+                        {scheduledCount > 0 && <> &middot; {scheduledCount} scheduled</>}
                     </p>
                     <div onClick={canEdit ? (e) => e.stopPropagation() : undefined}>
                         <EditableText
@@ -180,6 +184,7 @@ export default function SeasonCard({
                                 title={episode.title}
                                 description={episode.description}
                                 uploadDate={episode.uploadDate}
+                                releaseDate={episode.releaseDate}
                                 url={episode.url}
                                 author={episode.author}
                                 imageUrl={episode.imageUrl}
@@ -188,6 +193,7 @@ export default function SeasonCard({
                                 canEdit={canEdit}
                                 stream={stream}
                                 onTitleChanged={onEpisodeTitleChanged}
+                                onScheduleChanged={onChanged}
                                 episodeNumber={episode.episodeNumber}
                                 splitStatus={episode.splitStatus}
                                 splitError={episode.splitError}

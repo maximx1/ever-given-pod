@@ -4,6 +4,7 @@ import { getEpisodes, getUserById } from '../data/db';
 import { prepareEpisodeItem, prepareStreamItem, withFeedToken } from './data';
 import { parseSessionCookie } from './auth';
 import { StreamDto } from '../dtos/streamDto';
+import { isReleased, releaseTime } from './schedule';
 
 export async function handleFeedRequest(
     req: NextApiRequest,
@@ -30,12 +31,12 @@ export async function handleFeedRequest(
         feedToken = streamData.isPrivate ? token : undefined,
         data = prepareStreamItem(streamData, owner?.username),
         seasonNumbers = new Map(streamData.seasons?.map((s) => [s.id, s.number])),
-        // An episode still being split is about to be replaced by its parts
-        items = (await getEpisodes(streamData.id)).filter((ep) => ep.splitStatus !== 'pending').map((ep) => {
-            const uploaded = Number(ep.uploadDate);
+        // An episode still being split is about to be replaced by its parts; a scheduled one is not out yet
+        items = (await getEpisodes(streamData.id)).filter((ep) => ep.splitStatus !== 'pending' && isReleased(ep)).map((ep) => {
+            const released = releaseTime(ep);
             return {
                 ...prepareEpisodeItem(ep, feedToken, streamData.seasons),
-                date: Number.isFinite(uploaded) && uploaded > 0 ? new Date(uploaded) : undefined,
+                date: released > 0 ? new Date(released) : undefined,
                 itunesSeason: ep.seasonId ? seasonNumbers.get(ep.seasonId) : undefined,
                 itunesEpisode: ep.seasonId ? ep.episodeNumber : undefined,
             };

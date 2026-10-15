@@ -9,6 +9,12 @@ import { SeasonDto, StreamDto } from '@/common/dtos/streamDto';
 import { FIELD_LIMITS } from '@/common/limits';
 import CharCount from '@/app/common/components/charCount';
 import FileDropZone from '@/app/common/components/fileDropZone';
+import { fromDateTimeInput, toDateTimeInput } from '@/common/helpers/schedule';
+
+// 'each' gives every file its own release date; it is only offered when files become episodes in a batch
+type ReleaseMode = 'now' | 'date' | 'each';
+
+const fileKey = (file: File) => `${file.name}:${file.size}`;
 
 // "02 - Intro.mp3" sorts before "10 - Outro.mp3"
 const byFileName = (a: File, b: File) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
@@ -61,7 +67,11 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
         [progress, setProgress] = useState(-1),
         [uploadingName, setUploadingName] = useState(''),
         [batchStarted, setBatchStarted] = useState(false),
-        [tab, setTab] = useState<'episode' | 'season'>('episode');
+        [tab, setTab] = useState<'episode' | 'season'>('episode'),
+        [releaseMode, setReleaseMode] = useState<ReleaseMode>('now'),
+        [releaseAt, setReleaseAt] = useState(''),
+        [everyDays, setEveryDays] = useState('7'),
+        [fileDates, setFileDates] = useState<Record<string, string>>({});
 
     // The Season tab starts a new season, with any number of files as its first episodes.
     // The Episode tab adds one episode, or several files at once to an existing season.
@@ -72,7 +82,11 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
     const showsTextFields = !isBatch;
     const imageRequired = !titlesFromFiles && !seasonId;
     const needsSeasonChoice = isBatch && !seasonId;
+    // A new season with no files yet has no episodes to release
+    const showsRelease = !createsSeason || audioFiles.length > 0;
+    const mode: ReleaseMode = !titlesFromFiles && releaseMode === 'each' ? 'date' : releaseMode;
     const canSubmit = !submitting
+        && (!showsRelease || mode !== 'date' || fromDateTimeInput(releaseAt) !== undefined)
         && (createsSeason ? !!title.trim() : audioFiles.length > 0)
         && (!showsTextFields || !!title.trim())
         && !needsSeasonChoice
@@ -110,8 +124,8 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
     };
 
     const handleAudioSelected = (files: File[]) => {
-        const known = new Set(audioFiles.map((file) => `${file.name}:${file.size}`));
-        const merged = [...audioFiles, ...files.filter((file) => !known.has(`${file.name}:${file.size}`))].sort(byFileName);
+        const known = new Set(audioFiles.map(fileKey));
+        const merged = [...audioFiles, ...files.filter((file) => !known.has(fileKey(file)))].sort(byFileName);
         setAudioFiles(merged);
         // Several files with no season to put them in: they start a new one
         if (tab === 'episode' && merged.length > 1 && !seasonId && !batchStarted) {
@@ -131,6 +145,29 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
         setUploadingName('');
         setBatchStarted(false);
         setTab('episode');
+        setReleaseMode('now');
+        setReleaseAt('');
+        setEveryDays('7');
+        setFileDates({});
+    };
+
+    // Dates the files from the first date onwards, a set number of days apart, in list order
+    const fillDates = () => {
+        const first = fromDateTimeInput(releaseAt);
+        const days = Math.max(0, Number(everyDays) || 0);
+        if (first === undefined) return;
+        setFileDates(Object.fromEntries(audioFiles.map((file, index) => {
+            const date = new Date(first);
+            // By calendar day, so the time of day holds across daylight saving changes
+            date.setDate(date.getDate() + index * days);
+            return [fileKey(file), toDateTimeInput(date.getTime())];
+        })));
+    };
+
+    // Undefined releases the episode as soon as it is uploaded
+    const releaseDateFor = (file: File) => {
+        if (!showsRelease || mode === 'now') return undefined;
+        return fromDateTimeInput(mode === 'date' ? releaseAt : fileDates[fileKey(file)] ?? '');
     };
 
     const closeDialog = () => {
@@ -185,6 +222,8 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                 formData.append('description', fromFileNames ? '' : description.trim());
                 formData.append('author', author.trim());
                 if (targetSeasonId) formData.append('seasonId', targetSeasonId);
+                const releaseDate = releaseDateFor(file);
+                if (releaseDate !== undefined) formData.append('releaseDate', String(releaseDate));
                 if (!fromFileNames && imageFile) formData.append('image', imageFile);
                 formData.append('file', file);
 
@@ -350,11 +389,21 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                 {audioFiles.length > 0 && (
                                     <ol className="border border-gray-300 rounded-md bg-gray-50 mb-2 max-h-[180px] overflow-y-auto divide-y divide-gray-200">
                                         {audioFiles.map((file, index) => (
-                                            <li key={`${file.name}:${file.size}`} className="flex items-center justify-between px-3 py-2">
+                                            <li key={fileKey(file)} className="flex items-center justify-between gap-2 px-3 py-2">
                                                 <span className="text-sm text-gray-700 truncate">
                                                     {titlesFromFiles && <span className="text-gray-400 mr-2">{index + 1}.</span>}
                                                     {file.name}
                                                 </span>
+                                                {showsRelease && mode === 'each' && (
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={fileDates[fileKey(file)] ?? ''}
+                                                        onChange={(e) => setFileDates((prev) => ({ ...prev, [fileKey(file)]: e.target.value }))}
+                                                        className="ml-auto flex-shrink-0 border border-gray-300 rounded-md px-1 py-0.5 text-xs bg-white"
+                                                        disabled={submitting}
+                                                        title={`Release date for ${file.name}`}
+                                                    />
+                                                )}
                                                 <button
                                                     type="button"
                                                     onClick={() => setAudioFiles((prev) => prev.filter((f) => f !== file))}
@@ -382,6 +431,65 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                     />
                                 )}
                             </div>
+                            {showsRelease && (
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 block mb-1">Release</label>
+                                    <select
+                                        value={mode}
+                                        onChange={(e) => setReleaseMode(e.target.value as ReleaseMode)}
+                                        className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none bg-white"
+                                        disabled={submitting}
+                                    >
+                                        <option value="now">{titlesFromFiles ? 'As soon as they are uploaded' : 'As soon as it is uploaded'}</option>
+                                        <option value="date">{titlesFromFiles ? 'All on one date' : 'On a date'}</option>
+                                        {titlesFromFiles && <option value="each">Each episode on its own date</option>}
+                                    </select>
+                                    {mode !== 'now' && (
+                                        <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-gray-700">
+                                            {mode === 'each' && <span>First on</span>}
+                                            <input
+                                                type="datetime-local"
+                                                value={releaseAt}
+                                                onChange={(e) => setReleaseAt(e.target.value)}
+                                                className="border border-gray-300 rounded-md p-2 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none bg-white"
+                                                disabled={submitting}
+                                                aria-label={mode === 'each' ? 'First release date' : 'Release date'}
+                                            />
+                                            {mode === 'each' && (
+                                                <>
+                                                    <span>then every</span>
+                                                    <input
+                                                        type="number"
+                                                        min={0}
+                                                        max={365}
+                                                        value={everyDays}
+                                                        onChange={(e) => setEveryDays(e.target.value)}
+                                                        className="w-16 border border-gray-300 rounded-md p-2 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                                        disabled={submitting}
+                                                        aria-label="Days between releases"
+                                                    />
+                                                    <span>days</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={fillDates}
+                                                        className="px-3 py-1.5 text-sm border border-purple-500 text-purple-700 rounded-md hover:bg-purple-50 disabled:opacity-50"
+                                                        disabled={submitting || fromDateTimeInput(releaseAt) === undefined || audioFiles.length === 0}
+                                                    >
+                                                        Fill dates
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                    {mode !== 'now' && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {mode === 'each'
+                                                ? 'Set a date beside each file, or fill them in from a first date. A file left without a date is released as soon as it is uploaded.'
+                                                : `Only you can see ${titlesFromFiles ? 'these episodes' : 'this episode'} until then. Listeners and the feed get ${titlesFromFiles ? 'them' : 'it'} on this date.`}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {submitting && progress >= 0 && (

@@ -11,6 +11,7 @@ import { parseSessionCookie } from '../../../common/helpers/auth';
 import { discardUploads, getUploadExtension, isAudioUpload, validateImageUpload } from '../../../common/helpers/uploads';
 import { FfmpegMissingError, planSplit, probeAudio, queueSplit, resumePendingSplits } from '../../../common/helpers/splitter';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
+import { isReleased, parseReleaseDate, releaseTime } from '../../../common/helpers/schedule';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
   const stream = req.query.stream as string;
@@ -19,8 +20,8 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
     return res.status(404).json({ error: 'Stream not found' });
   }
 
+  const session = parseSessionCookie(req.headers.cookie);
   if (streamData.isPrivate) {
-    const session = parseSessionCookie(req.headers.cookie);
     if (!session) {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -33,9 +34,12 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
 
   resumePendingSplits().catch((error) => console.error('Could not resume splits:', error));
 
+  // Scheduled episodes are shown to the owner only, until their release date
+  const isOwner = session?.userId === streamData.userId;
   const episodes = (await getEpisodes(streamData.id))
+      .filter((ep) => isOwner || isReleased(ep))
       .map((ep) => prepareEpisodeItem(ep, undefined, streamData.seasons))
-      .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
+      .sort((a, b) => releaseTime(b) - releaseTime(a));
 
   res.status(200).json(episodes);
 };
@@ -83,6 +87,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       const description = fields.description?.[0];
       const author = fields.author?.[0];
       const seasonId = fields.seasonId?.[0] || undefined;
+      const releaseDate = parseReleaseDate(fields.releaseDate?.[0]);
 
       if (title && title.length > FIELD_LIMITS.title) {
         return res.status(400).json({ error: `Title must be ${FIELD_LIMITS.title} characters or fewer` });
@@ -92,6 +97,10 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       }
       if (author && author.length > FIELD_LIMITS.author) {
         return res.status(400).json({ error: `Author must be ${FIELD_LIMITS.author} characters or fewer` });
+      }
+
+      if (releaseDate === null) {
+        return res.status(400).json({ error: 'Release date is not a valid date' });
       }
 
       if (seasonId && !streamData.seasons?.some((s) => s.id === seasonId)) {
@@ -144,6 +153,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         title,
         description,
         uploadDate: Date.now().toString(),
+        releaseDate,
         author,
         imageUrl: imageFileName,
         url: episodeFileName,

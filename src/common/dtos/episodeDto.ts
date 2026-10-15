@@ -11,6 +11,8 @@ export type EpisodeDto = {
     title?: string;
     description?: string;
     uploadDate: string;
+    // Milliseconds since the epoch, like uploadDate. Until then only the owner sees the episode
+    releaseDate?: string;
     url?: string;
     author?: string;
     playCount?: number;
