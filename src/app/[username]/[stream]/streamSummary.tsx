@@ -9,6 +9,7 @@ import { useAuth } from '@/app/common/context/AuthContext';
 import ImageWithActions from '@/app/common/components/image/imageWithActions';
 import PrivacyToggle from '@/app/common/components/privacyToggle';
 import ShareDialog from '@/app/common/components/shareDialog';
+import FeedLink from '@/app/common/components/feedLink';
 import IconExpandTextButton from '@/app/common/components/buttons/iconExpandTextButton';
 import EditableText from '@/app/common/components/editableText';
 import PersonIcon from '@/app/common/components/icons/personIcon';
@@ -48,7 +49,6 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
         [showShareDialog, setShowShareDialog] = useState(false),
         [showSettingsDialog, setShowSettingsDialog] = useState(false),
         [feedToken, setFeedToken] = useState<string | undefined>(),
-        [feedUrl, setFeedUrl] = useState<string>(''),
         [tokenRevealed, setTokenRevealed] = useState(false),
         tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null),
         { user } = useAuth(),
@@ -73,12 +73,6 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                     setSummaryData(data);
                     setIsPrivate(data.isPrivate ?? false);
                     setFeedToken(data.feedToken);
-                    // Initialize feedUrl from initial data
-                    let initialUrl = data.feedUrl ?? '';
-                    if (data.isPrivate && data.feedToken) {
-                        initialUrl += `${initialUrl.includes('?') ? '&' : '?'}token=${data.feedToken}`;
-                    }
-                    setFeedUrl(initialUrl);
                     if (data.imageUrl) {
                         onImageResolved?.(data.imageUrl);
                     }
@@ -256,35 +250,17 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
 
                     <div className="mt-4 flex flex-col md:flex-row md:items-center gap-2">
                         <div className="flex items-center gap-2">
-                            <a
-                                href={feedUrl}
-                                onClick={async (e) => {
-                                    e.preventDefault();
-                                    let url = feedUrl;
-                                    let token = feedToken;
-                                    if (isPrivate && !token) {
-                                        try {
-                                            const res = await fetch(resolveApiUrl(`/${stream}/token`), { method: 'POST' });
-                                            const data = await res.json();
-                                            if (data.feedToken) {
-                                                token = data.feedToken;
-                                                setFeedToken(token);
-                                                // Update the URL with the new token
-                                                url = summaryData.feedUrl ?? '';
-                                                url += `${url.includes('?') ? '&' : '?'}token=${data.feedToken}`;
-                                            }
-                                        } catch { /* ignore */ }
-                                    }
-                                    if (isPrivate && token) {
-                                        url += `${url.includes('?') ? '&' : '?'}token=${token}`;
-                                    }
-                                    navigator.clipboard.writeText(url);
-                                    toast('Feed URL copied to clipboard');
-                                }}
+                            <FeedLink
+                                streamId={summaryData.id}
+                                feedUrl={summaryData.feedUrl}
+                                isPrivate={isPrivate}
+                                feedToken={feedToken}
+                                onTokenResolved={setFeedToken}
+                                title="Click to copy the feed URL, or open it in a new tab"
                                 className='bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm text-gray-900 no-underline'
                             >
                                 RSS Feed
-                            </a>
+                            </FeedLink>
                             <button
                                 onClick={() => handleNavigation(summaryData.siteUrl)}
                                 className='bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm'

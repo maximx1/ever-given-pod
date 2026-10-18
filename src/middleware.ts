@@ -14,13 +14,12 @@ export function middleware(req: NextRequest) {
     const feedMatch = adjustedPathname.match(/^\/([^/]+)\/([^/]+)\/feed$/);
     if (feedMatch) {
         const [, username, streamName] = feedMatch;
-        const destination = new URL(`${basePath}/api/feeds/by-name`, req.url);
-        destination.searchParams.set('username', username);
-        destination.searchParams.set('stream', streamName);
+        // Query params set on a middleware rewrite are dropped in production builds, so the
+        // names go in the path; the route also reads them from req.url when its params are empty
+        url.pathname = `${basePath}/api/feeds/${username}/${streamName}`;
         const token = req.nextUrl.searchParams.get('token');
-        if (token) destination.searchParams.set('token', token);
-
-        return NextResponse.rewrite(destination);
+        url.search = token ? `?token=${encodeURIComponent(token)}` : '';
+        return NextResponse.rewrite(url);
     }
 
     const hasSession = req.cookies.has('session');

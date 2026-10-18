@@ -27,7 +27,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ? streams
         : streams.filter((s) => !s.isPrivate);
 
-    const preparedStreams = visibleStreams.map((s) => prepareStreamItem(s, user.username)).filter(Boolean);
+    // The owner's own feed token lets their private streams' feed links open directly
+    const preparedStreams = visibleStreams
+        .map((s) => {
+            const prepared = prepareStreamItem(s, user.username);
+            const ownToken = isOwnProfile ? s.accessList?.find((a) => a.userId === user.id)?.feedToken : undefined;
+            return prepared && ownToken ? { ...prepared, feedToken: ownToken } : prepared;
+        })
+        .filter(Boolean);
 
     return res.status(200).json({
         id: user.id,

@@ -7,10 +7,14 @@ import { StreamDto } from '@/common/dtos/streamDto';
 import { resolveAppUrl, resolveApiUrl, resolveAssetUrl } from '@/common/helpers/api';
 import TrashSvg from '@/icons/trash.svg';
 import ChevronRightSvg from '@/icons/chevron-right.svg';
+import RssSvg from '@/icons/rss.svg';
+import FeedLink from '@/app/common/components/feedLink';
 
 type StreamCardProps = StreamDto & {
     username: string;
     feedUrl?: string;
+    // The viewer's token for a private stream's feed
+    feedToken?: string;
     siteUrl?: string;
     canEdit?: boolean;
     onDeleted?: () => void;
@@ -30,6 +34,9 @@ export default function StreamCard({
     pubDate,
     ttl,
     imageUrl,
+    feedUrl,
+    feedToken,
+    isPrivate,
     canEdit,
     onDeleted,
 }: StreamCardProps) {
@@ -99,6 +106,16 @@ export default function StreamCard({
                             <TrashSvg className="text-red-500" />
                         </button>
                     )}
+                    <FeedLink
+                        streamId={id}
+                        feedUrl={feedUrl}
+                        isPrivate={isPrivate}
+                        feedToken={feedToken}
+                        className="w-10 h-10 rounded-full border-2 border-purple-500 flex items-center justify-center hover:bg-purple-300 transition"
+                        title="RSS feed: click to copy, or open in a new tab"
+                    >
+                        <RssSvg className="text-purple-500" />
+                    </FeedLink>
                     <Link
                         href={resolveAppUrl(`/${encodeURIComponent(username)}/${encodeURIComponent(name?.trim() || id)}`)}
                         className="w-10 h-10 rounded-full border-2 border-purple-500 flex items-center justify-center hover:bg-purple-300 transition"
