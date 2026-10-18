@@ -60,7 +60,7 @@ export default function StreamCard({
         <>
             <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
                 <div className="w-[150px] h-full max-h-[232px] bg-purple-200 flex-shrink-0 relative">
-                    <Image src={imageUrl ?? resolveAssetUrl('/icons/podcast.svg')} alt={title ?? ''} layout="fill" className="object-contain" />
+                    <Image src={imageUrl ?? resolveAssetUrl('/icons/podcast.svg')} alt={title ?? ''} layout="fill" className="object-contain" unoptimized />
                 </div>
 
                 <div className="p-4 flex-grow flex flex-col">
