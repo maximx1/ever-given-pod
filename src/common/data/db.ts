@@ -7,6 +7,7 @@ import { EpisodeDto } from '../dtos/episodeDto';
 import { StreamDto, StreamAccessEntry, SeasonDto } from '../dtos/streamDto';
 import { DATA_DIR, DB_PATH } from '../helpers/paths';
 import { isReleased, releaseTime } from '../helpers/schedule';
+import { LATEST_SCHEMA_VERSION } from './migrations';
 
 export type DatabaseSchema = {
     schema_version: number;
@@ -19,7 +20,7 @@ export type DatabaseSchema = {
 const seedSampleData = process.env.SEED_SAMPLE_DATA?.trim().toLowerCase() !== 'false';
 
 const defaultData: DatabaseSchema = seedSampleData ? {
-    schema_version: 1,
+    schema_version: LATEST_SCHEMA_VERSION,
     users: [
         {
             id: '1',
@@ -43,7 +44,7 @@ const defaultData: DatabaseSchema = seedSampleData ? {
             episodes: [],
         },
     ],
-} : { schema_version: 1, users: [], streams: [] };
+} : { schema_version: LATEST_SCHEMA_VERSION, users: [], streams: [] };
 
 await fs.mkdir(DATA_DIR, { recursive: true });
 

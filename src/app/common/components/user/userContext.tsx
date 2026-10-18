@@ -5,6 +5,7 @@ import { resolveAppUrl, resolveApiUrl, resolveAssetUrl } from "@/common/helpers/
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/app/common/context/AuthContext";
 import PersonIcon from "@/app/common/components/icons/personIcon";
+import UploadImage from "@/app/common/components/image/uploadImage";
 
 export default function UserContext() {
     const router = useRouter();
@@ -59,9 +60,11 @@ export default function UserContext() {
                     className="flex h-full w-full items-center justify-center cursor-pointer hover:ring-2 hover:ring-inset hover:ring-purple-500 transition"
                 >
                     {hasProfileImage ? (
-                        <img
+                        <UploadImage
                             src={imgSrc}
                             alt={user.name || user.username}
+                            width={64}
+                            height={64}
                             className="h-full w-full object-cover"
                         />
                     ) : (

@@ -10,6 +10,7 @@ import { getUserById, updateUserImage } from '../../../common/data/db';
 import { MAX_IMAGE_SIZE } from '../../../common/limits';
 import { discardUploads } from '../../../common/helpers/uploads';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
+import { deleteUpload } from '../../../common/helpers/storage';
 
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -71,10 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(500).json({ error: 'Failed to update user image' });
             }
 
-            if (oldImageUrl) {
-                const oldPath = path.join(uploadDir, oldImageUrl);
-                await fs.unlink(oldPath).catch(() => {});
-            }
+            await deleteUpload(oldImageUrl);
 
             return res.status(200).json({ imageUrl: imageFileName });
         } catch (error) {

@@ -13,6 +13,7 @@ import { resolveApiUrl, resolveAssetUrl } from '@/common/helpers/api';
 import { FIELD_LIMITS } from '@/common/limits';
 import { usePlayer } from '@/app/common/context/PlayerContext';
 import { formatReleaseTime, fromDateTimeInput, isReleased, releaseTime, toDateTimeInput } from '@/common/helpers/schedule';
+import UploadImage from '@/app/common/components/image/uploadImage';
 
 type EpisodeCardProps = EpisodeDto & {
     fallbackImageUrl?: string;
@@ -101,24 +102,18 @@ export default function EpisodeCard({
     };
 
     const podcastFallback = resolveAssetUrl('/icons/podcast.svg');
-    const imgSrc = imageUrl || fallbackImageUrl || podcastFallback;
     // The file is replaced by its parts when the split finishes, so it is not offered meanwhile
     const playable = !!url && splitStatus !== 'pending';
 
     return (
         <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
             <div className="w-[150px] h-full max-h-[232px] bg-purple-200 flex-shrink-0 relative">
-                <img
-                    src={imgSrc}
+                <UploadImage
+                    src={imageUrl}
+                    fallbacks={[fallbackImageUrl, podcastFallback]}
                     alt={title ?? ''}
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (fallbackImageUrl && target.src !== fallbackImageUrl && target.src !== podcastFallback) {
-                            target.src = fallbackImageUrl;
-                        } else if (target.src !== podcastFallback) {
-                            target.src = podcastFallback;
-                        }
-                    }}
+                    width={150}
+                    height={150}
                     className="object-contain w-full h-full"
                 />
             </div>

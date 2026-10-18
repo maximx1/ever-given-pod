@@ -1,6 +1,6 @@
 "use client";
 
-import Image from 'next/image';
+import UploadImage from '@/app/common/components/image/uploadImage';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { StreamDto } from '@/common/dtos/streamDto';
@@ -56,13 +56,14 @@ export default function DiscoveryGrid({
                             className="aspect-square rounded-lg overflow-hidden shadow focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                             title={stream.title}
                         >
-                            <Image
-                                src={stream.imageUrl || resolveAssetUrl('/icons/podcast.svg')}
+                            <UploadImage
+                                src={stream.imageUrl}
+                                fallbacks={[resolveAssetUrl('/icons/podcast.svg')]}
                                 alt={stream.title ?? ''}
                                 width={200}
                                 height={200}
+                                sizes="(min-width: 1024px) 17vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
                                 className="object-cover w-full h-full"
-                                unoptimized
                             />
                         </button>
                     ))}

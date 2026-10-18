@@ -1,11 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs/promises';
-import path from 'path';
 import { getStream, getUserById, deleteStream, updateStreamTitle } from '../../common/data/db';
 import { FIELD_LIMITS } from '../../common/limits';
 import { prepareStreamItem } from '../../common/helpers/data';
 import { parseSessionCookie } from '../../common/helpers/auth';
-import { UPLOADS_DIR } from '../../common/helpers/paths';
+import { deleteUpload } from '../../common/helpers/storage';
 
 export default async function handler(
     req: NextApiRequest,
@@ -63,7 +61,6 @@ export default async function handler(
         }
 
         // Clean up associated files
-        const uploadDir = UPLOADS_DIR;
         const filesToDelete: string[] = [];
 
         if (removed.imageUrl) {
@@ -77,11 +74,7 @@ export default async function handler(
             if (ep.url) filesToDelete.push(ep.url);
         }
 
-        await Promise.all(
-            filesToDelete.map((f) =>
-                fs.unlink(path.join(uploadDir, f)).catch(() => {})
-            )
-        );
+        await Promise.all(filesToDelete.map(deleteUpload));
 
         return res.status(200).json({ message: 'Stream deleted' });
     }

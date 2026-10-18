@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import Image from 'next/image';
+import UploadImage from '@/app/common/components/image/uploadImage';
 import Link from 'next/link';
 import { StreamDto } from '@/common/dtos/streamDto';
 import { resolveAppUrl, resolveApiUrl, resolveAssetUrl } from '@/common/helpers/api';
@@ -60,7 +60,7 @@ export default function StreamCard({
         <>
             <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
                 <div className="w-[150px] h-full max-h-[232px] bg-purple-200 flex-shrink-0 relative">
-                    <Image src={imageUrl ?? resolveAssetUrl('/icons/podcast.svg')} alt={title ?? ''} layout="fill" className="object-contain" unoptimized />
+                    <UploadImage src={imageUrl} fallbacks={[resolveAssetUrl('/icons/podcast.svg')]} alt={title ?? ''} fill sizes="150px" className="object-contain" />
                 </div>
 
                 <div className="p-4 flex-grow flex flex-col">

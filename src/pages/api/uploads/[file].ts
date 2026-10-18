@@ -2,11 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import path from 'path';
 import fs from 'fs';
 import mime from 'mime-types';
-import sharp from 'sharp';
 import { getStreamByFile } from '../../../common/data/db';
 import { parseSessionCookie } from '../../../common/helpers/auth';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
 import { isReleased } from '../../../common/helpers/schedule';
+import { DEFAULT_IMAGE_QUALITY, getVariant, snapQuality, snapSize } from '../../../common/helpers/imageCache';
 
 const SUPPORTED_IMAGE_TYPES = new Set([
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/tiff',
@@ -16,34 +16,6 @@ const INLINE_MEDIA_TYPES = new Set(['application/mp4', 'application/ogg']);
 
 const isInlineSafe = (type: string) =>
     SUPPORTED_IMAGE_TYPES.has(type) || INLINE_MEDIA_TYPES.has(type) || type.startsWith('audio/') || type.startsWith('video/');
-
-async function getResizedPath(originalPath: string, max: number): Promise<string | null> {
-    const ext = path.extname(originalPath);
-    const base = path.basename(originalPath, ext);
-    const cachedPath = path.join(path.dirname(originalPath), `${base}.${max}${ext}`);
-
-    if (fs.existsSync(cachedPath)) {
-        return cachedPath;
-    }
-
-    const metadata = await sharp(originalPath).metadata();
-    const width = metadata.width ?? 0;
-    const height = metadata.height ?? 0;
-
-    if (width <= max && height <= max) {
-        return null;
-    }
-
-    const resizeOptions = width >= height
-        ? { width: max }
-        : { height: max };
-
-    await sharp(originalPath, { animated: true })
-        .resize({ ...resizeOptions, withoutEnlargement: true })
-        .toFile(cachedPath);
-
-    return cachedPath;
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const file = (req.query.file as string)
@@ -82,9 +54,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // A scheduled episode's files are the owner's alone until its release date
     const episode = stream?.episodes?.find((e) => e.url === file || e.imageUrl === file);
-    if (stream && episode && !isReleased(episode) && parseSessionCookie(req.headers.cookie)?.userId !== stream.userId) {
+    const isUnreleased = !!episode && !isReleased(episode);
+    if (stream && isUnreleased && parseSessionCookie(req.headers.cookie)?.userId !== stream.userId) {
         return res.status(404).json({ error: 'File not found' });
     }
+    const isRestricted = !!stream?.isPrivate || isUnreleased;
 
     // Anything that is not plain media is sent as a download so it can never run as a page on this origin
     const detectedType = mime.lookup(filePath) || 'application/octet-stream';
@@ -94,18 +68,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.setHeader('Content-Disposition', 'attachment');
     }
 
-    const maxParam = req.query.max as string | undefined;
-    const max = maxParam ? Math.min(parseInt(maxParam, 10), 2000) : NaN;
+    // ?w= fits the width (next/image), ?max= the longer side (feeds and older links)
+    const widthParam = parseInt(req.query.w as string, 10);
+    const maxParam = parseInt(req.query.max as string, 10);
+    const requested = widthParam > 0 ? widthParam : maxParam;
 
-    if (!isNaN(max) && max > 0 && SUPPORTED_IMAGE_TYPES.has(contentType)) {
+    if (requested > 0 && SUPPORTED_IMAGE_TYPES.has(contentType)) {
+        const qualityParam = parseInt(req.query.q as string, 10);
         try {
-            const resizedPath = await getResizedPath(filePath, max);
-            const servePath = resizedPath ?? filePath;
-            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-            res.setHeader('Content-Type', contentType);
-            fs.createReadStream(servePath).pipe(res);
+            const variant = await getVariant(file, filePath, {
+                size: snapSize(requested),
+                fit: widthParam > 0 ? 'width' : 'longest',
+                quality: snapQuality(qualityParam > 0 ? qualityParam : DEFAULT_IMAGE_QUALITY),
+                webp: !!req.headers.accept?.includes('image/webp'),
+            });
+            // A file name never changes content, but private and unreleased images stay out of shared caches
+            res.setHeader('Cache-Control', isRestricted
+                ? 'private, max-age=3600'
+                : 'public, max-age=31536000, immutable');
+            res.setHeader('Vary', 'Accept');
+            res.setHeader('Content-Type', variant.contentType);
+            fs.createReadStream(variant.path).pipe(res);
             return;
-        } catch {
+        } catch (error) {
+            console.error(`Could not resize ${file}:`, error);
             // Fall through to serve original on resize error
         }
     }

@@ -14,6 +14,7 @@ import RemoveCircleSvg from '@/icons/remove-circle.svg';
 import TrashSvg from '@/icons/trash.svg';
 import EpisodeCard from './episodeCard';
 import { isReleased } from '@/common/helpers/schedule';
+import UploadImage from '@/app/common/components/image/uploadImage';
 
 type SeasonCardProps = {
     season: SeasonDto;
@@ -45,7 +46,7 @@ export default function SeasonCard({
     // Only the owner is sent episodes that are not released yet
     const scheduledCount = episodes.filter((episode) => !isReleased(episode)).length;
     const podcastFallback = resolveAssetUrl('/icons/podcast.svg');
-    const coverSrc = season.imageUrl || episodes[0]?.imageUrl || streamImageUrl || podcastFallback;
+    const coverSrc = season.imageUrl || episodes[0]?.imageUrl || streamImageUrl;
 
     const handleCoverSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -112,13 +113,12 @@ export default function SeasonCard({
                 className="flex items-center gap-3 p-3 cursor-pointer"
                 onClick={() => setExpanded(!expanded)}
             >
-                <img
+                <UploadImage
                     src={coverSrc}
+                    fallbacks={[podcastFallback]}
                     alt=""
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src !== podcastFallback) target.src = podcastFallback;
-                    }}
+                    width={56}
+                    height={56}
                     onClick={canEdit ? (e) => { e.stopPropagation(); coverInputRef.current?.click(); } : undefined}
                     title={canEdit ? 'Change cover' : undefined}
                     className={`w-14 h-14 object-contain flex-shrink-0 ${canEdit ? 'hover:opacity-70' : ''}`}

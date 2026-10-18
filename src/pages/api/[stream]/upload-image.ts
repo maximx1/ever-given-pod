@@ -7,6 +7,7 @@ import { parseSessionCookie } from '../../../common/helpers/auth';
 import { getStream, updateStreamImage } from '../../../common/data/db';
 import { discardUploads, getUploadExtension, validateImageUpload } from '../../../common/helpers/uploads';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
+import { deleteUpload } from '../../../common/helpers/storage';
 
 export const config = {
     api: {
@@ -71,10 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(500).json({ error: 'Failed to update stream image' });
             }
 
-            if (oldImageUrl) {
-                const oldPath = path.join(uploadDir, oldImageUrl);
-                await fs.unlink(oldPath).catch(() => {});
-            }
+            await deleteUpload(oldImageUrl);
 
             return res.status(200).json({ imageUrl: imageFileName });
         } catch (error) {

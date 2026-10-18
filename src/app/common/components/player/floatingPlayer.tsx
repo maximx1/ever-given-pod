@@ -7,6 +7,7 @@ import PlayerQueue from '@/app/common/components/player/playerQueue';
 import LinearProgress from '@/app/common/components/player/linearProgress';
 import CircularProgress from '@/app/common/components/player/circularProgress';
 import ChevronUpSvg from '@/icons/chevron-up.svg';
+import UploadImage from '@/app/common/components/image/uploadImage';
 
 export default function FloatingPlayer() {
     const { queue, currentIndex, currentTime, duration, queueOpen, toggleQueue, seekTo, podcastFallbackUrl, closePlayer } = usePlayer();
@@ -14,7 +15,6 @@ export default function FloatingPlayer() {
     if (queue.length === 0) return null;
 
     const current = queue[currentIndex];
-    const imgSrc = current.imageUrl || current.fallbackImageUrl || podcastFallbackUrl;
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-20">
@@ -31,17 +31,12 @@ export default function FloatingPlayer() {
 
                 {/* Episode art — lowest priority, show from 500px up */}
                 <div className="hidden min-[500px]:block flex-shrink-0 w-14 h-14">
-                    <img
-                        src={imgSrc}
-                        alt={current.title}
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            if (current.fallbackImageUrl && target.src !== current.fallbackImageUrl && target.src !== podcastFallbackUrl) {
-                                target.src = current.fallbackImageUrl;
-                            } else if (target.src !== podcastFallbackUrl) {
-                                target.src = podcastFallbackUrl;
-                            }
-                        }}
+                    <UploadImage
+                        src={current.imageUrl}
+                        fallbacks={[current.fallbackImageUrl, podcastFallbackUrl]}
+                        alt={current.title ?? ''}
+                        width={56}
+                        height={56}
                         className="w-full h-full object-contain rounded-sm"
                     />
                 </div>

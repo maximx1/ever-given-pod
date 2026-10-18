@@ -8,6 +8,7 @@ import { getStream, updateSeasonImage } from '../../../common/data/db';
 import { prepareSeasonItem } from '../../../common/helpers/data';
 import { discardUploads, getUploadExtension, validateImageUpload } from '../../../common/helpers/uploads';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
+import { deleteUpload } from '../../../common/helpers/storage';
 
 export const config = {
     api: {
@@ -72,9 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(500).json({ error: 'Failed to update season image' });
             }
 
-            if (oldImageUrl) {
-                await fs.unlink(path.join(uploadDir, oldImageUrl)).catch(() => {});
-            }
+            await deleteUpload(oldImageUrl);
 
             return res.status(200).json(prepareSeasonItem(updated));
         } catch (error) {

@@ -1,12 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs/promises';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { canViewStream, parseSessionCookie } from '../../../common/helpers/auth';
 import { getStream, getSeasons, createSeason, updateSeason, deleteSeason, reorderSeason } from '../../../common/data/db';
 import { FIELD_LIMITS } from '../../../common/limits';
 import { prepareSeasonItem } from '../../../common/helpers/data';
-import { UPLOADS_DIR } from '../../../common/helpers/paths';
+import { deleteUpload } from '../../../common/helpers/storage';
 
 const validateText = (title: unknown, description: unknown, titleRequired: boolean): string | null => {
     if (title !== undefined || titleRequired) {
@@ -118,9 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(404).json({ message: 'Season not found' });
         }
 
-        if (removed.imageUrl) {
-            await fs.unlink(path.join(UPLOADS_DIR, removed.imageUrl)).catch(() => {});
-        }
+        await deleteUpload(removed.imageUrl);
 
         return res.status(200).json({ message: 'Season removed' });
     }

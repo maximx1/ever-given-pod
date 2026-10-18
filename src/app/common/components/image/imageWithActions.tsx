@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import FileDropZone from '@/app/common/components/fileDropZone';
+import UploadImage from '@/app/common/components/image/uploadImage';
 
 type ImageWithActionsProps = {
     src: string;
@@ -22,14 +23,8 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
     const uploadRef = useRef<HTMLDivElement>(null);
     const selectedFileRef = useRef<File | null>(null);
 
-    const getResizedUrl = (url: string, max: number) => {
-        const [base] = url.split('?');
-        return `${base}?max=${max}`;
-    };
-
     const getOriginalUrl = (url: string) => url.split('?')[0];
 
-    const viewerSrc = hasImage ? getResizedUrl(src, 2000) : src;
     const originalSrc = hasImage ? getOriginalUrl(src) : src;
 
     useEffect(() => {
@@ -112,8 +107,7 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
     return (
         <>
             <div className="relative w-full h-full cursor-pointer" onClick={handleImageClick}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={alt} className="absolute inset-0 w-full h-full object-cover md:object-contain" />
+                <UploadImage src={src} alt={alt} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover md:object-contain" />
                 {uploading && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-purple-100/70">
                         <span className="text-sm text-gray-600 mb-2">Uploading... {uploadProgress}%</span>
@@ -222,8 +216,7 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex-1 relative min-h-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={viewerSrc} alt={alt} className="absolute inset-0 w-full h-full object-contain" />
+                            <UploadImage src={src} alt={alt} fill sizes="min(80vh, 90vw)" className="object-contain" />
                         </div>
                         <div className="flex items-center justify-center px-3 py-2 bg-gray-50 border-t border-gray-200">
                             <a

@@ -2,6 +2,7 @@
 
 import { usePlayer } from '@/app/common/context/PlayerContext';
 import TrashSvg from '@/icons/trash.svg';
+import UploadImage from '@/app/common/components/image/uploadImage';
 
 export default function PlayerQueue() {
     const { queue, currentIndex, queueOpen, jumpToQueueItem, removeFromQueue, podcastFallbackUrl } = usePlayer();
@@ -19,7 +20,6 @@ export default function PlayerQueue() {
                     <ul>
                         {queue.map((item, index) => {
                             const isActive = index === currentIndex;
-                            const imgSrc = item.imageUrl || item.fallbackImageUrl || podcastFallbackUrl;
                             return (
                                 <li
                                     key={`${item.episodeId}-${index}`}
@@ -28,17 +28,12 @@ export default function PlayerQueue() {
                                     }`}
                                     onClick={() => jumpToQueueItem(index)}
                                 >
-                                    <img
-                                        src={imgSrc}
-                                        alt={item.title}
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            if (item.fallbackImageUrl && target.src !== item.fallbackImageUrl && target.src !== podcastFallbackUrl) {
-                                                target.src = item.fallbackImageUrl;
-                                            } else if (target.src !== podcastFallbackUrl) {
-                                                target.src = podcastFallbackUrl;
-                                            }
-                                        }}
+                                    <UploadImage
+                                        src={item.imageUrl}
+                                        fallbacks={[item.fallbackImageUrl, podcastFallbackUrl]}
+                                        alt={item.title ?? ''}
+                                        width={40}
+                                        height={40}
                                         className="w-10 h-10 object-contain flex-shrink-0 rounded-sm"
                                     />
                                     <div className="flex-1 min-w-0">

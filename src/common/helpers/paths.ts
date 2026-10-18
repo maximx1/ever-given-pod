@@ -6,3 +6,7 @@ export const DATA_DIR = process.env.DATA_DIR?.trim() ? path.resolve(process.env.
 
 export const DB_PATH = path.join(DATA_DIR, 'db.json');
 export const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+
+// Resized copies of uploaded images, one folder per original. Safe to delete at any time:
+// everything in it is made again on the next request.
+export const IMAGE_CACHE_DIR = path.join(DATA_DIR, 'cache', 'images');

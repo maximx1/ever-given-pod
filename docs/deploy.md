@@ -65,6 +65,13 @@ Everything the app stores is in `/data` inside the container:
 
 - `/data/db.json`: accounts, streams, episode details
 - `/data/uploads/`: audio and images
+- `/data/cache/images/`: resized copies of the images, made the first time each size is
+  asked for. Safe to delete at any time and not worth backing up
+- `/data/db.json.v<n>.bak`: the database as it was before an update changed its format
+
+When the app starts it brings `db.json` up to date for the new version (keeping the old copy
+as above), then once a day removes uploads that nothing points at any more. A file is only
+removed once it is a day old, so uploads still in progress are never touched.
 
 By default that is the Docker volume `ever-given-pod_data`. It survives rebuilding and
 replacing the container. It does **not** survive `docker compose down -v` or

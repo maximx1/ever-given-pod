@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getStream, getStreams, replaceEpisodeWithParts, setEpisodeSplitStatus } from '../data/db';
 import { DEFAULT_SPLIT_MINUTES } from '../limits';
 import { UPLOADS_DIR } from './paths';
+import { deleteUpload } from './storage';
 
 const FFMPEG = process.env.FFMPEG_PATH || 'ffmpeg';
 const FFPROBE = process.env.FFPROBE_PATH || 'ffprobe';
@@ -162,9 +163,7 @@ const runSplit = async (streamId: string, episodeId: string) => {
         }
 
         await fs.unlink(filePath).catch(() => {});
-        if (replaced.orphanedImageUrl) {
-            await fs.unlink(path.join(uploadDir, replaced.orphanedImageUrl)).catch(() => {});
-        }
+        await deleteUpload(replaced.orphanedImageUrl);
     } catch (error) {
         console.error(`Could not split episode ${episodeId}:`, error);
         await setEpisodeSplitStatus(streamId, episodeId, 'failed', error instanceof Error ? error.message : 'Splitting failed');
