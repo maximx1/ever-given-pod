@@ -11,3 +11,7 @@ export const FIELD_LIMITS = {
 } as const;
 
 export const MAX_IMAGE_SIZE = 30 * 1024 * 1024; // 30 MB
+
+// Length of a part when long audio is split, per stream setting
+export const DEFAULT_SPLIT_MINUTES = 60;
+export const SPLIT_MINUTES_RANGE = { min: 5, max: 600 } as const;

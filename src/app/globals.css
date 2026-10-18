@@ -24,6 +24,16 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     color: #09001e;
 }
+
+/* Dialogs cover the page with a .modal-overlay. The page behind one must not scroll. */
+html:has(.modal-overlay) {
+    overflow: hidden;
+}
+
+.modal-overlay {
+    overscroll-behavior: contain;
+}
+
 @keyframes marquee {
     0% {
         transform: translateX(0);

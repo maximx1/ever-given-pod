@@ -6,9 +6,12 @@ import multiparty from 'multiparty';
 import { getEpisodes, getStream, publishEpisode } from '../../../common/data/db';
 import { EpisodeDto } from '../../../common/dtos/episodeDto';
 import { prepareEpisodeItem } from '../../../common/helpers/data';
-import { FIELD_LIMITS } from '../../../common/limits';
+import { DEFAULT_SPLIT_MINUTES, FIELD_LIMITS } from '../../../common/limits';
 import { parseSessionCookie } from '../../../common/helpers/auth';
 import { discardUploads, getUploadExtension, isAudioUpload, validateImageUpload } from '../../../common/helpers/uploads';
+import { FfmpegMissingError, planSplit, probeAudio, queueSplit, resumePendingSplits } from '../../../common/helpers/splitter';
+import { UPLOADS_DIR } from '../../../common/helpers/paths';
+import { isReleased, parseReleaseDate, releaseTime } from '../../../common/helpers/schedule';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
   const stream = req.query.stream as string;
@@ -17,8 +20,8 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
     return res.status(404).json({ error: 'Stream not found' });
   }
 
+  const session = parseSessionCookie(req.headers.cookie);
   if (streamData.isPrivate) {
-    const session = parseSessionCookie(req.headers.cookie);
     if (!session) {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -29,9 +32,14 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
     }
   }
 
+  resumePendingSplits().catch((error) => console.error('Could not resume splits:', error));
+
+  // Scheduled episodes are shown to the owner only, until their release date
+  const isOwner = session?.userId === streamData.userId;
   const episodes = (await getEpisodes(streamData.id))
-      .map((ep) => prepareEpisodeItem(ep))
-      .sort((a, b) => Number(b.uploadDate) - Number(a.uploadDate));
+      .filter((ep) => isOwner || isReleased(ep))
+      .map((ep) => prepareEpisodeItem(ep, undefined, streamData.seasons))
+      .sort((a, b) => releaseTime(b) - releaseTime(a));
 
   res.status(200).json(episodes);
 };
@@ -62,7 +70,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(403).json({ error: 'Not authorized' });
   }
 
-  const uploadDir = path.join(process.cwd(), 'uploads');
+  const uploadDir = UPLOADS_DIR;
   await fs.mkdir(uploadDir, { recursive: true });
   const form = new multiparty.Form({
     uploadDir
@@ -78,6 +86,8 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       const title = fields.title?.[0];
       const description = fields.description?.[0];
       const author = fields.author?.[0];
+      const seasonId = fields.seasonId?.[0] || undefined;
+      const releaseDate = parseReleaseDate(fields.releaseDate?.[0]);
 
       if (title && title.length > FIELD_LIMITS.title) {
         return res.status(400).json({ error: `Title must be ${FIELD_LIMITS.title} characters or fewer` });
@@ -89,14 +99,23 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).json({ error: `Author must be ${FIELD_LIMITS.author} characters or fewer` });
       }
 
+      if (releaseDate === null) {
+        return res.status(400).json({ error: 'Release date is not a valid date' });
+      }
+
+      if (seasonId && !streamData.seasons?.some((s) => s.id === seasonId)) {
+        return res.status(400).json({ error: 'Season not found' });
+      }
+
       const imageFile = files.image?.[0];
       const episodeFile = files.file?.[0];
 
-      if (!imageFile || !episodeFile) {
+      // An episode in a season may go without its own image and show the season's cover
+      if (!episodeFile || (!imageFile && !seasonId)) {
         return res.status(400).json({ error: 'Missing image or file' });
       }
 
-      const imageError = await validateImageUpload(imageFile);
+      const imageError = imageFile ? await validateImageUpload(imageFile) : null;
       if (imageError) {
         return res.status(400).json({ error: imageError });
       }
@@ -104,14 +123,29 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).json({ error: 'Only audio files are allowed' });
       }
 
-      const imageFileName = `${uuidv4()}${getUploadExtension(imageFile)}`;
+      const imageFileName = imageFile ? `${uuidv4()}${getUploadExtension(imageFile)}` : undefined;
       const episodeFileName = `${uuidv4()}${getUploadExtension(episodeFile)}`;
 
-      const imageFilePath = path.join(uploadDir, imageFileName);
       const episodeFilePath = path.join(uploadDir, episodeFileName);
 
-      await fs.rename(imageFile.path, imageFilePath);
+      if (imageFile && imageFileName) {
+        await fs.rename(imageFile.path, path.join(uploadDir, imageFileName));
+      }
       await fs.rename(episodeFile.path, episodeFilePath);
+
+      // Long audio is published as one episode marked pending, then split into parts in the background
+      let splitting = false;
+      if (streamData.autoSplit ?? true) {
+        try {
+          const probe = await probeAudio(episodeFilePath);
+          splitting = planSplit(probe, streamData.splitMinutes ?? DEFAULT_SPLIT_MINUTES) !== null;
+        } catch (error) {
+          // Without ffmpeg, or with audio it cannot read, the upload stays a single episode
+          if (!(error instanceof FfmpegMissingError)) {
+            console.warn('Could not inspect uploaded audio:', error);
+          }
+        }
+      }
 
       const episodeData: EpisodeDto = {
         episodeId: uuidv4(),
@@ -119,15 +153,20 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
         title,
         description,
         uploadDate: Date.now().toString(),
+        releaseDate,
         author,
         imageUrl: imageFileName,
         url: episodeFileName,
+        splitStatus: splitting ? 'pending' : undefined,
       };
 
-      await publishEpisode(episodeData);
+      await publishEpisode(episodeData, seasonId);
+      if (splitting) {
+        queueSplit(streamData.id, episodeData.episodeId!);
+      }
 
       res.setHeader('Location', `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/${stream}/podcasts/${episodeData.episodeId}`);
-      res.status(201).json({ message: 'Episode created successfully' });
+      res.status(201).json({ message: 'Episode created successfully', splitting });
     } catch (error) {
       console.error('Error handling request:', error);
       res.status(500).json({ error: 'Internal server error' });

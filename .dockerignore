@@ -1,0 +1,15 @@
+# Keep the build context small and keep local state and secrets out of the image.
+node_modules
+.next
+uploads
+db.json
+backups
+.git
+.env
+.env.*
+.claude
+.vscode
+docs
+other
+*.md
+*.tsbuildinfo

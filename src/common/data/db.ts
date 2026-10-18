@@ -1,10 +1,12 @@
-import path from 'path';
 import fs from 'fs/promises';
 import bcrypt from 'bcrypt';
 import { JSONFilePreset } from 'lowdb/node';
+import { v4 as uuidv4 } from 'uuid';
 import { UserDto } from '../dtos/userDto';
 import { EpisodeDto } from '../dtos/episodeDto';
-import { StreamDto, StreamAccessEntry } from '../dtos/streamDto';
+import { StreamDto, StreamAccessEntry, SeasonDto } from '../dtos/streamDto';
+import { DATA_DIR, DB_PATH } from '../helpers/paths';
+import { isReleased, releaseTime } from '../helpers/schedule';
 
 export type DatabaseSchema = {
     schema_version: number;
@@ -12,7 +14,11 @@ export type DatabaseSchema = {
     streams: StreamDto[];
 };
 
-const defaultData: DatabaseSchema = {
+// A new database starts with a sample account whose password is published in the README.
+// A server that other people can reach should start empty instead: SEED_SAMPLE_DATA=false
+const seedSampleData = process.env.SEED_SAMPLE_DATA?.trim().toLowerCase() !== 'false';
+
+const defaultData: DatabaseSchema = seedSampleData ? {
     schema_version: 1,
     users: [
         {
@@ -37,17 +43,18 @@ const defaultData: DatabaseSchema = {
             episodes: [],
         },
     ],
-};
-const dbPath = path.join(process.cwd(), 'db.json');
+} : { schema_version: 1, users: [], streams: [] };
+
+await fs.mkdir(DATA_DIR, { recursive: true });
 
 // A blank db.json is treated like a missing one. Anything else that is not valid JSON still stops
 // the app, so a damaged database is never silently replaced with the defaults.
-const existingFile = await fs.readFile(dbPath, 'utf8').catch(() => null);
+const existingFile = await fs.readFile(DB_PATH, 'utf8').catch(() => null);
 if (existingFile !== null && existingFile.trim() === '') {
-    await fs.rm(dbPath, { force: true });
+    await fs.rm(DB_PATH, { force: true });
 }
 
-const db = await JSONFilePreset(dbPath, defaultData)
+const db = await JSONFilePreset(DB_PATH, defaultData)
 
 // A hand-reset file such as {} has none of the collections the rest of the app reads
 const fillMissingCollections = () => {
@@ -66,11 +73,15 @@ const processQueue = async () => {
     isWriting = true;
     const task = writeQueue.shift();
 
-    if (task) {
-        await task();
+    try {
+        if (task) {
+            await task();
+        }
+    } catch (error) {
+        console.error('Database write failed:', error);
+    } finally {
+        isWriting = false;
     }
-
-    isWriting = false;
 
     processQueue();
 };
@@ -101,7 +112,8 @@ export const getEpisodes = async (idOrName: string) => {
 export const getRandomEpisodes = async (limit: number = 20) => {
     const allEpisodes = db.data?.streams
         .filter((s) => !s.isPrivate)
-        .flatMap((s) => s.episodes ?? []) ?? [];
+        .flatMap((s) => s.episodes ?? [])
+        .filter((e) => e.splitStatus !== 'pending' && isReleased(e)) ?? [];
     const shuffled = allEpisodes.slice().sort(() => Math.random() - 0.5);
     return shuffled.slice(0, limit);
 };
@@ -112,16 +124,56 @@ export const getRandomStreams = async (limit: number = 12) => {
     return shuffled.slice(0, limit);
 };
 
-export const publishEpisode = async (episode: EpisodeDto) => {
-    await queueWrite(async () => {
-        const stream = db.data?.streams.find((s) => s.id === episode.streamId);
-        if (stream) {
-            if (!stream.episodes) stream.episodes = [];
-            stream.episodes.push(episode);
-            await db.write();
+const nextEpisodeNumber = (stream: StreamDto, seasonId: string) => {
+    const numbers = (stream.episodes ?? [])
+        .filter((e) => e.seasonId === seasonId)
+        .map((e) => e.episodeNumber ?? 0);
+    return Math.max(0, ...numbers) + 1;
+};
+
+// With a seasonId the episode is added to the end of that season
+const addEpisode = async (episode: EpisodeDto, seasonId?: string) => {
+    const stream = db.data?.streams.find((s) => s.id === episode.streamId);
+    if (!stream) return;
+
+    if (!stream.episodes) stream.episodes = [];
+    if (seasonId && stream.seasons?.some((s) => s.id === seasonId)) {
+        // Feed dates only resolve to the second, so keep each new episode at least a second
+        // after the season's latest; apps that sort by date then keep the season in order
+        const latest = Math.max(0, ...stream.episodes
+            .filter((e) => e.seasonId === seasonId)
+            .map((e) => Number(e.uploadDate) || 0));
+        if ((Number(episode.uploadDate) || 0) < latest + 1000) {
+            episode.uploadDate = (latest + 1000).toString();
+        }
+        // Likewise a scheduled episode never shares a release second with another in its season,
+        // so a whole season released at once still arrives in order
+        if (episode.releaseDate) {
+            const taken = new Set(stream.episodes
+                .filter((e) => e.seasonId === seasonId)
+                .map((e) => Math.floor(releaseTime(e) / 1000)));
+            let release = Number(episode.releaseDate);
+            while (taken.has(Math.floor(release / 1000))) release += 1000;
+            episode.releaseDate = release.toString();
+        }
+        episode.episodeNumber = nextEpisodeNumber(stream, seasonId);
+        episode.seasonId = seasonId;
+    }
+    stream.episodes.push(episode);
+    await db.write();
+};
+
+// Resolves once the episode is in the stream, not merely queued
+export const publishEpisode = (episode: EpisodeDto, seasonId?: string) => new Promise<void>((resolve, reject) => {
+    queueWrite(async () => {
+        try {
+            await addEpisode(episode, seasonId);
+            resolve();
+        } catch (error) {
+            reject(error);
         }
     });
-};
+});
 
 export const createStream = async (stream: StreamDto) => {
     await queueWrite(async () => {
@@ -300,9 +352,31 @@ export const updateEpisodeTitle = async (streamIdOrName: string, episodeId: stri
     return episode;
 };
 
+// A null releaseDate releases the episode now
+export const updateEpisodeReleaseDate = async (streamIdOrName: string, episodeId: string, releaseDate: string | null) => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === streamIdOrName || s.name === streamIdOrName);
+    const episode = stream?.episodes?.find((e) => e.episodeId === episodeId);
+    if (!episode) return null;
+
+    if (releaseDate) {
+        episode.releaseDate = releaseDate;
+    } else {
+        // Released now rather than at its upload time, so it reaches the top of the feed
+        if (episode.releaseDate) episode.uploadDate = Date.now().toString();
+        delete episode.releaseDate;
+    }
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return episode;
+};
+
 export const getStreamByFile = async (filename: string) => {
     return db.data?.streams.find((s) =>
         s.imageUrl === filename ||
+        s.seasons?.some((season) => season.imageUrl === filename) ||
         s.episodes?.some((e) => e.url === filename || e.imageUrl === filename)
     );
 };
@@ -350,4 +424,239 @@ export const incrementPlayCount = async (streamIdOrName: string, episodeId: stri
         episode.playCount = (episode.playCount ?? 0) + 1;
         await db.write();
     });
+};
+
+// ----------------------
+// ------ Seasons -------
+// ----------------------
+
+// Keeps a season's episode numbers contiguous (1..n) in their current order
+const renumberSeason = (stream: StreamDto, seasonId: string) => {
+    (stream.episodes ?? [])
+        .filter((e) => e.seasonId === seasonId)
+        .sort((a, b) => (a.episodeNumber ?? Number.MAX_SAFE_INTEGER) - (b.episodeNumber ?? Number.MAX_SAFE_INTEGER))
+        .forEach((e, index) => {
+            e.episodeNumber = index + 1;
+        });
+};
+
+const nextSeasonNumber = (stream: StreamDto) => Math.max(0, ...(stream.seasons ?? []).map((s) => s.number)) + 1;
+
+export const getSeasons = async (idOrName: string) => {
+    const stream = db.data?.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    return (stream?.seasons ?? []).slice().sort((a, b) => a.number - b.number);
+};
+
+export const createSeason = async (idOrName: string, season: Omit<SeasonDto, 'number'>): Promise<SeasonDto | null> => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    if (!stream) return null;
+
+    if (!stream.seasons) stream.seasons = [];
+    const created: SeasonDto = { ...season, number: nextSeasonNumber(stream) };
+    stream.seasons.push(created);
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return created;
+};
+
+export const updateSeason = async (idOrName: string, seasonId: string, updates: { title?: string; description?: string }) => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    const season = stream?.seasons?.find((s) => s.id === seasonId);
+    if (!season) return null;
+
+    if (updates.title !== undefined) season.title = updates.title;
+    if (updates.description !== undefined) season.description = updates.description || undefined;
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return season;
+};
+
+export const updateSeasonImage = async (idOrName: string, seasonId: string, imageUrl: string) => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    const season = stream?.seasons?.find((s) => s.id === seasonId);
+    if (!season) return null;
+
+    season.imageUrl = imageUrl;
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return season;
+};
+
+// Removes the season only; its episodes stay in the stream as ungrouped episodes
+export const deleteSeason = async (idOrName: string, seasonId: string): Promise<SeasonDto | null> => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    const index = stream?.seasons?.findIndex((s) => s.id === seasonId) ?? -1;
+    if (!stream?.seasons || index === -1) return null;
+
+    const [removed] = stream.seasons.splice(index, 1);
+    for (const episode of stream.episodes ?? []) {
+        if (episode.seasonId === seasonId) {
+            delete episode.seasonId;
+            delete episode.episodeNumber;
+        }
+    }
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return removed;
+};
+
+// Moves an episode to the end of a season, or out of its season when seasonId is null
+export const moveEpisodeToSeason = async (idOrName: string, episodeId: string, seasonId: string | null): Promise<EpisodeDto | null> => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    const episode = stream?.episodes?.find((e) => e.episodeId === episodeId);
+    if (!stream || !episode) return null;
+    if (seasonId && !stream.seasons?.some((s) => s.id === seasonId)) return null;
+
+    const previousSeasonId = episode.seasonId;
+    if (previousSeasonId === (seasonId ?? undefined)) return episode;
+
+    if (seasonId) {
+        episode.episodeNumber = nextEpisodeNumber(stream, seasonId);
+        episode.seasonId = seasonId;
+    } else {
+        delete episode.seasonId;
+        delete episode.episodeNumber;
+    }
+    if (previousSeasonId) renumberSeason(stream, previousSeasonId);
+
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return episode;
+};
+
+// episodeIds must list every episode of the season exactly once, in the wanted order
+export const reorderSeason = async (idOrName: string, seasonId: string, episodeIds: string[]): Promise<EpisodeDto[] | null> => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    if (!stream?.seasons?.some((s) => s.id === seasonId)) return null;
+
+    const members = (stream.episodes ?? []).filter((e) => e.seasonId === seasonId);
+    const isSameSet = members.length === episodeIds.length
+        && new Set(episodeIds).size === episodeIds.length
+        && members.every((e) => !!e.episodeId && episodeIds.includes(e.episodeId));
+    if (!isSameSet) return null;
+
+    for (const episode of members) {
+        episode.episodeNumber = episodeIds.indexOf(episode.episodeId!) + 1;
+    }
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return members.sort((a, b) => (a.episodeNumber ?? 0) - (b.episodeNumber ?? 0));
+};
+
+// ----------------------
+// ------ Splitting -----
+// ----------------------
+
+export const updateStreamSettings = async (idOrName: string, updates: { autoSplit?: boolean; splitMinutes?: number }) => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    if (!stream) return null;
+
+    if (updates.autoSplit !== undefined) stream.autoSplit = updates.autoSplit;
+    if (updates.splitMinutes !== undefined) stream.splitMinutes = updates.splitMinutes;
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return stream;
+};
+
+export const setEpisodeSplitStatus = async (idOrName: string, episodeId: string, status: EpisodeDto['splitStatus'], error?: string) => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    const episode = stream?.episodes?.find((e) => e.episodeId === episodeId);
+    if (!episode) return null;
+
+    if (status) {
+        episode.splitStatus = status;
+    } else {
+        delete episode.splitStatus;
+    }
+    if (error) {
+        episode.splitError = error;
+    } else {
+        delete episode.splitError;
+    }
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return episode;
+};
+
+export type SplitPart = { url: string; title: string; description: string };
+
+// Swaps an episode for the parts it was split into. Outside a season, the parts get a new season
+// that takes over the episode's title, description and image. Returns the removed episode, plus
+// its image when no season could adopt it.
+export const replaceEpisodeWithParts = async (idOrName: string, episodeId: string, parts: SplitPart[]) => {
+    if (!db.data) return null;
+
+    const stream = db.data.streams.find((s) => s.id === idOrName || s.name === idOrName);
+    const index = stream?.episodes?.findIndex((e) => e.episodeId === episodeId) ?? -1;
+    if (!stream?.episodes || index === -1) return null;
+
+    const original = stream.episodes[index];
+    let orphanedImageUrl: string | undefined;
+    let season = stream.seasons?.find((s) => s.id === original.seasonId);
+    if (!season) {
+        season = {
+            id: uuidv4(),
+            number: nextSeasonNumber(stream),
+            title: original.title || 'Untitled',
+            description: original.description || undefined,
+            imageUrl: original.imageUrl,
+        };
+        if (!stream.seasons) stream.seasons = [];
+        stream.seasons.push(season);
+    } else if (original.imageUrl && !season.imageUrl) {
+        season.imageUrl = original.imageUrl;
+    } else {
+        orphanedImageUrl = original.imageUrl;
+    }
+
+    const seasonId = season.id;
+    const firstNumber = original.episodeNumber ?? 0;
+    const firstDate = Number(original.uploadDate) || Date.now();
+    const firstRelease = Number(original.releaseDate) || 0;
+    const partEpisodes: EpisodeDto[] = parts.map((part, partIndex) => ({
+        episodeId: uuidv4(),
+        streamId: stream.id,
+        title: part.title,
+        description: part.description,
+        author: original.author,
+        url: part.url,
+        // A second apart so feed dates keep the parts in order
+        uploadDate: (firstDate + partIndex * 1000).toString(),
+        // A scheduled upload stays scheduled, its parts released together
+        releaseDate: firstRelease ? (firstRelease + partIndex * 1000).toString() : undefined,
+        seasonId,
+        // Fractions slot the parts in where the original sat; renumbering makes them whole again
+        episodeNumber: firstNumber + (partIndex + 1) / (parts.length + 1),
+    }));
+    stream.episodes.splice(index, 1, ...partEpisodes);
+    renumberSeason(stream, seasonId);
+
+    await queueWrite(async () => {
+        await db.write();
+    });
+    return { original, orphanedImageUrl };
 };

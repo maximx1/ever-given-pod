@@ -5,6 +5,8 @@ import mime from 'mime-types';
 import sharp from 'sharp';
 import { getStreamByFile } from '../../../common/data/db';
 import { parseSessionCookie } from '../../../common/helpers/auth';
+import { UPLOADS_DIR } from '../../../common/helpers/paths';
+import { isReleased } from '../../../common/helpers/schedule';
 
 const SUPPORTED_IMAGE_TYPES = new Set([
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/tiff',
@@ -51,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'File not specified' });
     }
 
-    const uploadsDir = path.resolve(process.cwd(), 'uploads');
+    const uploadsDir = UPLOADS_DIR;
     const filePath = path.resolve(uploadsDir, file);
 
     if (!filePath.startsWith(uploadsDir + path.sep)) {
@@ -76,6 +78,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(403).json({ error: 'Invalid token' });
             }
         }
+    }
+
+    // A scheduled episode's files are the owner's alone until its release date
+    const episode = stream?.episodes?.find((e) => e.url === file || e.imageUrl === file);
+    if (stream && episode && !isReleased(episode) && parseSessionCookie(req.headers.cookie)?.userId !== stream.userId) {
+        return res.status(404).json({ error: 'File not found' });
     }
 
     // Anything that is not plain media is sent as a download so it can never run as a page on this origin

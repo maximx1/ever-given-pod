@@ -4,7 +4,8 @@ import path from 'path';
 import mime from 'mime-types';
 import { EpisodeDto } from '../dtos/episodeDto';
 import { resolveApiUrl, resolveAppUrl, resolveAssetUrl } from './api';
-import { StreamDto } from '../dtos/streamDto';
+import { SeasonDto, StreamDto } from '../dtos/streamDto';
+import { UPLOADS_DIR } from './paths';
 
 export const getFileSize = (filePath: string): number => {
     const stats = fs.statSync(filePath);
@@ -23,28 +24,36 @@ export const convertUrlToPublic = (url?: string, max?: number) => {
     return max ? `${base}?max=${max}` : base;
 };
 
-export const prepareEpisodeItem = (episode: EpisodeDto, token?: string) => {
+// Files of a private stream are only served with a feed token (or a session), images included
+export const withFeedToken = (url?: string, token?: string) =>
+    url && token ? `${url}${url.includes('?') ? '&' : '?'}token=${token}` : url;
+
+export const prepareSeasonItem = (season: SeasonDto) => ({
+    ...season,
+    imageUrl: convertUrlToPublic(season.imageUrl, 600),
+});
+
+// Pass the stream's seasons so an episode without its own image shows its season's cover
+export const prepareEpisodeItem = (episode: EpisodeDto, token?: string, seasons?: SeasonDto[]) => {
     let fileSize = 0;
     let fileMimeType = 'application/octet-stream';
     if (episode.url) {
         try {
-            fileSize = getFileSize(path.join(process.cwd(), `uploads/${episode.url}`));
+            fileSize = getFileSize(path.join(UPLOADS_DIR, episode.url));
             fileMimeType = getFileMimeType(episode.url);
         } catch {
             // File may not exist on disk
         }
     }
-    let fileUrl = convertUrlToPublic(episode.url);
-    if (fileUrl && token) {
-        fileUrl += `${fileUrl.includes('?') ? '&' : '?'}token=${token}`;
-    }
+    const fileUrl = withFeedToken(convertUrlToPublic(episode.url), token);
 
+    const seasonImageUrl = episode.seasonId ? seasons?.find((s) => s.id === episode.seasonId)?.imageUrl : undefined;
     const publicEpisode = { ...episode };
     delete publicEpisode.playbackPositions;
 
     return {
         ...publicEpisode,
-        imageUrl: convertUrlToPublic(episode.imageUrl, 600),
+        imageUrl: withFeedToken(convertUrlToPublic(episode.imageUrl ?? seasonImageUrl, 600), token),
         url: fileUrl,
         enclosure: {
             url: fileUrl ?? '',
@@ -66,6 +75,7 @@ export const prepareStreamItem = (stream?: StreamDto, ownerUsername?: string) =>
     const basePath = ownerUsername ? `/${encodeURIComponent(ownerUsername)}/${slug}` : `/${slug}`;
     return {
         ...streamWithoutEpisodes,
+        seasons: stream.seasons?.map(prepareSeasonItem),
         imageUrl,
         feedUrl: resolveApiUrl(`/${stream.id}/feed`),
         siteUrl: stream.siteUrl ?? resolveAppUrl(basePath)
