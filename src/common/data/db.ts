@@ -416,6 +416,18 @@ export const getPlaybackPosition = async (streamIdOrName: string, episodeId: str
     return { position: entry.position, duration: entry.duration };
 };
 
+export const incrementDownloadCount = async (streamId: string, episodeId: string, day: string) => {
+    await queueWrite(async () => {
+        const stream = db.data?.streams.find((s) => s.id === streamId);
+        const episode = stream?.episodes?.find((e) => e.episodeId === episodeId);
+        if (!episode) return;
+        const downloads = episode.downloads ??= { total: 0, daily: {} };
+        downloads.total += 1;
+        downloads.daily[day] = (downloads.daily[day] ?? 0) + 1;
+        await db.write();
+    });
+};
+
 export const incrementPlayCount = async (streamIdOrName: string, episodeId: string) => {
     await queueWrite(async () => {
         const stream = db.data?.streams.find((s) => s.id === streamIdOrName || s.name === streamIdOrName);

@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getStream, getUserById, deleteStream, updateStreamTitle } from '../../common/data/db';
 import { FIELD_LIMITS } from '../../common/limits';
 import { prepareStreamItem } from '../../common/helpers/data';
+import { sumDownloads } from '../../common/helpers/downloadStats';
 import { parseSessionCookie } from '../../common/helpers/auth';
 import { deleteUpload } from '../../common/helpers/storage';
 
@@ -127,6 +128,7 @@ export default async function handler(
         ...(isOwner ? {
             isPrivate: streamData.isPrivate ?? false,
             accessList: enrichedAccessList,
+            downloads: sumDownloads((streamData.episodes ?? []).map((e) => e.downloads)),
         } : {}),
         ...(myAccess ? { feedToken: myAccess.feedToken } : {}),
     });

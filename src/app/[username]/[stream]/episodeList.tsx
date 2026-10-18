@@ -169,6 +169,7 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                             onScheduleChanged={fetchEpisodes}
                             splitStatus={episode.splitStatus}
                             splitError={episode.splitError}
+                            downloads={episode.downloads}
                             actions={isOwner && episode.splitStatus !== 'pending' && seasons.length > 0 && (
                                 <select
                                     value=""

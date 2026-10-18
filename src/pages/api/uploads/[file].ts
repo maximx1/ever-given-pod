@@ -7,6 +7,7 @@ import { parseSessionCookie } from '../../../common/helpers/auth';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
 import { isReleased } from '../../../common/helpers/schedule';
 import { DEFAULT_IMAGE_QUALITY, getVariant, snapQuality, snapSize } from '../../../common/helpers/imageCache';
+import { countDownload } from '../../../common/helpers/downloads';
 
 const SUPPORTED_IMAGE_TYPES = new Set([
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/tiff',
@@ -59,6 +60,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: 'File not found' });
     }
     const isRestricted = !!stream?.isPrivate || isUnreleased;
+
+    // An episode's audio counts as a download, except when its owner fetches it
+    if (stream && episode?.episodeId && episode.url === file && req.method === 'GET'
+        && parseSessionCookie(req.headers.cookie)?.userId !== stream.userId) {
+        countDownload(req, stream.id, episode.episodeId)
+            .catch((error) => console.error(`Could not count a download of ${file}:`, error));
+    }
 
     // Anything that is not plain media is sent as a download so it can never run as a page on this origin
     const detectedType = mime.lookup(filePath) || 'application/octet-stream';

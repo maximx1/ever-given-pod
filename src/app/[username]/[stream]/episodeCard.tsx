@@ -14,6 +14,7 @@ import { FIELD_LIMITS } from '@/common/limits';
 import { usePlayer } from '@/app/common/context/PlayerContext';
 import { formatReleaseTime, fromDateTimeInput, isReleased, releaseTime, toDateTimeInput } from '@/common/helpers/schedule';
 import UploadImage from '@/app/common/components/image/uploadImage';
+import { RECENT_DOWNLOAD_DAYS, recentDownloads } from '@/common/helpers/downloadStats';
 
 type EpisodeCardProps = EpisodeDto & {
     fallbackImageUrl?: string;
@@ -44,6 +45,7 @@ export default function EpisodeCard({
     episodeNumber,
     splitStatus,
     splitError,
+    downloads,
     actions,
 }: EpisodeCardProps) {
     const { requestPlayNow, requestAddToQueue } = usePlayer();
@@ -165,6 +167,11 @@ export default function EpisodeCard({
                 )}
                 <div className="mt-2 text-sm text-gray-500">
                     <p>By: {author}</p>
+                    {canEdit && downloads && (
+                        <p title="Each listener counts once a day; your own listens are not counted">
+                            Downloads: {downloads.total} ({recentDownloads(downloads)} in the last {RECENT_DOWNLOAD_DAYS} days)
+                        </p>
+                    )}
                     {released ? (
                         <p>Released: {publishedAt ?
                             new Date(publishedAt).toLocaleDateString("en-US", {

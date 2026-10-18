@@ -18,6 +18,8 @@ import StreamSettingsDialog from './streamSettingsDialog';
 import KeySvg from '@/icons/key.svg';
 import CopySvg from '@/icons/copy.svg';
 import { FIELD_LIMITS } from '@/common/limits';
+import { DownloadStats } from '@/common/dtos/episodeDto';
+import { RECENT_DOWNLOAD_DAYS, recentDownloads } from '@/common/helpers/downloadStats';
 // Image optimization handled by ImageWithActions — don't import `next/image` here
 import { toast } from 'react-toastify';
 
@@ -39,6 +41,8 @@ type ExtendedStreamDto = StreamDto & {
     isPrivate?: boolean;
     accessList?: StreamAccessEntry[];
     feedToken?: string;
+    // The owner's alone
+    downloads?: DownloadStats;
 };
 
 export default function StreamSummary({ stream, onAccessDenied, onImageResolved, onNameResolved }: StreamSummaryType) {
@@ -237,6 +241,11 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                         <p><strong>Language:</strong> {summaryData.language}</p>
                         <p><strong>Published Date:</strong> {summaryData.pubDate}</p>
                         <p><strong>TTL:</strong> {summaryData.ttl} minutes</p>
+                        {canEdit && summaryData.downloads && (
+                            <p title="Each listener counts once a day per episode; your own listens are not counted">
+                                <strong>Downloads:</strong> {summaryData.downloads.total} ({recentDownloads(summaryData.downloads)} in the last {RECENT_DOWNLOAD_DAYS} days)
+                            </p>
+                        )}
                     </div>
 
                     <div className="mt-4">

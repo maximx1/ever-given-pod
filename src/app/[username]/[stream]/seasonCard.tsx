@@ -197,6 +197,7 @@ export default function SeasonCard({
                                 episodeNumber={episode.episodeNumber}
                                 splitStatus={episode.splitStatus}
                                 splitError={episode.splitError}
+                                downloads={episode.downloads}
                                 actions={canEdit && (
                                     <>
                                         <IconExpandTextButton

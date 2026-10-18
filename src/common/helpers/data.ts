@@ -50,6 +50,8 @@ export const prepareEpisodeItem = (episode: EpisodeDto, token?: string, seasons?
     const seasonImageUrl = episode.seasonId ? seasons?.find((s) => s.id === episode.seasonId)?.imageUrl : undefined;
     const publicEpisode = { ...episode };
     delete publicEpisode.playbackPositions;
+    // Download counts are the owner's; the episode list adds them back for them
+    delete publicEpisode.downloads;
 
     return {
         ...publicEpisode,

@@ -4,6 +4,13 @@ export type PlaybackPosition = {
     duration?: number;
 };
 
+// Downloads of an episode's audio, one per listener (IP and user agent) per UTC day
+export type DownloadStats = {
+    total: number;
+    // Keyed by UTC date, YYYY-MM-DD
+    daily: Record<string, number>;
+};
+
 export type EpisodeDto = {
     episodeId?: string;
     streamId?: string;
@@ -16,6 +23,7 @@ export type EpisodeDto = {
     url?: string;
     author?: string;
     playCount?: number;
+    downloads?: DownloadStats;
     playbackPositions?: PlaybackPosition[];
     seasonId?: string;
     episodeNumber?: number;

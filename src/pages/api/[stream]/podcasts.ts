@@ -39,7 +39,10 @@ const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { er
   const isOwner = session?.userId === streamData.userId;
   const episodes = (await getEpisodes(streamData.id))
       .filter((ep) => isOwner || isReleased(ep))
-      .map((ep) => prepareEpisodeItem(ep, undefined, streamData.seasons))
+      .map((ep) => ({
+          ...prepareEpisodeItem(ep, undefined, streamData.seasons),
+          ...(isOwner ? { downloads: ep.downloads ?? { total: 0, daily: {} } } : {}),
+      }))
       .sort((a, b) => releaseTime(b) - releaseTime(a));
 
   res.status(200).json(episodes);

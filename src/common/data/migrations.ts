@@ -25,6 +25,18 @@ const migrations: Migration[] = [
                 .map((name) => fs.unlink(path.join(UPLOADS_DIR, name)).catch(() => {})));
         },
     },
+    {
+        version: 3,
+        description: 'Episodes keep a download count: a total and a count per day',
+        up: (data) => {
+            const streams = Array.isArray(data.streams) ? data.streams : [];
+            for (const stream of streams) {
+                for (const episode of stream?.episodes ?? []) {
+                    episode.downloads ??= { total: 0, daily: {} };
+                }
+            }
+        },
+    },
 ];
 
 export const LATEST_SCHEMA_VERSION = Math.max(1, ...migrations.map((m) => m.version));
