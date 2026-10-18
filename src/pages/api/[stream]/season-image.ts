@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs/promises';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import multiparty from 'multiparty';
 import { parseSessionCookie } from '../../../common/helpers/auth';
@@ -8,7 +7,7 @@ import { getStream, updateSeasonImage } from '../../../common/data/db';
 import { prepareSeasonItem } from '../../../common/helpers/data';
 import { discardUploads, getUploadExtension, validateImageUpload } from '../../../common/helpers/uploads';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
-import { deleteUpload } from '../../../common/helpers/storage';
+import { deleteUpload, saveImageUpload } from '../../../common/helpers/storage';
 
 export const config = {
     api: {
@@ -65,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             const imageFileName = `${uuidv4()}${getUploadExtension(imageFile)}`;
-            await fs.rename(imageFile.path, path.join(uploadDir, imageFileName));
+            await saveImageUpload(imageFile.path, imageFileName);
 
             const oldImageUrl = season.imageUrl;
             const updated = await updateSeasonImage(stream.id, seasonId, imageFileName);

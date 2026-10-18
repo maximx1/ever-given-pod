@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { DB_PATH, IMAGE_CACHE_DIR, UPLOADS_DIR } from './paths';
-import { clearVariants } from './imageCache';
+import { clearVariants, stripImageMetadata, warmVariants } from './imageCache';
 
 // Deletes an upload together with every resized copy of it
 export const deleteUpload = async (fileName?: string) => {
@@ -10,6 +10,21 @@ export const deleteUpload = async (fileName?: string) => {
     if (!filePath.startsWith(UPLOADS_DIR + path.sep)) return;
     await fs.unlink(filePath).catch(() => {});
     await clearVariants(fileName);
+};
+
+// Moves a received image into the uploads folder under its final name. Camera metadata is
+// removed before anything can serve it; the common sizes are then made in the background.
+export const saveImageUpload = async (tempPath: string, fileName: string) => {
+    const filePath = path.join(UPLOADS_DIR, fileName);
+    await fs.rename(tempPath, filePath);
+    try {
+        await stripImageMetadata(filePath);
+    } catch (error) {
+        // An image sharp cannot read is kept as uploaded, as before
+        console.warn(`Could not remove metadata from ${fileName}:`, error);
+        return;
+    }
+    warmVariants(fileName, filePath).catch((error) => console.warn(`Could not pre-size ${fileName}:`, error));
 };
 
 type StoredData = {

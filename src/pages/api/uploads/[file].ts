@@ -80,7 +80,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 size: snapSize(requested),
                 fit: widthParam > 0 ? 'width' : 'longest',
                 quality: snapQuality(qualityParam > 0 ? qualityParam : DEFAULT_IMAGE_QUALITY),
-                webp: !!req.headers.accept?.includes('image/webp'),
+                // ?format=jpeg for podcast apps, which take only JPEG or PNG artwork
+                format: req.query.format === 'jpeg' ? 'jpeg'
+                    : req.headers.accept?.includes('image/webp') ? 'webp' : undefined,
             });
             // A file name never changes content, but private and unreleased images stay out of shared caches
             res.setHeader('Cache-Control', isRestricted

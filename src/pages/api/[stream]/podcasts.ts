@@ -12,6 +12,7 @@ import { discardUploads, getUploadExtension, isAudioUpload, validateImageUpload 
 import { FfmpegMissingError, planSplit, probeAudio, queueSplit, resumePendingSplits } from '../../../common/helpers/splitter';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
 import { isReleased, parseReleaseDate, releaseTime } from '../../../common/helpers/schedule';
+import { saveImageUpload } from '../../../common/helpers/storage';
 
 const get = async (req: NextApiRequest, res: NextApiResponse<EpisodeDto[] | { error: string }>) => {
   const stream = req.query.stream as string;
@@ -129,7 +130,7 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       const episodeFilePath = path.join(uploadDir, episodeFileName);
 
       if (imageFile && imageFileName) {
-        await fs.rename(imageFile.path, path.join(uploadDir, imageFileName));
+        await saveImageUpload(imageFile.path, imageFileName);
       }
       await fs.rename(episodeFile.path, episodeFilePath);
 

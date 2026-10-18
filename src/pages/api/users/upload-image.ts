@@ -10,7 +10,7 @@ import { getUserById, updateUserImage } from '../../../common/data/db';
 import { MAX_IMAGE_SIZE } from '../../../common/limits';
 import { discardUploads } from '../../../common/helpers/uploads';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
-import { deleteUpload } from '../../../common/helpers/storage';
+import { deleteUpload, saveImageUpload } from '../../../common/helpers/storage';
 
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -61,9 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             const ext = path.extname(imageFile.originalFilename || '') || (mime.extension(detectedType) ? `.${mime.extension(detectedType)}` : '.bin');
             const imageFileName = `${uuidv4()}${ext}`;
-            const imageFilePath = path.join(uploadDir, imageFileName);
-
-            await fs.rename(imageFile.path, imageFilePath);
+            await saveImageUpload(imageFile.path, imageFileName);
 
             const existingUser = await getUserById(session.userId);
             const oldImageUrl = existingUser?.imageUrl;

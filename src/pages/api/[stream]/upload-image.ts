@@ -1,13 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs/promises';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import multiparty from 'multiparty';
 import { parseSessionCookie } from '../../../common/helpers/auth';
 import { getStream, updateStreamImage } from '../../../common/data/db';
 import { discardUploads, getUploadExtension, validateImageUpload } from '../../../common/helpers/uploads';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
-import { deleteUpload } from '../../../common/helpers/storage';
+import { deleteUpload, saveImageUpload } from '../../../common/helpers/storage';
 
 export const config = {
     api: {
@@ -62,9 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             const imageFileName = `${uuidv4()}${getUploadExtension(imageFile)}`;
-            const imageFilePath = path.join(uploadDir, imageFileName);
-
-            await fs.rename(imageFile.path, imageFilePath);
+            await saveImageUpload(imageFile.path, imageFileName);
 
             const oldImageUrl = stream.imageUrl;
             const updated = await updateStreamImage(streamId, imageFileName);

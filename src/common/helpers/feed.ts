@@ -6,6 +6,17 @@ import { parseSessionCookie } from './auth';
 import { StreamDto } from '../dtos/streamDto';
 import { isReleased, releaseTime } from './schedule';
 
+// Podcast apps take only JPEG or PNG artwork, and Apple wants it 1400-3000 pixels square, so the
+// feed asks for a large JPEG instead of the site's 600 pixel copy. Smaller uploads stay their size.
+const toFeedArtwork = (url?: string) => {
+    if (!url) return url;
+    const [base, query = ''] = url.split('?');
+    const params = new URLSearchParams(query);
+    params.set('max', '2048');
+    params.set('format', 'jpeg');
+    return `${base}?${params}`;
+};
+
 export async function handleFeedRequest(
     req: NextApiRequest,
     res: NextApiResponse,
@@ -34,8 +45,10 @@ export async function handleFeedRequest(
         // An episode still being split is about to be replaced by its parts; a scheduled one is not out yet
         items = (await getEpisodes(streamData.id)).filter((ep) => ep.splitStatus !== 'pending' && isReleased(ep)).map((ep) => {
             const released = releaseTime(ep);
+            const episode = prepareEpisodeItem(ep, feedToken, streamData.seasons);
             return {
-                ...prepareEpisodeItem(ep, feedToken, streamData.seasons),
+                ...episode,
+                imageUrl: toFeedArtwork(episode.imageUrl),
                 date: released > 0 ? new Date(released) : undefined,
                 itunesSeason: ep.seasonId ? seasonNumbers.get(ep.seasonId) : undefined,
                 itunesEpisode: ep.seasonId ? ep.episodeNumber : undefined,
@@ -44,7 +57,7 @@ export async function handleFeedRequest(
         // Streams with seasons are meant to be played in order, so apps should list oldest first
         feed = new Podcast({
             ...data,
-            imageUrl: withFeedToken(data?.imageUrl, feedToken),
+            imageUrl: toFeedArtwork(withFeedToken(data?.imageUrl, feedToken)),
             itunesType: streamData.seasons?.length ? 'serial' : undefined,
         });
 

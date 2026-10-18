@@ -10,6 +10,7 @@ import { StreamDto } from '../../common/dtos/streamDto';
 import { FIELD_LIMITS, MAX_IMAGE_SIZE } from '../../common/limits';
 import { discardUploads } from '../../common/helpers/uploads';
 import { UPLOADS_DIR } from '../../common/helpers/paths';
+import { saveImageUpload } from '../../common/helpers/storage';
 
 const VALID_NAME_PATTERN = /^[a-z0-9_-]+$/;
 
@@ -90,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                 const ext = path.extname(imageFile.originalFilename || '') || (mime.extension(detectedType) ? `.${mime.extension(detectedType)}` : '.bin');
                 imageFileName = `${uuidv4()}${ext}`;
-                await fs.rename(imageFile.path, path.join(uploadDir, imageFileName));
+                await saveImageUpload(imageFile.path, imageFileName);
             }
 
             const stream: StreamDto = {
