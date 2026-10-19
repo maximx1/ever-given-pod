@@ -9,6 +9,7 @@ import FloatingPlayer from '@/app/common/components/player/floatingPlayer';
 import ResumeDialog from '@/app/common/components/player/resumeDialog';
 import { usePlayer } from '@/app/common/context/PlayerContext';
 import { FloatingActionsSlot } from '@/app/common/components/floatingActions';
+import ThemeToggle from '@/app/common/components/theme/themeToggle';
 
 const PLAYER_BAR_HEIGHT = 72;
 
@@ -30,7 +31,8 @@ export default function Main({ children, showUserContext = true }: MainProps) {
   
     return (
         <div className="min-h-screen flex flex-col">
-            <header className="bg-purple-300 py-4 sticky top-0 z-10">
+            <header className="bg-card-strong py-4 sticky top-0 z-10">
+                <ThemeToggle className="absolute left-2 top-1/2 -translate-y-1/2" />
                 <div className="mx-auto w-full max-w-full px-4">
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center cursor-pointer" onClick={handleHeaderClick}>
                         <Image src={resolveAssetUrl("/icons/site-icon.svg")} alt="Site Icon" width={32} height={32} className="mr-2" />
@@ -53,7 +55,7 @@ export default function Main({ children, showUserContext = true }: MainProps) {
                     style={{ bottom: playerPad }}
                 />
             </main>
-            <footer className={`${queue.length > 0 ? 'hidden' : ''} bg-purple-300 py-4`}>
+            <footer className={`${queue.length > 0 ? 'hidden' : ''} bg-card-strong py-4`}>
                 <p className="text-right text-sm pr-4">© 2025-{new Date().getFullYear()} Ever Givin Pod</p>
             </footer>
             <FloatingPlayer />

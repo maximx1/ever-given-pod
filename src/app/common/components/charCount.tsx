@@ -11,7 +11,7 @@ export default function CharCount({ current, max, threshold = 0.95 }: CharCountP
     const isOver = remaining <= 0;
 
     return (
-        <span className={`text-xs ${isOver ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
+        <span className={`text-xs ${isOver ? 'text-red-500 font-semibold' : 'text-ink-5'}`}>
             {current}/{max}
         </span>
     );

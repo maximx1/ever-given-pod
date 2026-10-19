@@ -260,18 +260,18 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
             <FloatingActions>
                 <div
                     onClick={() => setDialogOpen(true)}
-                    className="absolute bottom-4 right-4 w-16 h-16 shadow-md rounded-full flex items-center justify-center bg-purple-500 cursor-pointer hover:bg-purple-600 transition-colors"
+                    className="absolute bottom-4 right-4 w-16 h-16 shadow-card rounded-full flex items-center justify-center bg-accent cursor-pointer hover:bg-accent-strong transition-colors"
                 >
-                    <span className="text-3xl font-bold text-white">+</span>
+                    <span className="text-3xl font-bold text-on-accent">+</span>
                 </div>
             </FloatingActions>
 
             {dialogOpen && (
                 // Clicking outside does not close this dialog: a stray click would throw away what was typed
                 <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-[420px] max-h-[90vh] overflow-y-auto">
+                    <div className="bg-raised rounded-lg shadow-lg p-6 w-[420px] max-h-[90vh] overflow-y-auto">
                         {/* Stays at the top while the form scrolls. The negative offsets cover the dialog's padding. */}
-                        <div role="tablist" className="sticky -top-6 z-10 -mx-6 -mt-6 px-6 pt-6 bg-white flex border-b border-gray-200 mb-4">
+                        <div role="tablist" className="sticky -top-6 z-10 -mx-6 -mt-6 px-6 pt-6 bg-raised flex border-b border-line-soft mb-4">
                             {(['episode', 'season'] as const).map((name) => (
                                 <button
                                     key={name}
@@ -281,7 +281,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                     onClick={() => setTab(name)}
                                     disabled={submitting || batchStarted}
                                     className={`px-4 py-2 -mb-px text-lg font-bold border-b-2 transition-colors disabled:cursor-not-allowed ${
-                                        tab === name ? 'border-purple-600 text-gray-800' : 'border-transparent text-gray-400 hover:text-gray-600'
+                                        tab === name ? 'border-accent-strong text-ink' : 'border-transparent text-ink-5 hover:text-ink-3'
                                     }`}
                                 >
                                     {name === 'episode' ? 'Episode' : 'Season'}
@@ -289,7 +289,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                             ))}
                         </div>
                         {createsSeason && (
-                            <p className="text-sm text-gray-500 mb-3">
+                            <p className="text-sm text-ink-4 mb-3">
                                 A season groups episodes in order: a season of a show, or one book and its parts. Add its first episodes now, or add them later from the Episode tab.
                             </p>
                         )}
@@ -297,7 +297,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                             {showsTextFields && (
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <label className="text-sm font-medium text-gray-700">{createsSeason ? 'Season Title' : 'Title'}</label>
+                                        <label className="text-sm font-medium text-ink-2">{createsSeason ? 'Season Title' : 'Title'}</label>
                                         <CharCount current={title.length} max={FIELD_LIMITS.title} />
                                     </div>
                                     <input
@@ -306,7 +306,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                         onChange={(e) => setTitle(e.target.value)}
                                         placeholder={createsSeason ? 'Season title, e.g. the book name' : 'Episode title'}
                                         maxLength={FIELD_LIMITS.title}
-                                        className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                        className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none"
                                         autoFocus
                                         disabled={submitting}
                                         onKeyDown={(e) => { if (e.key === 'Escape' && !submitting) closeDialog(); }}
@@ -316,7 +316,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                             {showsTextFields && (
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <label className="text-sm font-medium text-gray-700">{createsSeason ? 'Season Description' : 'Description'}</label>
+                                        <label className="text-sm font-medium text-ink-2">{createsSeason ? 'Season Description' : 'Description'}</label>
                                         <CharCount current={description.length} max={FIELD_LIMITS.description} />
                                     </div>
                                     <textarea
@@ -325,7 +325,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                         placeholder={createsSeason ? 'Optional' : 'Episode description'}
                                         maxLength={FIELD_LIMITS.description}
                                         rows={3}
-                                        className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none resize-vertical"
+                                        className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none resize-vertical"
                                         disabled={submitting}
                                         onKeyDown={(e) => { if (e.key === 'Escape' && !submitting) closeDialog(); }}
                                     />
@@ -333,7 +333,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                             )}
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <label className="text-sm font-medium text-gray-700">Author</label>
+                                    <label className="text-sm font-medium text-ink-2">Author</label>
                                     <CharCount current={author.length} max={FIELD_LIMITS.author} />
                                 </div>
                                 <input
@@ -342,18 +342,18 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                     onChange={(e) => setAuthor(e.target.value)}
                                     placeholder="Author name"
                                     maxLength={FIELD_LIMITS.author}
-                                    className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none"
                                     disabled={submitting}
                                     onKeyDown={(e) => { if (e.key === 'Escape' && !submitting) closeDialog(); }}
                                 />
                             </div>
                             {!createsSeason && (seasons.length > 0 || isBatch) && (
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 block mb-1">Season</label>
+                                    <label className="text-sm font-medium text-ink-2 block mb-1">Season</label>
                                     <select
                                         value={seasonId}
                                         onChange={(e) => setSeasonId(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none bg-white"
+                                        className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none bg-raised"
                                         disabled={submitting}
                                     >
                                         <option value="">{isBatch ? 'Choose a season' : 'No season'}</option>
@@ -370,7 +370,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                             )}
                             {showsTextFields && (
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 block mb-1">
+                                    <label className="text-sm font-medium text-ink-2 block mb-1">
                                         {createsSeason ? 'Season Cover (optional)' : imageRequired ? 'Episode Image' : 'Episode Image (optional)'}
                                     </label>
                                     <FileDropZone
@@ -383,15 +383,15 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                 </div>
                             )}
                             <div>
-                                <label className="text-sm font-medium text-gray-700 block mb-1">
+                                <label className="text-sm font-medium text-ink-2 block mb-1">
                                     {createsSeason ? 'Audio Files (optional)' : isBatch ? 'Audio Files' : 'Audio File'}
                                 </label>
                                 {audioFiles.length > 0 && (
-                                    <ol className="border border-gray-300 rounded-md bg-gray-50 mb-2 max-h-[180px] overflow-y-auto divide-y divide-gray-200">
+                                    <ol className="border border-line rounded-md bg-raised-alt mb-2 max-h-[180px] overflow-y-auto divide-y divide-line-soft">
                                         {audioFiles.map((file, index) => (
                                             <li key={fileKey(file)} className="flex items-center justify-between gap-2 px-3 py-2">
-                                                <span className="text-sm text-gray-700 truncate">
-                                                    {titlesFromFiles && <span className="text-gray-400 mr-2">{index + 1}.</span>}
+                                                <span className="text-sm text-ink-2 truncate">
+                                                    {titlesFromFiles && <span className="text-ink-5 mr-2">{index + 1}.</span>}
                                                     {file.name}
                                                 </span>
                                                 {showsRelease && mode === 'each' && (
@@ -399,7 +399,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                                         type="datetime-local"
                                                         value={fileDates[fileKey(file)] ?? ''}
                                                         onChange={(e) => setFileDates((prev) => ({ ...prev, [fileKey(file)]: e.target.value }))}
-                                                        className="ml-auto flex-shrink-0 border border-gray-300 rounded-md px-1 py-0.5 text-xs bg-white"
+                                                        className="ml-auto flex-shrink-0 border border-line rounded-md px-1 py-0.5 text-xs bg-raised"
                                                         disabled={submitting}
                                                         title={`Release date for ${file.name}`}
                                                     />
@@ -407,7 +407,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                                 <button
                                                     type="button"
                                                     onClick={() => setAudioFiles((prev) => prev.filter((f) => f !== file))}
-                                                    className="text-gray-400 hover:text-gray-600 text-lg leading-none ml-2 disabled:opacity-30"
+                                                    className="text-ink-5 hover:text-ink-3 text-lg leading-none ml-2 disabled:opacity-30"
                                                     disabled={submitting}
                                                     title="Remove file"
                                                 >
@@ -418,7 +418,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                     </ol>
                                 )}
                                 {titlesFromFiles && audioFiles.length > 0 && (
-                                    <p className="text-xs text-gray-500 mb-2">
+                                    <p className="text-xs text-ink-4 mb-2">
                                         Each file becomes an episode of {createsSeason ? 'the new season' : 'the chosen season'}, in this order. Titles come from the file names.
                                     </p>
                                 )}
@@ -433,11 +433,11 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                             </div>
                             {showsRelease && (
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 block mb-1">Release</label>
+                                    <label className="text-sm font-medium text-ink-2 block mb-1">Release</label>
                                     <select
                                         value={mode}
                                         onChange={(e) => setReleaseMode(e.target.value as ReleaseMode)}
-                                        className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none bg-white"
+                                        className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none bg-raised"
                                         disabled={submitting}
                                     >
                                         <option value="now">{titlesFromFiles ? 'As soon as they are uploaded' : 'As soon as it is uploaded'}</option>
@@ -445,13 +445,13 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                         {titlesFromFiles && <option value="each">Each episode on its own date</option>}
                                     </select>
                                     {mode !== 'now' && (
-                                        <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-gray-700">
+                                        <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-ink-2">
                                             {mode === 'each' && <span>First on</span>}
                                             <input
                                                 type="datetime-local"
                                                 value={releaseAt}
                                                 onChange={(e) => setReleaseAt(e.target.value)}
-                                                className="border border-gray-300 rounded-md p-2 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none bg-white"
+                                                className="border border-line rounded-md p-2 text-sm focus:ring-accent focus:border-accent outline-none bg-raised"
                                                 disabled={submitting}
                                                 aria-label={mode === 'each' ? 'First release date' : 'Release date'}
                                             />
@@ -464,7 +464,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                                         max={365}
                                                         value={everyDays}
                                                         onChange={(e) => setEveryDays(e.target.value)}
-                                                        className="w-16 border border-gray-300 rounded-md p-2 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                                        className="w-16 border border-line rounded-md p-2 text-sm focus:ring-accent focus:border-accent outline-none"
                                                         disabled={submitting}
                                                         aria-label="Days between releases"
                                                     />
@@ -472,7 +472,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                                     <button
                                                         type="button"
                                                         onClick={fillDates}
-                                                        className="px-3 py-1.5 text-sm border border-purple-500 text-purple-700 rounded-md hover:bg-purple-50 disabled:opacity-50"
+                                                        className="px-3 py-1.5 text-sm border border-accent text-accent-ink rounded-md hover:bg-tint-soft disabled:opacity-50"
                                                         disabled={submitting || fromDateTimeInput(releaseAt) === undefined || audioFiles.length === 0}
                                                     >
                                                         Fill dates
@@ -482,7 +482,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                         </div>
                                     )}
                                     {mode !== 'now' && (
-                                        <p className="text-xs text-gray-500 mt-1">
+                                        <p className="text-xs text-ink-4 mt-1">
                                             {mode === 'each'
                                                 ? 'Set a date beside each file, or fill them in from a first date. A file left without a date is released as soon as it is uploaded.'
                                                 : `Only you can see ${titlesFromFiles ? 'these episodes' : 'this episode'} until then. Listeners and the feed get ${titlesFromFiles ? 'them' : 'it'} on this date.`}
@@ -494,10 +494,10 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
 
                         {submitting && progress >= 0 && (
                             <div className="mt-4">
-                                {uploadingName && <p className="text-xs text-gray-500 mb-1 truncate">Uploading {uploadingName}</p>}
-                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                {uploadingName && <p className="text-xs text-ink-4 mb-1 truncate">Uploading {uploadingName}</p>}
+                                <div className="w-full bg-track rounded-full h-2">
                                     <div
-                                        className="bg-purple-600 h-2 rounded-full transition-all"
+                                        className="bg-accent-strong h-2 rounded-full transition-all"
                                         style={{ width: `${progress}%` }}
                                     />
                                 </div>
@@ -508,7 +508,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                             <button
                                 type="button"
                                 onClick={closeDialog}
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                                className="px-4 py-2 text-sm text-ink-3 hover:text-ink"
                                 disabled={submitting}
                             >
                                 Cancel
@@ -516,7 +516,7 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                             <button
                                 type="button"
                                 onClick={handleSubmit}
-                                className="px-4 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                                className="px-4 py-2 text-sm bg-accent-strong text-on-accent rounded-md hover:bg-accent-deep disabled:opacity-50"
                                 disabled={!canSubmit}
                             >
                                 {submitLabel}

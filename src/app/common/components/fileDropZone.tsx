@@ -92,7 +92,7 @@ export default function FileDropZone({ accept, label = 'Drag & drop a file here'
             />
             <div
                 className={`border-2 border-dashed rounded-md flex flex-col items-center justify-center transition-colors cursor-pointer ${
-                    dragOver ? 'border-purple-500 bg-purple-50' : 'border-gray-300 bg-gray-50'
+                    dragOver ? 'border-accent bg-tint-soft' : 'border-line bg-raised-alt'
                 } ${previewUrl ? 'p-2' : 'p-4'}`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -111,7 +111,7 @@ export default function FileDropZone({ accept, label = 'Drag & drop a file here'
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onClear(); }}
-                                className="absolute top-0 right-0 text-gray-400 hover:text-gray-600 text-lg leading-none bg-white rounded-full w-5 h-5 flex items-center justify-center shadow"
+                                className="absolute top-0 right-0 text-ink-5 hover:text-ink-3 text-lg leading-none bg-raised rounded-full w-5 h-5 flex items-center justify-center shadow"
                             >
                                 &times;
                             </button>
@@ -119,8 +119,8 @@ export default function FileDropZone({ accept, label = 'Drag & drop a file here'
                     </div>
                 ) : (
                     <>
-                        <p className="text-sm text-gray-500 mb-1 text-center">{label}</p>
-                        <span className="text-sm text-purple-600 font-medium">or browse files</span>
+                        <p className="text-sm text-ink-4 mb-1 text-center">{label}</p>
+                        <span className="text-sm text-accent-strong font-medium">or browse files</span>
                     </>
                 )}
             </div>

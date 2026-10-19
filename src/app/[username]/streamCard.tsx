@@ -65,17 +65,17 @@ export default function StreamCard({
 
     return (
         <>
-            <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
-                <div className="w-[150px] h-full max-h-[232px] bg-purple-200 flex-shrink-0 relative">
+            <div className="w-full min-h-[150px] shadow-card rounded-sm overflow-hidden flex m-4 mb-1 bg-card">
+                <div className="w-[150px] h-full max-h-[232px] bg-card flex-shrink-0 relative">
                     <UploadImage src={imageUrl} fallbacks={[resolveAssetUrl('/icons/podcast.svg')]} alt={title ?? ''} fill sizes="150px" className="object-contain" />
                 </div>
 
                 <div className="p-4 flex-grow flex flex-col">
-                    <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-                    {name && <p className="text-xs text-gray-400">{name}</p>}
-                    {description && <p className="text-sm text-gray-600">{description}</p>}
+                    <h2 className="text-lg font-bold text-ink">{title}</h2>
+                    {name && <p className="text-xs text-ink-5">{name}</p>}
+                    {description && <p className="text-sm text-ink-3">{description}</p>}
 
-                    <div className="mt-2 text-sm text-gray-500">
+                    <div className="mt-2 text-sm text-ink-4">
                         {author && <p><strong>Author:</strong> {author}</p>}
                         {managingEditor && <p><strong>Managing Editor:</strong> {managingEditor}</p>}
                         {webMaster && <p><strong>Web Master:</strong> {webMaster}</p>}
@@ -86,8 +86,8 @@ export default function StreamCard({
 
                     {categories && categories.length > 0 && (
                         <div className="mt-2">
-                            <p className="text-sm font-bold text-gray-700">Categories:</p>
-                            <ul className="list-disc list-inside text-sm text-gray-600">
+                            <p className="text-sm font-bold text-ink-2">Categories:</p>
+                            <ul className="list-disc list-inside text-sm text-ink-3">
                                 {categories.map((category, index) => (
                                     <li key={index}>{category}</li>
                                 ))}
@@ -100,7 +100,7 @@ export default function StreamCard({
                     {canEdit && (
                         <button
                             onClick={() => setDeleteOpen(true)}
-                            className="w-10 h-10 rounded-full border-2 border-red-400 flex items-center justify-center hover:bg-red-100 transition"
+                            className="w-10 h-10 rounded-full border-2 border-red-400 flex items-center justify-center hover:bg-danger-soft transition"
                             title="Delete stream"
                         >
                             <TrashSvg className="text-red-500" />
@@ -111,17 +111,17 @@ export default function StreamCard({
                         feedUrl={feedUrl}
                         isPrivate={isPrivate}
                         feedToken={feedToken}
-                        className="w-10 h-10 rounded-full border-2 border-purple-500 flex items-center justify-center hover:bg-purple-300 transition"
+                        className="w-10 h-10 rounded-full border-2 border-accent flex items-center justify-center hover:bg-card-strong transition"
                         title="RSS feed: click to copy, or open in a new tab"
                     >
-                        <RssSvg className="text-purple-500" />
+                        <RssSvg className="text-accent" />
                     </FeedLink>
                     <Link
                         href={resolveAppUrl(`/${encodeURIComponent(username)}/${encodeURIComponent(name?.trim() || id)}`)}
-                        className="w-10 h-10 rounded-full border-2 border-purple-500 flex items-center justify-center hover:bg-purple-300 transition"
+                        className="w-10 h-10 rounded-full border-2 border-accent flex items-center justify-center hover:bg-card-strong transition"
                         title="View episodes"
                     >
-                        <ChevronRightSvg className="text-purple-500" />
+                        <ChevronRightSvg className="text-accent" />
                     </Link>
                 </div>
             </div>
@@ -132,11 +132,11 @@ export default function StreamCard({
                     onClick={() => { if (!deleting) { setDeleteOpen(false); setConfirmText(''); } }}
                 >
                     <div
-                        className="bg-white rounded-lg shadow-lg p-6 w-[360px]"
+                        className="bg-raised rounded-lg shadow-lg p-6 w-[360px]"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3 className="text-lg font-bold text-gray-800 mb-2">Delete Stream</h3>
-                        <p className="text-sm text-gray-600 mb-4">
+                        <h3 className="text-lg font-bold text-ink mb-2">Delete Stream</h3>
+                        <p className="text-sm text-ink-3 mb-4">
                             This will permanently delete <strong>{title}</strong> and all its episodes. Type <strong>delete</strong> to confirm.
                         </p>
                         <input
@@ -144,7 +144,7 @@ export default function StreamCard({
                             value={confirmText}
                             onChange={(e) => setConfirmText(e.target.value)}
                             placeholder='Type "delete" to confirm'
-                            className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
+                            className="w-full border border-line rounded-md p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
                             autoFocus
                             onKeyDown={(e) => { if (e.key === 'Enter') handleDelete(); if (e.key === 'Escape') { setDeleteOpen(false); setConfirmText(''); } }}
                         />
@@ -152,7 +152,7 @@ export default function StreamCard({
                             <button
                                 type="button"
                                 onClick={() => { setDeleteOpen(false); setConfirmText(''); }}
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                                className="px-4 py-2 text-sm text-ink-3 hover:text-ink"
                                 disabled={deleting}
                             >
                                 Cancel
@@ -160,7 +160,7 @@ export default function StreamCard({
                             <button
                                 type="button"
                                 onClick={handleDelete}
-                                className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                className="px-4 py-2 text-sm bg-red-600 text-on-accent rounded-md hover:bg-red-700 disabled:opacity-50"
                                 disabled={deleting || confirmText !== 'delete'}
                             >
                                 {deleting ? 'Deleting...' : 'Delete'}

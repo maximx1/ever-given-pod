@@ -34,12 +34,12 @@ export default function Home() {
               ref={inputRef}
               type='text'
               placeholder='Search…'
-              className='w-full pr-12 pl-4 py-4 rounded-lg bg-purple-200 text-base outline-none border border-purple-200'
+              className='w-full pr-12 pl-4 py-4 rounded-lg bg-card text-base outline-none border border-card'
             />
             <button
               type="button"
               onClick={handleSearchClick}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded hover:bg-purple-100 transition"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded hover:bg-tint transition"
               tabIndex={0}
             >
               <SearchSvg />

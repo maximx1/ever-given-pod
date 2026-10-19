@@ -108,8 +108,8 @@ export default function EpisodeCard({
     const playable = !!url && splitStatus !== 'pending';
 
     return (
-        <div className="w-full min-h-[150px] shadow-md rounded-sm overflow-hidden flex m-4 mb-1 bg-purple-200">
-            <div className="w-[150px] h-full max-h-[232px] bg-purple-200 flex-shrink-0 relative">
+        <div className="w-full min-h-[150px] shadow-card rounded-sm overflow-hidden flex m-4 mb-1 bg-card">
+            <div className="w-[150px] h-full max-h-[232px] bg-card flex-shrink-0 relative">
                 <UploadImage
                     src={imageUrl}
                     fallbacks={[fallbackImageUrl, podcastFallback]}
@@ -122,14 +122,14 @@ export default function EpisodeCard({
 
             <div className="p-4 flex-grow flex flex-col">
                 {episodeNumber != null && (
-                    <span className="text-xs font-semibold text-purple-700">Episode {episodeNumber}</span>
+                    <span className="text-xs font-semibold text-accent-ink">Episode {episodeNumber}</span>
                 )}
                 <EditableText
                     value={title ?? ''}
                     canEdit={canEdit}
                     maxLength={FIELD_LIMITS.title}
                     tag="h2"
-                    className="text-lg font-bold text-gray-800"
+                    className="text-lg font-bold text-ink"
                     onSave={async (newTitle) => {
                         if (!stream || !episodeId) return false;
                         try {
@@ -147,11 +147,11 @@ export default function EpisodeCard({
                     }}
                 />
                 <div className="relative">
-                    <div ref={descRef} className={`text-sm text-gray-600 overflow-hidden transition-all duration-300 whitespace-pre-wrap ${descriptionExpanded ? 'max-h-full' : 'max-h-[60px]'}`}>
+                    <div ref={descRef} className={`text-sm text-ink-3 overflow-hidden transition-all duration-300 whitespace-pre-wrap ${descriptionExpanded ? 'max-h-full' : 'max-h-[60px]'}`}>
                         {description}
                     </div>
                     {!descriptionExpanded && needsExpand && (
-                        <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-purple-200 to-transparent pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-card to-transparent pointer-events-none"></div>
                     )}
                 </div>
                 {needsExpand && (
@@ -160,12 +160,12 @@ export default function EpisodeCard({
                     </button>
                 )}
                 {splitStatus === 'pending' && (
-                    <p className="mt-2 text-sm font-semibold text-purple-700">Splitting into parts...</p>
+                    <p className="mt-2 text-sm font-semibold text-accent-ink">Splitting into parts...</p>
                 )}
                 {splitStatus === 'failed' && canEdit && (
                     <p className="mt-2 text-sm text-red-600">Could not split into parts{splitError ? `: ${splitError}` : ''}</p>
                 )}
-                <div className="mt-2 text-sm text-gray-500">
+                <div className="mt-2 text-sm text-ink-4">
                     <p>By: {author}</p>
                     {canEdit && downloads && (
                         <p title="Each listener counts once a day; your own listens are not counted">
@@ -180,7 +180,7 @@ export default function EpisodeCard({
                                 day: "numeric"
                             }) : "Unknown"}</p>
                     ) : (
-                        <p className="font-semibold text-purple-700">Scheduled for {formatReleaseTime(publishedAt)}</p>
+                        <p className="font-semibold text-accent-ink">Scheduled for {formatReleaseTime(publishedAt)}</p>
                     )}
                     {canEdit && !scheduleOpen && (
                         <div className="flex flex-wrap gap-3">
@@ -190,7 +190,7 @@ export default function EpisodeCard({
                                     setScheduleInput(toDateTimeInput(released ? Date.now() + 24 * 60 * 60 * 1000 : publishedAt));
                                     setScheduleOpen(true);
                                 }}
-                                className="text-purple-700 hover:underline"
+                                className="text-accent-ink hover:underline"
                             >
                                 {released ? 'Schedule' : 'Change date'}
                             </button>
@@ -198,7 +198,7 @@ export default function EpisodeCard({
                                 <button
                                     type="button"
                                     onClick={() => saveSchedule(undefined)}
-                                    className="text-purple-700 hover:underline disabled:opacity-50"
+                                    className="text-accent-ink hover:underline disabled:opacity-50"
                                     disabled={scheduleBusy}
                                 >
                                     Release now
@@ -212,14 +212,14 @@ export default function EpisodeCard({
                                 type="datetime-local"
                                 value={scheduleInput}
                                 onChange={(e) => setScheduleInput(e.target.value)}
-                                className="border border-purple-400 rounded-sm px-2 py-1 text-sm text-gray-700 bg-white"
+                                className="border border-card-deep rounded-sm px-2 py-1 text-sm text-ink-2 bg-raised"
                                 aria-label="Release date"
                                 disabled={scheduleBusy}
                             />
                             <button
                                 type="button"
                                 onClick={() => saveSchedule(fromDateTimeInput(scheduleInput))}
-                                className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                                className="px-3 py-1 text-sm bg-accent-strong text-on-accent rounded-md hover:bg-accent-deep disabled:opacity-50"
                                 disabled={scheduleBusy || fromDateTimeInput(scheduleInput) === undefined}
                             >
                                 Save
@@ -227,7 +227,7 @@ export default function EpisodeCard({
                             <button
                                 type="button"
                                 onClick={() => setScheduleOpen(false)}
-                                className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                                className="px-2 py-1 text-sm text-ink-3 hover:text-ink"
                                 disabled={scheduleBusy}
                             >
                                 Cancel

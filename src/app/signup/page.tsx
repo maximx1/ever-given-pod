@@ -126,7 +126,7 @@ export default function SignupPage() {
     return (
         <Main showUserContext={false}>
             <div className="container mx-auto mt-10 p-6 rounded-md shadow">
-                <div className="max-w-md bg-white mx-auto p-6 rounded-md shadow">
+                <div className="max-w-md bg-raised mx-auto p-6 rounded-md shadow">
                     <h2 className="text-xl font-bold mb-4">Sign Up</h2>
                     <form onSubmit={submitHandler} className="space-y-4">
                         <div>
@@ -212,7 +212,7 @@ export default function SignupPage() {
                         <button
                             type="submit"
                             disabled={!allPreflightsPassed}
-                            className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-accent hover:bg-accent-strong text-on-accent py-2 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Sign Up
                         </button>

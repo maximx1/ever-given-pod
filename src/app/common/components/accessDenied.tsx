@@ -11,8 +11,8 @@ export default function AccessDenied() {
                 <div className={`w-[80px] h-[80px] mb-6 opacity-60 ${styles.lockIcon}`}>
                     <LockSvg />
                 </div>
-                <h2 className="text-2xl font-bold text-purple-300 mb-2">This stream is private</h2>
-                <p className="text-purple-200 text-center max-w-md">
+                <h2 className="text-2xl font-bold text-on-page-strong mb-2">This stream is private</h2>
+                <p className="text-on-page text-center max-w-md">
                     You don&apos;t have access to this stream. The owner has restricted it to specific users.
                 </p>
             </div>

@@ -57,28 +57,28 @@ export default function StreamSettingsDialog({ streamId, autoSplit = true, split
             onClick={() => { if (!saving) onClose(); }}
         >
             <div
-                className="bg-white rounded-lg shadow-lg p-6 w-[420px] max-h-[90vh] overflow-y-auto"
+                className="bg-raised rounded-lg shadow-lg p-6 w-[420px] max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Stream Settings</h3>
+                <h3 className="text-lg font-bold text-ink mb-4">Stream Settings</h3>
                 <div className="space-y-3">
                     <label className="flex items-start gap-2 cursor-pointer">
                         <input
                             type="checkbox"
                             checked={split}
                             onChange={(e) => setSplit(e.target.checked)}
-                            className="mt-1 accent-purple-600"
+                            className="mt-1 accent-accent-strong"
                             disabled={saving}
                         />
                         <span>
-                            <span className="text-sm font-medium text-gray-700 block">Split long uploads into parts</span>
-                            <span className="text-xs text-gray-500 block">
+                            <span className="text-sm font-medium text-ink-2 block">Split long uploads into parts</span>
+                            <span className="text-xs text-ink-4 block">
                                 Long audio becomes a season of parts, which podcast apps download far more reliably than one huge file. Audio with chapter markers is split at the chapters.
                             </span>
                         </span>
                     </label>
                     <div>
-                        <label className="text-sm font-medium text-gray-700 block mb-1">Part length (minutes)</label>
+                        <label className="text-sm font-medium text-ink-2 block mb-1">Part length (minutes)</label>
                         <input
                             type="number"
                             value={minutes}
@@ -86,11 +86,11 @@ export default function StreamSettingsDialog({ streamId, autoSplit = true, split
                             min={SPLIT_MINUTES_RANGE.min}
                             max={SPLIT_MINUTES_RANGE.max}
                             step={1}
-                            className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
+                            className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none"
                             disabled={saving}
                             onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') onClose(); }}
                         />
-                        <p className={`text-xs mt-1 ${minutesValid ? 'text-gray-500' : 'text-red-600'}`}>
+                        <p className={`text-xs mt-1 ${minutesValid ? 'text-ink-4' : 'text-red-600'}`}>
                             {minutesValid
                                 ? `Audio longer than ${parsedMinutes * 1.5} minutes is cut into equal parts of at most ${parsedMinutes} minutes.`
                                 : `Enter a whole number from ${SPLIT_MINUTES_RANGE.min} to ${SPLIT_MINUTES_RANGE.max}.`}
@@ -102,7 +102,7 @@ export default function StreamSettingsDialog({ streamId, autoSplit = true, split
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                        className="px-4 py-2 text-sm text-ink-3 hover:text-ink"
                         disabled={saving}
                     >
                         Cancel
@@ -110,7 +110,7 @@ export default function StreamSettingsDialog({ streamId, autoSplit = true, split
                     <button
                         type="button"
                         onClick={handleSave}
-                        className="px-4 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                        className="px-4 py-2 text-sm bg-accent-strong text-on-accent rounded-md hover:bg-accent-deep disabled:opacity-50"
                         disabled={saving || !minutesValid}
                     >
                         {saving ? 'Saving...' : 'Save'}

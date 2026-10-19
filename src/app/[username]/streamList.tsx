@@ -13,7 +13,7 @@ type StreamListProps = {
 export default function StreamList({ username, streams, canEdit, onStreamDeleted }: StreamListProps) {
     if (streams.length === 0) {
         return (
-            <div className="max-w-[800px] mx-auto w-full px-4 py-8 text-center text-gray-500">
+            <div className="max-w-[800px] mx-auto w-full px-4 py-8 text-center text-ink-4">
                 <p>No streams yet.</p>
             </div>
         );

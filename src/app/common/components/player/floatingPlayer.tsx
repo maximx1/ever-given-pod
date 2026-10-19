@@ -22,7 +22,7 @@ export default function FloatingPlayer() {
             <PlayerQueue />
 
             {/* Player bar */}
-            <div className="bg-purple-300 border-t border-purple-400 shadow-lg flex items-center h-[72px] px-2 gap-2">
+            <div className="bg-card-strong border-t border-card-deep shadow-lg flex items-center h-[72px] px-2 gap-2">
 
                 {/* Circular progress — leftmost */}
                 <div className="flex-shrink-0">
@@ -43,8 +43,8 @@ export default function FloatingPlayer() {
 
                 {/* Text info */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    <ScrollingText text={current.streamName} className="text-xs text-gray-600 font-medium" />
-                    <ScrollingText text={current.title} className="text-sm text-gray-800 font-semibold" />
+                    <ScrollingText text={current.streamName} className="text-xs text-ink-3 font-medium" />
+                    <ScrollingText text={current.title} className="text-sm text-ink font-semibold" />
                 </div>
 
                 {/* Linear progress kept for later but hidden for now */}
@@ -60,7 +60,7 @@ export default function FloatingPlayer() {
                     <button
                         onClick={toggleQueue}
                         aria-label={queueOpen ? 'Close queue' : 'Open queue'}
-                        className="flex p-2 rounded-full hover:bg-purple-400 transition-colors duration-150 text-gray-800 cursor-pointer flex-shrink-0"
+                        className="flex p-2 rounded-full hover:bg-card-deep transition-colors duration-150 text-ink cursor-pointer flex-shrink-0"
                     >
                         <ChevronUpSvg
                             className={`transition-transform duration-300 ${queueOpen ? 'rotate-180' : ''}`}
@@ -72,7 +72,7 @@ export default function FloatingPlayer() {
                 <button
                     onClick={closePlayer}
                     aria-label="Close player"
-                    className="flex-shrink-0 p-2 rounded-full text-gray-800 hover:bg-purple-400 transition-colors"
+                    className="flex-shrink-0 p-2 rounded-full text-ink hover:bg-card-deep transition-colors"
                 >
                     <span className="text-sm font-bold">×</span>
                 </button>

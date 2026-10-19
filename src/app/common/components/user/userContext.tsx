@@ -57,7 +57,7 @@ export default function UserContext() {
                     aria-label="Account menu"
                     aria-expanded={menuOpen}
                     onClick={() => setMenuOpen(v => !v)}
-                    className="flex h-full w-full items-center justify-center cursor-pointer hover:ring-2 hover:ring-inset hover:ring-purple-500 transition"
+                    className="flex h-full w-full items-center justify-center cursor-pointer hover:ring-2 hover:ring-inset hover:ring-accent transition"
                 >
                     {hasProfileImage ? (
                         <UploadImage
@@ -68,21 +68,21 @@ export default function UserContext() {
                             className="h-full w-full object-cover"
                         />
                     ) : (
-                        <PersonIcon size={40} className="text-purple-500" />
+                        <PersonIcon size={40} className="text-accent" />
                     )}
                 </button>
                 {menuOpen && (
-                    <div className="absolute right-0 top-full mt-1 bg-white rounded-md shadow-lg py-1 min-w-[140px] z-50">
+                    <div className="absolute right-0 top-full mt-1 bg-raised rounded-md shadow-lg py-1 min-w-[140px] z-50">
                         <a
                             href={resolveAppUrl(`/${user.username}`)}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-100"
+                            className="block px-4 py-2 text-sm text-ink-2 hover:bg-tint"
                             onClick={() => setMenuOpen(false)}
                         >
                             Profile
                         </a>
                         <button
                             onClick={handleLogout}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-100"
+                            className="block w-full text-left px-4 py-2 text-sm text-ink-2 hover:bg-tint"
                         >
                             Log Out
                         </button>
@@ -104,14 +104,14 @@ export default function UserContext() {
             <button
                 type="button"
                 onClick={() => navigateWithRedirect('/signup')}
-                className="px-3 py-1.5 rounded-md bg-purple-400 text-white text-xs font-semibold hover:bg-purple-600 transition"
+                className="px-3 py-1.5 rounded-md bg-card-deep text-on-accent text-xs font-semibold hover:bg-accent-strong transition"
             >
                 Sign Up
             </button>
             <button
                 type="button"
                 onClick={() => navigateWithRedirect('/login')}
-                className="px-3 py-1.5 rounded-md bg-purple-400 text-white text-xs font-semibold hover:bg-purple-600 transition"
+                className="px-3 py-1.5 rounded-md bg-card-deep text-on-accent text-xs font-semibold hover:bg-accent-strong transition"
             >
                 Log In
             </button>

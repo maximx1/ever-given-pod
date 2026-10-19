@@ -49,7 +49,7 @@ export default function IconExpandTextButton({
                 duration-200
                 bg-transparent
                 rounded-sm
-                hover:bg-purple-400
+                hover:bg-card-deep
                 hover:shadow
                 pl-1
                 pr-2

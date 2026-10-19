@@ -109,11 +109,11 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
             <div className="relative w-full h-full cursor-pointer" onClick={handleImageClick}>
                 <UploadImage src={src} alt={alt} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover md:object-contain" />
                 {uploading && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-purple-100/70">
-                        <span className="text-sm text-gray-600 mb-2">Uploading... {uploadProgress}%</span>
-                        <div className="w-3/4 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-tint/70">
+                        <span className="text-sm text-ink-3 mb-2">Uploading... {uploadProgress}%</span>
+                        <div className="w-3/4 h-2 bg-track rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-purple-500 rounded-full transition-all duration-200"
+                                className="h-full bg-accent rounded-full transition-all duration-200"
                                 style={{ width: `${uploadProgress}%` }}
                             />
                         </div>
@@ -123,13 +123,13 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
                 {menuOpen && (
                     <div
                         ref={menuRef}
-                        className="absolute z-20 top-2 left-2 bg-white shadow-lg rounded-md border border-gray-200 py-1 min-w-[160px]"
+                        className="absolute z-20 top-2 left-2 bg-raised shadow-lg rounded-md border border-line-soft py-1 min-w-[160px]"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {hasImage && (
                             <button
                                 onClick={handleViewFullSize}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 transition"
+                                className="w-full text-left px-4 py-2 text-sm text-ink-2 hover:bg-tint transition"
                             >
                                 View full size
                             </button>
@@ -137,7 +137,7 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
                         {canEdit && (
                             <button
                                 onClick={handleUploadClick}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 transition"
+                                className="w-full text-left px-4 py-2 text-sm text-ink-2 hover:bg-tint transition"
                             >
                                 Upload image
                             </button>
@@ -149,14 +149,14 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
             {uploadOpen && (
                 <div
                     ref={uploadRef}
-                    className="absolute z-30 top-2 left-2 bg-white shadow-xl rounded-lg border border-gray-200 w-[280px]"
+                    className="absolute z-30 top-2 left-2 bg-raised shadow-xl rounded-lg border border-line-soft w-[280px]"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="p-3 border-b border-gray-100 flex items-center justify-between">
-                        <span className="text-sm font-semibold text-gray-700">Upload Image</span>
+                    <div className="p-3 border-b border-line-soft flex items-center justify-between">
+                        <span className="text-sm font-semibold text-ink-2">Upload Image</span>
                         <button
                             onClick={closeUploadDialog}
-                            className="text-gray-400 hover:text-gray-600 text-lg leading-none"
+                            className="text-ink-5 hover:text-ink-3 text-lg leading-none"
                         >
                             &times;
                         </button>
@@ -179,13 +179,13 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
                         <div className="px-3 pb-3">
                             {uploading ? (
                                 <div className="flex flex-col gap-1">
-                                    <div className="flex items-center justify-between text-xs text-gray-500">
+                                    <div className="flex items-center justify-between text-xs text-ink-4">
                                         <span>Uploading...</span>
                                         <span>{uploadProgress}%</span>
                                     </div>
-                                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div className="w-full h-2 bg-track rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-purple-500 rounded-full transition-all duration-200"
+                                            className="h-full bg-accent rounded-full transition-all duration-200"
                                             style={{ width: `${uploadProgress}%` }}
                                         />
                                     </div>
@@ -194,7 +194,7 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
                                 <div className="flex justify-end">
                                     <button
                                         onClick={handleConfirmUpload}
-                                        className="px-4 py-1.5 rounded-md bg-purple-500 text-white text-sm font-semibold hover:bg-purple-600 transition"
+                                        className="px-4 py-1.5 rounded-md bg-accent text-on-accent text-sm font-semibold hover:bg-accent-strong transition"
                                     >
                                         Upload
                                     </button>
@@ -211,19 +211,19 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
                     onClick={() => setViewerOpen(false)}
                 >
                     <div
-                        className="relative bg-white rounded-md overflow-hidden flex flex-col"
+                        className="relative bg-raised rounded-md overflow-hidden flex flex-col"
                         style={{ width: '80vh', height: '80vh', maxWidth: '90vw', maxHeight: '90vh' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex-1 relative min-h-0">
                             <UploadImage src={src} alt={alt} fill sizes="min(80vh, 90vw)" className="object-contain" />
                         </div>
-                        <div className="flex items-center justify-center px-3 py-2 bg-gray-50 border-t border-gray-200">
+                        <div className="flex items-center justify-center px-3 py-2 bg-raised-alt border-t border-line-soft">
                             <a
                                 href={originalSrc}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs text-purple-600 hover:text-purple-800 font-medium"
+                                className="text-xs text-accent-strong hover:text-accent-ink-strong font-medium"
                             >
                                 Open in new tab
                             </a>

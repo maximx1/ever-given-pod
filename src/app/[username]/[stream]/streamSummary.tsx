@@ -198,9 +198,9 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
     };
 
     return (
-        <div className="stream-summary w-full h-auto shadow-md overflow-hidden flex flex-col bg-purple-200">
+        <div className="stream-summary w-full h-auto shadow-card overflow-hidden flex flex-col bg-card">
             <div className="flex flex-col md:flex-row md:items-start">
-                <div className="relative w-full h-[150px] md:w-1/3 md:h-[376] bg-purple-200 flex-shrink-0">
+                <div className="relative w-full h-[150px] md:w-1/3 md:h-[376] bg-card flex-shrink-0">
                     <ImageWithActions
                         src={displayImage}
                         alt={summaryData.title ?? ''}
@@ -215,7 +215,7 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                         canEdit={canEdit}
                         maxLength={FIELD_LIMITS.streamTitle}
                         tag="h2"
-                        className="text-lg font-bold text-gray-800"
+                        className="text-lg font-bold text-ink"
                         onSave={async (newTitle) => {
                             try {
                                 const res = await fetch(resolveApiUrl(`/${stream}`), {
@@ -231,10 +231,10 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                             return false;
                         }}
                     />
-                    {summaryData.name && <p className="text-xs text-gray-400">{summaryData.name}</p>}
-                    <p className="text-sm text-gray-600">{summaryData.description}</p>
+                    {summaryData.name && <p className="text-xs text-ink-5">{summaryData.name}</p>}
+                    <p className="text-sm text-ink-3">{summaryData.description}</p>
 
-                    <div className="mt-4 text-sm text-gray-500">
+                    <div className="mt-4 text-sm text-ink-4">
                         <p><strong>Author:</strong> {summaryData.author}</p>
                         <p><strong>Managing Editor:</strong> {summaryData.managingEditor}</p>
                         <p><strong>Web Master:</strong> {summaryData.webMaster}</p>
@@ -249,8 +249,8 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                     </div>
 
                     <div className="mt-4">
-                        <p className="text-sm font-bold text-gray-700">Categories:</p>
-                        <ul className="list-disc list-inside text-sm text-gray-600">
+                        <p className="text-sm font-bold text-ink-2">Categories:</p>
+                        <ul className="list-disc list-inside text-sm text-ink-3">
                             {summaryData.categories?.map((category, index) => (
                                 <li key={index}>{category}</li>
                             ))}
@@ -266,13 +266,13 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                                 feedToken={feedToken}
                                 onTokenResolved={setFeedToken}
                                 title="Click to copy the feed URL, or open it in a new tab"
-                                className='bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm text-gray-900 no-underline'
+                                className='bg-card-deep hover:bg-accent text-sm px-4 py-2 rounded-sm text-ink no-underline'
                             >
                                 RSS Feed
                             </FeedLink>
                             <button
                                 onClick={() => handleNavigation(summaryData.siteUrl)}
-                                className='bg-purple-400 hover:bg-purple-500 text-sm px-4 py-2 rounded-sm'
+                                className='bg-card-deep hover:bg-accent text-sm px-4 py-2 rounded-sm'
                             >
                                 Visit Site
                             </button>
@@ -307,8 +307,8 @@ export default function StreamSummary({ stream, onAccessDenied, onImageResolved,
                                     />
                                 )}
                                 {tokenRevealed && feedToken && (
-                                    <div className="flex items-center bg-purple-400 rounded-sm px-2 py-2.5 text-sm gap-2">
-                                        <code className="text-xs text-gray-800 select-all">
+                                    <div className="flex items-center bg-card-deep rounded-sm px-2 py-2.5 text-sm gap-2">
+                                        <code className="text-xs text-ink select-all">
                                             {feedToken}
                                         </code>
                                         <button

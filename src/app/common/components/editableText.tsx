@@ -64,7 +64,7 @@ export default function EditableText({
     if (!editing) {
         return (
             <Tag
-                className={`${className} ${canEdit ? 'cursor-pointer hover:underline decoration-purple-300 underline-offset-4' : ''}`}
+                className={`${className} ${canEdit ? 'cursor-pointer hover:underline decoration-card-strong underline-offset-4' : ''}`}
                 onClick={canEdit ? () => { setDraft(value); setEditing(true); } : undefined}
                 title={canEdit ? 'Click to edit' : undefined}
             >
@@ -83,13 +83,13 @@ export default function EditableText({
                 onKeyDown={handleKeyDown}
                 maxLength={maxLength}
                 disabled={saving}
-                className={`border border-gray-300 rounded-sm px-2 py-0.5 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none ${inputClassName}`}
+                className={`border border-line rounded-sm px-2 py-0.5 text-sm focus:ring-accent focus:border-accent outline-none ${inputClassName}`}
             />
             <button
                 type="button"
                 onClick={handleSave}
                 disabled={saving || !draft.trim()}
-                className="text-xs px-2 py-0.5 bg-purple-500 text-white rounded-sm hover:bg-purple-600 disabled:opacity-50 cursor-pointer"
+                className="text-xs px-2 py-0.5 bg-accent text-on-accent rounded-sm hover:bg-accent-strong disabled:opacity-50 cursor-pointer"
             >
                 Save
             </button>
@@ -97,7 +97,7 @@ export default function EditableText({
                 type="button"
                 onClick={handleCancel}
                 disabled={saving}
-                className="text-xs px-2 py-0.5 bg-gray-300 text-gray-700 rounded-sm hover:bg-gray-400 cursor-pointer"
+                className="text-xs px-2 py-0.5 bg-track-strong text-ink-2 rounded-sm hover:bg-track-deep cursor-pointer"
             >
                 Cancel
             </button>

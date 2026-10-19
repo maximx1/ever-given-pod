@@ -95,9 +95,9 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
             <FloatingActions>
                 <div
                     onClick={() => setDialogOpen(true)}
-                    className="absolute bottom-4 right-4 w-16 h-16 shadow-md rounded-full flex items-center justify-center bg-purple-500 cursor-pointer hover:bg-purple-600 transition-colors"
+                    className="absolute bottom-4 right-4 w-16 h-16 shadow-card rounded-full flex items-center justify-center bg-accent cursor-pointer hover:bg-accent-strong transition-colors"
                 >
-                    <span className="text-3xl font-bold text-white">+</span>
+                    <span className="text-3xl font-bold text-on-accent">+</span>
                 </div>
             </FloatingActions>
 
@@ -107,19 +107,19 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                     onClick={() => { if (!submitting) setDialogOpen(false); }}
                 >
                     <div
-                        className="bg-white rounded-lg shadow-lg p-6 w-[360px]"
+                        className="bg-raised rounded-lg shadow-lg p-6 w-[360px]"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">New Stream</h3>
+                        <h3 className="text-lg font-bold text-ink mb-4">New Stream</h3>
                         {error && (
-                            <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                            <div className="mb-3 text-sm text-red-600 bg-danger-soft border border-danger-line rounded-md px-3 py-2">
                                 {error}
                             </div>
                         )}
                         <div className="space-y-3">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <label className="text-sm font-medium text-gray-700">Title</label>
+                                    <label className="text-sm font-medium text-ink-2">Title</label>
                                     <CharCount current={title.length} max={FIELD_LIMITS.streamTitle} />
                                 </div>
                                 <input
@@ -128,14 +128,14 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                                     onChange={(e) => handleTitleChange(e.target.value)}
                                     placeholder="Stream title"
                                     maxLength={FIELD_LIMITS.streamTitle}
-                                    className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none"
                                     autoFocus
                                     onKeyDown={(e) => { if (e.key === 'Escape') setDialogOpen(false); }}
                                 />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <label className="text-sm font-medium text-gray-700">Name</label>
+                                    <label className="text-sm font-medium text-ink-2">Name</label>
                                     <CharCount current={name.length} max={FIELD_LIMITS.streamName} />
                                 </div>
                                 <input
@@ -144,13 +144,13 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                                     onChange={(e) => handleNameChange(e.target.value)}
                                     placeholder="url-safe-name"
                                     maxLength={FIELD_LIMITS.streamName}
-                                    className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none"
                                     onKeyDown={(e) => { if (e.key === 'Escape') setDialogOpen(false); }}
                                 />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <label className="text-sm font-medium text-gray-700">Description</label>
+                                    <label className="text-sm font-medium text-ink-2">Description</label>
                                     <CharCount current={description.length} max={FIELD_LIMITS.description} />
                                 </div>
                                 <textarea
@@ -159,12 +159,12 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                                     placeholder="Stream description (optional)"
                                     maxLength={FIELD_LIMITS.description}
                                     rows={3}
-                                    className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-purple-500 focus:border-purple-500 outline-none resize-vertical"
+                                    className="w-full border border-line rounded-md p-3 text-sm focus:ring-accent focus:border-accent outline-none resize-vertical"
                                     onKeyDown={(e) => { if (e.key === 'Escape') setDialogOpen(false); }}
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-gray-700 block mb-1">Image (optional)</label>
+                                <label className="text-sm font-medium text-ink-2 block mb-1">Image (optional)</label>
                                 <FileDropZone
                                     accept="image/*"
                                     label="Drag & drop an image here"
@@ -178,7 +178,7 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                             <button
                                 type="button"
                                 onClick={() => setDialogOpen(false)}
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                                className="px-4 py-2 text-sm text-ink-3 hover:text-ink"
                                 disabled={submitting}
                             >
                                 Cancel
@@ -186,7 +186,7 @@ export default function AddStreamButton({ onStreamCreated }: AddStreamButtonProp
                             <button
                                 type="button"
                                 onClick={handleSubmit}
-                                className="px-4 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                                className="px-4 py-2 text-sm bg-accent-strong text-on-accent rounded-md hover:bg-accent-deep disabled:opacity-50"
                                 disabled={submitting || !title.trim() || !name.trim()}
                             >
                                 {submitting ? 'Creating...' : 'Create'}

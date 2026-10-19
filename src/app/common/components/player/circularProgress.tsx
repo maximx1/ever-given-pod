@@ -99,7 +99,7 @@ export default function CircularProgress({
                 r={radius}
                 fill="none"
                 stroke="currentColor"
-                className="text-gray-500"
+                className="text-ink-4"
                 strokeWidth={strokeWidth}
                 strokeDasharray={`${activeArcLength} ${gapLength}`}
                 strokeDashoffset={circumference * (0.25 - offsetShift)}
@@ -110,7 +110,7 @@ export default function CircularProgress({
                 r={radius}
                 fill="none"
                 stroke="currentColor"
-                className="text-purple-600"
+                className="text-accent-strong"
                 strokeWidth={strokeWidth}
                 strokeDasharray={`${filled} ${circumference - filled}`}
                 strokeDashoffset={circumference * (0.25 - offsetShift)}
@@ -122,7 +122,7 @@ export default function CircularProgress({
                 cy={dotY}
                 r={strokeWidth}
                 fill="currentColor"
-                className="text-purple-700"
+                className="text-accent-ink"
                 stroke="white"
                 strokeWidth={1.5}
             />
@@ -132,7 +132,7 @@ export default function CircularProgress({
                 textAnchor="middle"
                 dominantBaseline="auto"
                 fill="currentColor"
-                className="text-gray-800"
+                className="text-ink"
                 style={{ fontSize: `${fontSize}px`, fontWeight: 600, pointerEvents: 'none' }}
             >
                 {formatCompact(currentTime)}
@@ -143,7 +143,7 @@ export default function CircularProgress({
                 x2={center + size * 0.18}
                 y2={center + fontSize * 0.25}
                 stroke="currentColor"
-                className="text-gray-500"
+                className="text-ink-4"
                 strokeWidth={0.5}
             />
             <text
@@ -152,7 +152,7 @@ export default function CircularProgress({
                 textAnchor="middle"
                 dominantBaseline="hanging"
                 fill="currentColor"
-                className="text-gray-600"
+                className="text-ink-3"
                 style={{ fontSize: `${fontSize * 0.85}px`, fontWeight: 400, pointerEvents: 'none' }}
             >
                 {formatCompact(duration)}

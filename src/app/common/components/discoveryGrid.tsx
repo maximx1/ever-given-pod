@@ -37,10 +37,10 @@ export default function DiscoveryGrid({
         <>
             <div className="w-full flex justify-center mt-8 mb-15">
                 <div className="w-[500px] flex flex-col items-center">
-                    <h1 className="text-2xl font-bold text-purple-200 text-center">
+                    <h1 className="text-2xl font-bold text-on-page text-center">
                         {title}
                     </h1>
-                    <p className="text-sm text-purple-200 mt-2 text-center">
+                    <p className="text-sm text-on-page mt-2 text-center">
                         {subtitle}
                     </p>
                 </div>
@@ -53,7 +53,7 @@ export default function DiscoveryGrid({
                             key={stream.id}
                             type='button'
                             onClick={() => handleStreamClick(stream)}
-                            className="aspect-square rounded-lg overflow-hidden shadow focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+                            className="aspect-square rounded-lg overflow-hidden shadow focus:outline-none focus:ring-2 focus:ring-accent transition"
                             title={stream.title}
                         >
                             <UploadImage

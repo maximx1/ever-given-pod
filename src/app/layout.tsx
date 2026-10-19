@@ -5,6 +5,7 @@ import { AuthProvider } from "@/app/common/context/AuthContext";
 import { PlayerProvider } from "@/app/common/context/PlayerContext";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ThemeScript from "@/app/common/components/theme/themeScript";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // The theme script sets data-theme before React loads, which React would otherwise report
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
           <PlayerProvider>

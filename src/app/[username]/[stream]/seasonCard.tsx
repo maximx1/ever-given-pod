@@ -108,7 +108,7 @@ export default function SeasonCard({
     };
 
     return (
-        <div className="shadow-md rounded-sm m-4 mb-1 bg-purple-300">
+        <div className="shadow-card rounded-sm m-4 mb-1 bg-card-strong">
             <div
                 className="flex items-center gap-3 p-3 cursor-pointer"
                 onClick={() => setExpanded(!expanded)}
@@ -134,7 +134,7 @@ export default function SeasonCard({
                     />
                 )}
                 <div className="flex-grow min-w-0">
-                    <p className="text-xs font-semibold text-purple-800">
+                    <p className="text-xs font-semibold text-accent-ink-strong">
                         Season {season.number} &middot; {episodes.length} episode{episodes.length === 1 ? '' : 's'}
                         {scheduledCount > 0 && <> &middot; {scheduledCount} scheduled</>}
                     </p>
@@ -144,7 +144,7 @@ export default function SeasonCard({
                             canEdit={canEdit}
                             maxLength={FIELD_LIMITS.title}
                             tag="h2"
-                            className="text-lg font-bold text-gray-800"
+                            className="text-lg font-bold text-ink"
                             onSave={(title) => send('seasons', 'PATCH', { seasonId: season.id, title }, 'Could not rename the season.')}
                         />
                     </div>
@@ -153,27 +153,27 @@ export default function SeasonCard({
                     <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); setDeleteOpen(true); }}
-                        className="w-10 h-10 flex-shrink-0 rounded-full border-2 border-red-400 flex items-center justify-center hover:bg-red-100 transition cursor-pointer"
+                        className="w-10 h-10 flex-shrink-0 rounded-full border-2 border-red-400 flex items-center justify-center hover:bg-danger-soft transition cursor-pointer"
                         title="Remove season"
                     >
                         <TrashSvg className="text-red-500" />
                     </button>
                 )}
                 <span
-                    className={`w-10 h-10 flex-shrink-0 rounded-full border-2 border-purple-500 flex items-center justify-center transition-transform ${expanded ? 'rotate-90' : ''}`}
+                    className={`w-10 h-10 flex-shrink-0 rounded-full border-2 border-accent flex items-center justify-center transition-transform ${expanded ? 'rotate-90' : ''}`}
                     title={expanded ? 'Hide episodes' : 'Show episodes'}
                 >
-                    <ChevronRightSvg className="text-purple-500" />
+                    <ChevronRightSvg className="text-accent" />
                 </span>
             </div>
 
             {expanded && (
                 <div className="pb-3">
                     {season.description && (
-                        <p className="px-4 pb-1 text-sm text-gray-700 whitespace-pre-wrap">{season.description}</p>
+                        <p className="px-4 pb-1 text-sm text-ink-2 whitespace-pre-wrap">{season.description}</p>
                     )}
                     {episodes.length === 0 && (
-                        <p className="px-4 pb-1 text-sm text-gray-600">
+                        <p className="px-4 pb-1 text-sm text-ink-3">
                             No episodes yet.{canEdit ? ' Add one from an episode below, or choose this season when uploading.' : ''}
                         </p>
                     )}
@@ -238,11 +238,11 @@ export default function SeasonCard({
                     onClick={() => { if (!busy) setDeleteOpen(false); }}
                 >
                     <div
-                        className="bg-white rounded-lg shadow-lg p-6 w-[360px]"
+                        className="bg-raised rounded-lg shadow-lg p-6 w-[360px]"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3 className="text-lg font-bold text-gray-800 mb-2">Remove Season</h3>
-                        <p className="text-sm text-gray-600 mb-4">
+                        <h3 className="text-lg font-bold text-ink mb-2">Remove Season</h3>
+                        <p className="text-sm text-ink-3 mb-4">
                             This removes <strong>{season.title}</strong>.
                             {episodes.length > 0 && ` Its ${episodes.length} episode${episodes.length === 1 ? '' : 's'} will stay in the stream as ungrouped episodes.`}
                             {season.imageUrl && ' The season cover is deleted.'}
@@ -251,7 +251,7 @@ export default function SeasonCard({
                             <button
                                 type="button"
                                 onClick={() => setDeleteOpen(false)}
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                                className="px-4 py-2 text-sm text-ink-3 hover:text-ink"
                                 disabled={busy}
                             >
                                 Cancel
@@ -259,7 +259,7 @@ export default function SeasonCard({
                             <button
                                 type="button"
                                 onClick={handleDelete}
-                                className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                className="px-4 py-2 text-sm bg-red-600 text-on-accent rounded-md hover:bg-red-700 disabled:opacity-50"
                                 disabled={busy}
                             >
                                 {busy ? 'Removing...' : 'Remove'}

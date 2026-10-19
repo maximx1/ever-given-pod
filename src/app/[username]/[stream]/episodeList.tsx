@@ -114,7 +114,7 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                         type="button"
                         onClick={() => setSortDir('asc')}
                         style={{ bottom: `${UP_BOTTOM}px`, right: `${ARROW_RIGHT}px` }}
-                        className={`absolute cursor-pointer transition-colors ${sortDir === 'asc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
+                        className={`absolute cursor-pointer transition-colors ${sortDir === 'asc' ? 'text-accent' : 'text-accent/50 hover:text-accent'}`}
                         title="Oldest first"
                     >
                         <ArrowIcon direction="up" size={ARROW_SIZE} />
@@ -123,7 +123,7 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                         type="button"
                         onClick={() => setSortDir('desc')}
                         style={{ bottom: `${DOWN_BOTTOM}px`, right: `${ARROW_RIGHT}px` }}
-                        className={`absolute cursor-pointer transition-colors ${sortDir === 'desc' ? 'text-purple-500' : 'text-purple-500/50 hover:text-purple-500'}`}
+                        className={`absolute cursor-pointer transition-colors ${sortDir === 'desc' ? 'text-accent' : 'text-accent/50 hover:text-accent'}`}
                         title="Newest first"
                     >
                         <ArrowIcon direction="down" size={ARROW_SIZE} />
@@ -174,7 +174,7 @@ export default function EpisodeList({ stream, streamImageUrl, streamName }: Epis
                                 <select
                                     value=""
                                     onChange={(e) => handleMoveToSeason(episode.episodeId, e.target.value)}
-                                    className="mt-4 max-w-[160px] text-sm bg-transparent border border-purple-400 rounded-sm px-2 py-1.5 text-gray-700 cursor-pointer"
+                                    className="mt-4 max-w-[160px] text-sm bg-transparent border border-card-deep rounded-sm px-2 py-1.5 text-ink-2 cursor-pointer"
                                     title="Add to a season"
                                 >
                                     <option value="" disabled>Add to season...</option>

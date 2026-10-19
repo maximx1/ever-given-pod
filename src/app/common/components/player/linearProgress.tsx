@@ -55,23 +55,23 @@ export default function LinearProgress({ currentTime, duration, onSeek, classNam
         <div className={`flex items-center gap-2 w-full ${className}`}>
             <div
                 ref={barRef}
-                className="relative flex-1 h-1.5 bg-gray-500 rounded-full cursor-pointer select-none touch-none"
+                className="relative flex-1 h-1.5 bg-track-deep rounded-full cursor-pointer select-none touch-none"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
             >
                 {/* Filled portion */}
                 <div
-                    className="absolute top-0 left-0 h-full bg-purple-600 rounded-full pointer-events-none"
+                    className="absolute top-0 left-0 h-full bg-accent-strong rounded-full pointer-events-none"
                     style={{ width: `${pct}%` }}
                 />
                 {/* Draggable dot */}
                 <div
-                    className="absolute top-1/2 w-3.5 h-3.5 bg-purple-700 border-2 border-white rounded-full shadow pointer-events-none"
+                    className="absolute top-1/2 w-3.5 h-3.5 bg-accent-deep border-2 border-raised rounded-full shadow pointer-events-none"
                     style={{ left: `${pct}%`, transform: `translate(-50%, -50%)` }}
                 />
             </div>
-            <span className="text-xs text-gray-700 whitespace-nowrap select-none">
+            <span className="text-xs text-ink-2 whitespace-nowrap select-none">
                 {formatTime(currentTime)} / {formatTime(duration)}
             </span>
         </div>

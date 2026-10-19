@@ -19,8 +19,8 @@ type ControlButtonProps = {
 
 function ControlButton({ onClick, label, className = '', children, disabled = false }: ControlButtonProps) {
     const base = 'p-2 rounded-full transition-colors duration-150';
-    const activeClass = `hover:bg-purple-400 text-gray-800 cursor-pointer`;
-    const disabledClass = `text-gray-400 cursor-not-allowed`;
+    const activeClass = `hover:bg-card-deep text-ink cursor-pointer`;
+    const disabledClass = `text-ink-5 cursor-not-allowed`;
     return (
         <button
             onClick={onClick}

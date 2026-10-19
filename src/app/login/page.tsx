@@ -56,7 +56,7 @@ export default function LoginPage() {
     return (
         <Main showUserContext={false}>
             <div className="container mx-auto mt-10 p-6 rounded-md shadow">
-                <div className="max-w-md bg-white mx-auto p-6 rounded-md shadow">
+                <div className="max-w-md bg-raised mx-auto p-6 rounded-md shadow">
                     <h2 className="text-xl font-bold mb-4">Log In</h2>
                     <form onSubmit={submitHandler} className="space-y-4">
                         <div>
@@ -83,7 +83,7 @@ export default function LoginPage() {
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 rounded font-semibold"
+                            className="w-full bg-accent hover:bg-accent-strong text-on-accent py-2 rounded font-semibold"
                         >
                             Log In
                         </button>

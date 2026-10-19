@@ -48,9 +48,9 @@ export default function ProfileSummary({ username, name, email, imageUrl, canEdi
     };
 
     return (
-        <div className="podcast-summary w-full h-auto shadow-md overflow-hidden flex flex-col bg-purple-200">
+        <div className="podcast-summary w-full h-auto shadow-card overflow-hidden flex flex-col bg-card">
             <div className="flex flex-col md:flex-row md:items-start">
-                <div className="relative w-full h-[150px] md:w-1/3 md:h-[376] bg-purple-200 flex-shrink-0">
+                <div className="relative w-full h-[150px] md:w-1/3 md:h-[376] bg-card flex-shrink-0">
                     <ImageWithActions
                         src={displayImage}
                         alt={username}
@@ -60,10 +60,10 @@ export default function ProfileSummary({ username, name, email, imageUrl, canEdi
                     />
                 </div>
                 <div className="p-4 flex-grow flex flex-col md:ml-4">
-                    <h2 className="text-lg font-bold text-gray-800">{name || username}</h2>
-                    <p className="text-sm text-gray-600">@{username}</p>
+                    <h2 className="text-lg font-bold text-ink">{name || username}</h2>
+                    <p className="text-sm text-ink-3">@{username}</p>
 
-                    <div className="mt-4 text-sm text-gray-500">
+                    <div className="mt-4 text-sm text-ink-4">
                         {email && <p><strong>Email:</strong> {email}</p>}
                         {creationDate && (
                             <p><strong>Member since:</strong> {new Date(creationDate).toLocaleDateString("en-US", {

@@ -1,28 +1,80 @@
 @import "tailwindcss";
+/*
+ * The colour swatch. Components use these names (bg-card, text-ink, border-line, ...), never
+ * Tailwind's raw palette, so a theme is a change here alone. Each value is light-dark(light, dark):
+ * the browser picks one from color-scheme, which follows the system unless the page sets
+ * data-theme="light" or "dark" on <html> (see ThemeScript).
+ */
 :root {
-    --background: #ffffff;
-    --foreground: #171717;
+    color-scheme: light dark;
+}
+:root[data-theme="light"] {
+    color-scheme: light;
+}
+:root[data-theme="dark"] {
+    color-scheme: dark;
 }
 
-@theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+@theme {
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-     :root {
-        --background: #09001e;
-        --foreground: #ededed;
-    }
+    /* The page behind everything, and text drawn straight on it */
+    --color-page: light-dark(#ffffff, #09001e);
+    --color-on-page: light-dark(oklch(43.8% 0.218 303.724), oklch(90.2% 0.063 306.703));
+    --color-on-page-strong: light-dark(oklch(38.1% 0.176 304.987), oklch(82.7% 0.119 306.383));
+
+    /* Cards, the header and footer: the purple panels */
+    --color-card: light-dark(oklch(90.2% 0.063 306.703), #170b30);
+    --color-card-strong: light-dark(oklch(82.7% 0.119 306.383), #221242);
+    --color-card-deep: light-dark(oklch(71.4% 0.203 305.504), #33195f);
+
+    /* Menus, dialogs and inputs that sit above the page */
+    --color-raised: light-dark(#ffffff, #1b1132);
+    --color-raised-alt: light-dark(oklch(98.5% 0.002 247.839), #22173c);
+    --color-tint: light-dark(oklch(94.6% 0.033 307.174), #2a1a4a);
+    --color-tint-soft: light-dark(oklch(97.7% 0.014 308.299), #21153d);
+
+    /* Progress bars and neutral buttons */
+    --color-track: light-dark(oklch(92.8% 0.006 264.531), #2f2449);
+    --color-track-strong: light-dark(oklch(87.2% 0.01 258.338), #3e3160);
+    --color-track-deep: light-dark(oklch(70.7% 0.022 261.325), #5a4b80);
+
+    /* Text, strongest first */
+    --color-ink: light-dark(oklch(27.8% 0.033 256.848), #eee8fa);
+    --color-ink-2: light-dark(oklch(37.3% 0.034 259.733), #d9cfec);
+    --color-ink-3: light-dark(oklch(44.6% 0.03 256.802), #bcb0d4);
+    --color-ink-4: light-dark(oklch(55.1% 0.027 264.364), #9d91b8);
+    --color-ink-5: light-dark(oklch(70.7% 0.022 261.325), #7d7198);
+
+    /* Borders */
+    --color-line: light-dark(oklch(87.2% 0.01 258.338), #3b2e5e);
+    --color-line-soft: light-dark(oklch(92.8% 0.006 264.531), #2b2048);
+
+    /* The purple accent: buttons, links, focus rings. Brighter on dark, for the neon look */
+    --color-accent: light-dark(oklch(62.7% 0.265 303.9), #a259ff);
+    --color-accent-strong: light-dark(oklch(55.8% 0.288 302.321), #8f3cff);
+    --color-accent-deep: light-dark(oklch(49.6% 0.265 301.924), #7a28e8);
+    --color-accent-soft: light-dark(oklch(71.4% 0.203 305.504), #c391ff);
+    --color-on-accent: #ffffff;
+    /* Accent-coloured text on a card */
+    --color-accent-ink: light-dark(oklch(49.6% 0.265 301.924), #d4b3ff);
+    --color-accent-ink-strong: light-dark(oklch(43.8% 0.218 303.724), #e6d3ff);
+
+    --color-danger-soft: light-dark(oklch(97.1% 0.013 17.38), #3a0f1e);
+    --color-danger-line: light-dark(oklch(88.5% 0.062 18.334), #6e1c33);
+
+    /* A card's shadow: a soft drop shadow on light, a purple glow on dark */
+    --shadow-card: 0 4px 6px -1px light-dark(rgb(0 0 0 / 0.1), transparent),
+        0 2px 4px -2px light-dark(rgb(0 0 0 / 0.1), transparent),
+        0 0 14px 0 light-dark(transparent, rgb(162 89 255 / 0.4));
+    --shadow-glow: 0 0 10px 1px light-dark(rgb(162 89 255 / 0.35), rgb(162 89 255 / 0.65));
 }
 
 body {
-    background: var(--background);
-    color: var(--foreground);
+    background: var(--color-page);
+    color: var(--color-ink);
     font-family: Arial, Helvetica, sans-serif;
-    color: #09001e;
 }
 
 /* Dialogs cover the page with a .modal-overlay. The page behind one must not scroll. */
