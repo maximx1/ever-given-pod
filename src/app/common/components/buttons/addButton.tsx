@@ -424,8 +424,8 @@ export default function AddButton({ stream, onEpisodeCreated, seasons = [] }: { 
                                 )}
                                 {!submitting && (
                                     <FileDropZone
-                                        accept="audio/*"
-                                        label={audioFiles.length > 0 ? 'Add more audio files' : 'Drag & drop one or more audio files here'}
+                                        accept="audio/*,video/*"
+                                        label={audioFiles.length > 0 ? 'Add more audio or video files' : 'Drag & drop one or more audio or video files here'}
                                         multiple
                                         onFilesSelected={handleAudioSelected}
                                     />

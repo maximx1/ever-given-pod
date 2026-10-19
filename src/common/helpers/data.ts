@@ -15,6 +15,8 @@ export const getFileSize = (filePath: string): number => {
 export const getFileMimeType = (filePath: string): string => {
     const ext = path.extname(filePath);
     const mimeType = mime.lookup(ext);
+    // Podcast apps look for video/mp4; mime-types names .mp4 application/mp4
+    if (mimeType === 'application/mp4') return 'video/mp4';
     return mimeType || 'application/octet-stream';
 };
 

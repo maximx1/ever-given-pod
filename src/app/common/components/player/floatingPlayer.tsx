@@ -7,10 +7,11 @@ import PlayerQueue from '@/app/common/components/player/playerQueue';
 import LinearProgress from '@/app/common/components/player/linearProgress';
 import CircularProgress from '@/app/common/components/player/circularProgress';
 import ChevronUpSvg from '@/icons/chevron-up.svg';
+import VideoSvg from '@/icons/video.svg';
 import UploadImage from '@/app/common/components/image/uploadImage';
 
 export default function FloatingPlayer() {
-    const { queue, currentIndex, currentTime, duration, queueOpen, toggleQueue, seekTo, podcastFallbackUrl, closePlayer } = usePlayer();
+    const { queue, currentIndex, currentTime, duration, queueOpen, toggleQueue, seekTo, podcastFallbackUrl, closePlayer, hasVideo, videoOpen, openVideo } = usePlayer();
 
     if (queue.length === 0) return null;
 
@@ -51,6 +52,18 @@ export default function FloatingPlayer() {
                 <div className="hidden">
                     <LinearProgress currentTime={currentTime} duration={duration} onSeek={seekTo} />
                 </div>
+
+                {/* Brings a minimized video back up */}
+                {hasVideo && !videoOpen && (
+                    <button
+                        onClick={openVideo}
+                        aria-label="Show video"
+                        title="Show video"
+                        className="flex p-2 rounded-full hover:bg-card-deep transition-colors duration-150 text-ink cursor-pointer flex-shrink-0"
+                    >
+                        <VideoSvg className="w-6 h-6" />
+                    </button>
+                )}
 
                 {/* Media controls */}
                 <MediaControls className="flex-shrink-0" />

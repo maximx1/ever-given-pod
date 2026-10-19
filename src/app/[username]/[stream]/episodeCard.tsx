@@ -15,6 +15,7 @@ import { usePlayer } from '@/app/common/context/PlayerContext';
 import { formatReleaseTime, fromDateTimeInput, isReleased, releaseTime, toDateTimeInput } from '@/common/helpers/schedule';
 import UploadImage from '@/app/common/components/image/uploadImage';
 import { RECENT_DOWNLOAD_DAYS, recentDownloads } from '@/common/helpers/downloadStats';
+import { isVideoUrl } from '@/common/helpers/media';
 
 type EpisodeCardProps = EpisodeDto & {
     fallbackImageUrl?: string;
@@ -121,8 +122,15 @@ export default function EpisodeCard({
             </div>
 
             <div className="p-4 flex-grow flex flex-col">
-                {episodeNumber != null && (
-                    <span className="text-xs font-semibold text-accent-ink">Episode {episodeNumber}</span>
+                {(episodeNumber != null || isVideoUrl(url)) && (
+                    <div className="flex items-center gap-2">
+                        {episodeNumber != null && (
+                            <span className="text-xs font-semibold text-accent-ink">Episode {episodeNumber}</span>
+                        )}
+                        {isVideoUrl(url) && (
+                            <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-accent text-on-accent">Video</span>
+                        )}
+                    </div>
                 )}
                 <EditableText
                     value={title ?? ''}

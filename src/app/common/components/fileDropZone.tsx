@@ -44,7 +44,9 @@ export default function FileDropZone({ accept, label = 'Drag & drop a file here'
         const files = Array.from(picked ?? []);
         if (files.length === 0) return true;
 
-        const expected = accept?.includes('image') ? 'image' : accept?.includes('audio') ? 'audio' : 'valid';
+        const expected = accept?.includes('image') ? 'image'
+            : accept?.includes('video') ? 'audio or video'
+            : accept?.includes('audio') ? 'audio' : 'valid';
         if (!multiple) {
             if (!matchesAccept(files[0], accept)) {
                 toast.error(`Please select an ${expected} file.`);

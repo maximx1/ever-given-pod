@@ -3,6 +3,7 @@
 import { createContext, useContext, useRef, useState, useCallback, useEffect, ReactNode } from 'react';
 import { resolveApiUrl, resolveAssetUrl } from '@/common/helpers/api';
 import { useAuth } from '@/app/common/context/AuthContext';
+import VideoTray from '@/app/common/components/player/videoTray';
 
 export type QueueItem = {
     episodeId: string;
@@ -30,10 +31,13 @@ type PlayerState = {
     duration: number;
     queueOpen: boolean;
     resumePrompt: ResumePrompt | null;
+    // The current episode has a picture, and whether the tray showing it is up
+    hasVideo: boolean;
+    videoOpen: boolean;
 };
 
 type PlayerContextValue = PlayerState & {
-    audioRef: React.RefObject<HTMLAudioElement | null>;
+    mediaRef: React.RefObject<HTMLVideoElement | null>;
     playNow: (item: QueueItem) => void;
     addToQueue: (item: QueueItem) => void;
     removeFromQueue: (index: number) => void;
@@ -49,13 +53,15 @@ type PlayerContextValue = PlayerState & {
     resolveResumePrompt: (resume: boolean) => void;
     dismissResumePrompt: () => void;
     closePlayer: () => void;
+    openVideo: () => void;
+    minimizeVideo: () => void;
     podcastFallbackUrl: string;
 };
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
-    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const mediaRef = useRef<HTMLVideoElement | null>(null);
     const podcastFallbackUrl = resolveAssetUrl('/icons/podcast.svg');
     const { user } = useAuth();
 
@@ -66,6 +72,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const [duration, setDuration] = useState(0);
     const [queueOpen, setQueueOpen] = useState(false);
     const [resumePrompt, setResumePrompt] = useState<ResumePrompt | null>(null);
+    const [hasVideo, setHasVideo] = useState(false);
+    const [videoOpen, setVideoOpen] = useState(false);
+    const hasVideoRef = useRef(false);
+    // Set when the listener starts an episode, so a video opens its tray; a restored one stays down
+    const openVideoOnLoadRef = useRef(false);
     const playCountedRef = useRef<Set<string>>(new Set());
     const positionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -84,7 +95,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         }
         if (!isPlaying || !user) return;
         positionIntervalRef.current = setInterval(() => {
-            const audio = audioRef.current;
+            const audio = mediaRef.current;
             const item = queue[currentIndex];
             if (!audio || !item) return;
             fetch(resolveApiUrl(`/${item.streamId}/playback`), {
@@ -117,7 +128,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
                 setCurrentIndex(typeof parsed.currentIndex === 'number' ? parsed.currentIndex : 0);
                 setCurrentTime(typeof parsed.currentTime === 'number' ? parsed.currentTime : 0);
                 // restore audio src and seek to time after metadata loads
-                const audio = audioRef.current;
+                const audio = mediaRef.current;
                 const idx = typeof parsed.currentIndex === 'number' ? parsed.currentIndex : 0;
                 const item = parsed.queue[idx];
                 if (audio && item) {
@@ -161,15 +172,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const playAtIndex = useCallback((index: number, newQueue?: QueueItem[], startTime?: number) => {
         const q = newQueue ?? queue;
         const item = q[index];
-        if (!item || !audioRef.current) return;
-        if (audioRef.current.src !== item.url) {
-            audioRef.current.src = item.url;
+        if (!item || !mediaRef.current) return;
+        if (mediaRef.current.src !== item.url) {
+            mediaRef.current.src = item.url;
+            openVideoOnLoadRef.current = true;
+        } else if (hasVideoRef.current) {
+            setVideoOpen(true);
         }
         const resume = startTime ?? item.resumeFrom;
         if (resume && resume > 0) {
-            audioRef.current.currentTime = resume;
+            mediaRef.current.currentTime = resume;
         }
-        audioRef.current.play().catch(() => {});
+        mediaRef.current.play().catch(() => {});
         setCurrentIndex(index);
         setIsPlaying(true);
         recordPlayCount(item);
@@ -245,7 +259,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const closePlayer = useCallback(() => {
-        const audio = audioRef.current;
+        const audio = mediaRef.current;
         if (audio) {
             try { audio.pause(); } catch {}
             try { audio.currentTime = 0; } catch {}
@@ -254,6 +268,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setQueue([]);
         setCurrentIndex(0);
         setIsPlaying(false);
+        setVideoOpen(false);
         setCurrentTime(0);
         setDuration(0);
         playCountedRef.current.clear();
@@ -278,7 +293,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
                 const nextItem = q[nextIndex];
                 playAtIndex(nextIndex, q, nextItem.resumeFrom);
             } else {
-                audioRef.current?.pause();
+                mediaRef.current?.pause();
                 setIsPlaying(false);
             }
             return q;
@@ -286,7 +301,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }, [currentIndex, playAtIndex]);
 
     const playPrevious = useCallback(() => {
-        const audio = audioRef.current;
+        const audio = mediaRef.current;
         if (!audio) return;
         // If more than 3s in, restart current track
         if (audio.currentTime > 3) {
@@ -300,7 +315,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }, [currentIndex, playAtIndex]);
 
     const togglePlayPause = useCallback(() => {
-        const audio = audioRef.current;
+        const audio = mediaRef.current;
         if (!audio || queue.length === 0) return;
         if (isPlaying) {
             audio.pause();
@@ -315,13 +330,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }, [isPlaying, queue, currentIndex]);
 
     const seekRelative = useCallback((seconds: number) => {
-        const audio = audioRef.current;
+        const audio = mediaRef.current;
         if (!audio) return;
         audio.currentTime = Math.max(0, Math.min(audio.duration || 0, audio.currentTime + seconds));
     }, []);
 
     const seekTo = useCallback((time: number) => {
-        const audio = audioRef.current;
+        const audio = mediaRef.current;
         if (!audio) return;
         audio.currentTime = Math.max(0, Math.min(audio.duration || 0, time));
     }, []);
@@ -334,8 +349,35 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setQueueOpen(prev => !prev);
     }, []);
 
+    // Minimizing only hides the picture; the episode keeps playing as audio
+    const openVideo = useCallback(() => setVideoOpen(true), []);
+    const minimizeVideo = useCallback(() => setVideoOpen(false), []);
+
     useEffect(() => {
-        const audio = audioRef.current;
+        const media = mediaRef.current;
+        if (!media) return;
+        const onMetadata = () => {
+            const video = media.videoWidth > 0;
+            hasVideoRef.current = video;
+            setHasVideo(video);
+            if (openVideoOnLoadRef.current) setVideoOpen(video);
+            openVideoOnLoadRef.current = false;
+        };
+        const onEmptied = () => {
+            hasVideoRef.current = false;
+            setHasVideo(false);
+            setVideoOpen(false);
+        };
+        media.addEventListener('loadedmetadata', onMetadata);
+        media.addEventListener('emptied', onEmptied);
+        return () => {
+            media.removeEventListener('loadedmetadata', onMetadata);
+            media.removeEventListener('emptied', onEmptied);
+        };
+    }, []);
+
+    useEffect(() => {
+        const audio = mediaRef.current;
         if (!audio) return;
         const onTimeUpdate = () => setCurrentTime(audio.currentTime);
         const onDurationChange = () => setDuration(audio.duration || 0);
@@ -397,7 +439,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             duration,
             queueOpen,
             resumePrompt,
-            audioRef,
+            hasVideo,
+            videoOpen,
+            mediaRef,
             playNow,
             addToQueue,
             removeFromQueue,
@@ -413,9 +457,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             resolveResumePrompt,
             dismissResumePrompt,
             closePlayer,
+            openVideo,
+            minimizeVideo,
             podcastFallbackUrl,
         }}>
-            <audio ref={audioRef} />
+            {/* One media element for the whole visit, so playback survives page changes. It plays
+                audio episodes too; the tray only shows it when the episode has a picture. */}
+            <VideoTray mediaRef={mediaRef} open={videoOpen && hasVideo} onMinimize={minimizeVideo} />
             {children}
         </PlayerContext.Provider>
     );

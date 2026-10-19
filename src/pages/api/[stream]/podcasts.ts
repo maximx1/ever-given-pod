@@ -8,7 +8,7 @@ import { EpisodeDto } from '../../../common/dtos/episodeDto';
 import { prepareEpisodeItem } from '../../../common/helpers/data';
 import { DEFAULT_SPLIT_MINUTES, FIELD_LIMITS } from '../../../common/limits';
 import { parseSessionCookie } from '../../../common/helpers/auth';
-import { discardUploads, getUploadExtension, isAudioUpload, validateImageUpload } from '../../../common/helpers/uploads';
+import { discardUploads, getUploadExtension, isAudioUpload, isVideoUpload, validateImageUpload } from '../../../common/helpers/uploads';
 import { FfmpegMissingError, planSplit, probeAudio, queueSplit, resumePendingSplits } from '../../../common/helpers/splitter';
 import { UPLOADS_DIR } from '../../../common/helpers/paths';
 import { isReleased, parseReleaseDate, releaseTime } from '../../../common/helpers/schedule';
@@ -123,8 +123,9 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       if (imageError) {
         return res.status(400).json({ error: imageError });
       }
-      if (!isAudioUpload(episodeFile)) {
-        return res.status(400).json({ error: 'Only audio files are allowed' });
+      const isVideo = isVideoUpload(episodeFile);
+      if (!isAudioUpload(episodeFile) && !isVideo) {
+        return res.status(400).json({ error: 'Only audio and video files are allowed' });
       }
 
       const imageFileName = imageFile ? `${uuidv4()}${getUploadExtension(imageFile)}` : undefined;
@@ -137,9 +138,10 @@ const post = async (req: NextApiRequest, res: NextApiResponse) => {
       }
       await fs.rename(episodeFile.path, episodeFilePath);
 
-      // Long audio is published as one episode marked pending, then split into parts in the background
+      // Long audio is published as one episode marked pending, then split into parts in the background.
+      // Video is never split.
       let splitting = false;
-      if (streamData.autoSplit ?? true) {
+      if (!isVideo && (streamData.autoSplit ?? true)) {
         try {
           const probe = await probeAudio(episodeFilePath);
           splitting = planSplit(probe, streamData.splitMinutes ?? DEFAULT_SPLIT_MINUTES) !== null;

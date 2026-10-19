@@ -28,7 +28,17 @@ export const validateImageUpload = async (file: File): Promise<string | null> =>
     return null;
 };
 
-export const isAudioUpload = (file: File): boolean => detectUploadType(file).startsWith('audio/');
+// mime-types calls .mp4 application/mp4, which can hold audio or video; the browser's type says which
+const detectMediaType = (file: File): string => {
+    const type = detectUploadType(file);
+    if (type !== 'application/mp4') return type;
+    const sent = file.headers?.['content-type'] || '';
+    return sent.startsWith('audio/') ? sent : 'video/mp4';
+};
+
+export const isAudioUpload = (file: File): boolean => detectMediaType(file).startsWith('audio/');
+
+export const isVideoUpload = (file: File): boolean => detectMediaType(file).startsWith('video/');
 
 // Removes whatever multiparty left in the upload directory; files already moved to their final name are skipped
 export const discardUploads = async (files?: Record<string, File[] | undefined>) => {
