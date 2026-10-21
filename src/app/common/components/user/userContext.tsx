@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { resolveAppUrl, resolveApiUrl, resolveAssetUrl } from "@/common/helpers/api";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/common/context/AuthContext";
@@ -75,13 +76,14 @@ export default function UserContext() {
                 </button>
                 {menuOpen && (
                     <div className="absolute right-0 top-full mt-1 bg-raised rounded-md shadow-lg py-1 min-w-[140px] z-50">
-                        <a
+                        {/* A client-side link, so playing audio carries on to the profile */}
+                        <Link
                             href={resolveAppUrl(`/${user.username}`)}
                             className="block px-4 py-2 text-sm text-ink-2 hover:bg-tint"
                             onClick={() => setMenuOpen(false)}
                         >
                             Profile
-                        </a>
+                        </Link>
                         <button
                             onClick={handleLogout}
                             className="block w-full text-left px-4 py-2 text-sm text-ink-2 hover:bg-tint"
