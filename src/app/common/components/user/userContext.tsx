@@ -2,15 +2,16 @@
 
 import { useState, useRef, useEffect } from "react";
 import { resolveAppUrl, resolveApiUrl, resolveAssetUrl } from "@/common/helpers/api";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/common/context/AuthContext";
 import PersonIcon from "@/app/common/components/icons/personIcon";
 import UploadImage from "@/app/common/components/image/uploadImage";
+import { useLoginNavigation } from "@/app/common/components/user/useLoginNavigation";
 import MenuSvg from "@/icons/menu.svg";
 
 export default function UserContext() {
     const router = useRouter();
-    const pathname = usePathname();
+    const navigateWithRedirect = useLoginNavigation();
     const { user, loading, setUser } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -92,13 +93,6 @@ export default function UserContext() {
             </div>
         );
     }
-
-    const navigateWithRedirect = (target: string) => {
-        if (pathname && pathname !== '/login' && pathname !== '/signup') {
-            sessionStorage.setItem('loginRedirect', pathname);
-        }
-        router.push(resolveAppUrl(target));
-    };
 
     return (
         <>
