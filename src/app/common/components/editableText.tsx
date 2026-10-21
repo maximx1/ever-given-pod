@@ -74,7 +74,8 @@ export default function EditableText({
     }
 
     return (
-        <span className="inline-flex items-center gap-1.5">
+        // The buttons stretch to the input's height. 16px text keeps phones from zooming in on focus
+        <span className="flex items-stretch gap-1.5 w-full max-w-md">
             <input
                 ref={inputRef}
                 type="text"
@@ -83,13 +84,13 @@ export default function EditableText({
                 onKeyDown={handleKeyDown}
                 maxLength={maxLength}
                 disabled={saving}
-                className={`border border-line rounded-sm px-2 py-0.5 text-sm focus:ring-accent focus:border-accent outline-none ${inputClassName}`}
+                className={`flex-1 min-w-0 border border-line rounded-sm px-2 py-1.5 text-base focus:ring-accent focus:border-accent outline-none ${inputClassName}`}
             />
             <button
                 type="button"
                 onClick={handleSave}
                 disabled={saving || !draft.trim()}
-                className="text-xs px-2 py-0.5 bg-accent text-on-accent rounded-sm hover:bg-accent-strong disabled:opacity-50 cursor-pointer"
+                className="flex-shrink-0 text-sm font-semibold px-3 bg-accent text-on-accent rounded-sm hover:bg-accent-strong disabled:opacity-50 cursor-pointer"
             >
                 Save
             </button>
@@ -97,7 +98,7 @@ export default function EditableText({
                 type="button"
                 onClick={handleCancel}
                 disabled={saving}
-                className="text-xs px-2 py-0.5 bg-track-strong text-ink-2 rounded-sm hover:bg-track-deep cursor-pointer"
+                className="flex-shrink-0 text-sm px-3 bg-track-strong text-ink-2 rounded-sm hover:bg-track-deep cursor-pointer"
             >
                 Cancel
             </button>
