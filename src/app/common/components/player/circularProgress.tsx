@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 
 type CircularProgressProps = {
     currentTime: number;
@@ -20,6 +20,10 @@ function formatCompact(seconds: number): string {
     return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+// The gap at the top of the ring, where the episode starts and ends, in radians
+const GAP_ANGLE = (30 * Math.PI) / 180;
+// Where the listener's choice of total or remaining time is kept
+const TIME_DISPLAY_KEY = 'playerTimeDisplay';
 
 export default function CircularProgress({
     currentTime,
@@ -31,12 +35,31 @@ export default function CircularProgress({
 }: CircularProgressProps) {
     const svgRef = useRef<SVGSVGElement>(null);
     const draggingRef = useRef(false);
+    // The lower number shows the episode's length, or the time left in it
+    const [showRemaining, setShowRemaining] = useState(false);
+
+    useEffect(() => {
+        try {
+            setShowRemaining(localStorage.getItem(TIME_DISPLAY_KEY) === 'remaining');
+        } catch { /* storage blocked: keep the default */ }
+    }, []);
+
+    const toggleTimeDisplay = useCallback(() => {
+        setShowRemaining((prev) => {
+            try {
+                localStorage.setItem(TIME_DISPLAY_KEY, prev ? 'total' : 'remaining');
+            } catch { /* storage blocked: the choice lasts until reload */ }
+            return !prev;
+        });
+    }, []);
 
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     const center = size / 2;
 
-    const gapAngle = (30 * Math.PI) / 180;
+    const gapAngle = GAP_ANGLE;
+    // Pressing inside this radius switches the time display; the ring around it seeks
+    const innerRadius = radius * 0.55;
     const activeArcLength = circumference * (1 - gapAngle / (2 * Math.PI));
     const fraction = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
     const filled = activeArcLength * fraction;
@@ -61,13 +84,18 @@ export default function CircularProgress({
             const ratio = a / arcEnd;
             onSeek(Math.min(ratio, 1) * duration);
         }
-    }, [duration, onSeek, center]);
+    }, [duration, onSeek, center, gapAngle]);
 
     const onPointerDown = useCallback((e: React.PointerEvent) => {
+        const rect = svgRef.current?.getBoundingClientRect();
+        if (rect && Math.hypot(e.clientX - rect.left - center, e.clientY - rect.top - center) < innerRadius) {
+            toggleTimeDisplay();
+            return;
+        }
         draggingRef.current = true;
         (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
         seekFromEvent(e.clientX, e.clientY);
-    }, [seekFromEvent]);
+    }, [seekFromEvent, center, innerRadius, toggleTimeDisplay]);
 
     const onPointerMove = useCallback((e: React.PointerEvent) => {
         if (!draggingRef.current) return;
@@ -93,6 +121,7 @@ export default function CircularProgress({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
         >
+            <title>{showRemaining ? 'Time left. Tap the middle to show the length' : 'Length. Tap the middle to show the time left'}</title>
             <circle
                 cx={center}
                 cy={center}
@@ -155,7 +184,7 @@ export default function CircularProgress({
                 className="text-ink-3"
                 style={{ fontSize: `${fontSize * 0.85}px`, fontWeight: 400, pointerEvents: 'none' }}
             >
-                {formatCompact(duration)}
+                {showRemaining ? `-${formatCompact(Math.max(duration - currentTime, 0))}` : formatCompact(duration)}
             </text>
         </svg>
     );
