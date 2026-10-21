@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/app/common/context/AuthContext";
 import PersonIcon from "@/app/common/components/icons/personIcon";
 import UploadImage from "@/app/common/components/image/uploadImage";
+import MenuSvg from "@/icons/menu.svg";
 
 export default function UserContext() {
     const router = useRouter();
@@ -100,21 +101,53 @@ export default function UserContext() {
     };
 
     return (
-        <div className="flex items-center space-x-2">
-            <button
-                type="button"
-                onClick={() => navigateWithRedirect('/signup')}
-                className="px-3 py-1.5 rounded-md bg-card-deep text-on-accent text-xs font-semibold hover:bg-accent-strong transition"
-            >
-                Sign Up
-            </button>
-            <button
-                type="button"
-                onClick={() => navigateWithRedirect('/login')}
-                className="px-3 py-1.5 rounded-md bg-card-deep text-on-accent text-xs font-semibold hover:bg-accent-strong transition"
-            >
-                Log In
-            </button>
-        </div>
+        <>
+            <div className="hidden sm:flex items-center space-x-2">
+                <button
+                    type="button"
+                    onClick={() => navigateWithRedirect('/signup')}
+                    className="px-3 py-1.5 rounded-md bg-card-deep text-on-accent text-xs font-semibold hover:bg-accent-strong transition"
+                >
+                    Sign Up
+                </button>
+                <button
+                    type="button"
+                    onClick={() => navigateWithRedirect('/login')}
+                    className="px-3 py-1.5 rounded-md bg-card-deep text-on-accent text-xs font-semibold hover:bg-accent-strong transition"
+                >
+                    Log In
+                </button>
+            </div>
+            {/* On phones the two buttons would run into the site name, so they fold into a menu */}
+            <div className="sm:hidden absolute top-0 right-0 h-full aspect-square" ref={menuRef}>
+                <button
+                    type="button"
+                    aria-label="Menu"
+                    aria-expanded={menuOpen}
+                    onClick={() => setMenuOpen(v => !v)}
+                    className="flex h-full w-full items-center justify-center cursor-pointer text-accent hover:ring-2 hover:ring-inset hover:ring-accent transition"
+                >
+                    <MenuSvg className="w-7 h-7" />
+                </button>
+                {menuOpen && (
+                    <div className="absolute right-0 top-full mt-1 bg-raised rounded-md shadow-lg py-1 min-w-[140px] z-50">
+                        <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); navigateWithRedirect('/login'); }}
+                            className="block w-full text-left px-4 py-3 text-sm text-ink-2 hover:bg-tint"
+                        >
+                            Log In
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); navigateWithRedirect('/signup'); }}
+                            className="block w-full text-left px-4 py-3 text-sm text-ink-2 hover:bg-tint"
+                        >
+                            Sign Up
+                        </button>
+                    </div>
+                )}
+            </div>
+        </>
     );
 }

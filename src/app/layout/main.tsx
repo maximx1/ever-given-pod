@@ -36,7 +36,7 @@ export default function Main({ children, showUserContext = true }: MainProps) {
                 <div className="mx-auto w-full max-w-full px-4">
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center cursor-pointer" onClick={handleHeaderClick}>
                         <Image src={resolveAssetUrl("/icons/site-icon.svg")} alt="Site Icon" width={32} height={32} className="mr-2" />
-                        <h1 className="text-2xl font-bold">Ever Givin Pod</h1>
+                        <h1 className="text-xl sm:text-2xl font-bold whitespace-nowrap">Ever Givin Pod</h1>
                     </div>
                     <div className="flex justify-end h-[22px]">
                         {showUserContext && <UserContext />}
