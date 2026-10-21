@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import UploadImage from '@/app/common/components/image/uploadImage';
+import ImageBackdrop from '@/app/common/components/image/imageBackdrop';
 import Link from 'next/link';
 import { StreamDto } from '@/common/dtos/streamDto';
 import { resolveAppUrl, resolveApiUrl, resolveAssetUrl } from '@/common/helpers/api';
@@ -66,7 +67,8 @@ export default function StreamCard({
     return (
         <>
             <div className="w-full min-h-[150px] shadow-card rounded-sm overflow-hidden flex m-4 mb-1 bg-card">
-                <div className="w-[150px] h-full max-h-[232px] bg-card flex-shrink-0 relative">
+                <div className="w-[150px] h-full max-h-[232px] bg-card flex-shrink-0 relative overflow-hidden">
+                    {imageUrl && <ImageBackdrop src={imageUrl} />}
                     <UploadImage src={imageUrl} fallbacks={[resolveAssetUrl('/icons/podcast.svg')]} alt={title ?? ''} fill sizes="150px" className="object-contain" />
                 </div>
 

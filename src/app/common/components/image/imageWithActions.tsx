@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import FileDropZone from '@/app/common/components/fileDropZone';
 import UploadImage from '@/app/common/components/image/uploadImage';
+import ImageBackdrop from '@/app/common/components/image/imageBackdrop';
 
 type ImageWithActionsProps = {
     src: string;
@@ -107,7 +108,8 @@ export default function ImageWithActions({ src, alt, canEdit, hasImage, onUpload
     return (
         <>
             <div className="relative w-full h-full cursor-pointer" onClick={handleImageClick}>
-                <UploadImage src={src} alt={alt} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover md:object-contain" />
+                {hasImage && <ImageBackdrop src={src} />}
+                <UploadImage src={src} alt={alt} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-contain" />
                 {uploading && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-tint/70">
                         <span className="text-sm text-ink-3 mb-2">Uploading... {uploadProgress}%</span>

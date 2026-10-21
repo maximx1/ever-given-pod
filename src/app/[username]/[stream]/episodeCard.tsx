@@ -14,6 +14,7 @@ import { FIELD_LIMITS } from '@/common/limits';
 import { usePlayer } from '@/app/common/context/PlayerContext';
 import { formatReleaseTime, fromDateTimeInput, isReleased, releaseTime, toDateTimeInput } from '@/common/helpers/schedule';
 import UploadImage from '@/app/common/components/image/uploadImage';
+import ImageBackdrop from '@/app/common/components/image/imageBackdrop';
 import { RECENT_DOWNLOAD_DAYS, recentDownloads } from '@/common/helpers/downloadStats';
 import { isVideoUrl } from '@/common/helpers/media';
 
@@ -110,14 +111,15 @@ export default function EpisodeCard({
 
     return (
         <div className="w-full min-h-[150px] shadow-card rounded-sm overflow-hidden flex m-4 mb-1 bg-card">
-            <div className="w-[150px] h-full max-h-[232px] bg-card flex-shrink-0 relative">
+            <div className="w-[150px] h-full max-h-[232px] bg-card flex-shrink-0 relative overflow-hidden">
+                {(imageUrl || fallbackImageUrl) && <ImageBackdrop src={imageUrl} fallbacks={[fallbackImageUrl]} />}
                 <UploadImage
                     src={imageUrl}
                     fallbacks={[fallbackImageUrl, podcastFallback]}
                     alt={title ?? ''}
                     width={150}
                     height={150}
-                    className="object-contain w-full h-full"
+                    className="relative object-contain w-full h-full"
                 />
             </div>
 
